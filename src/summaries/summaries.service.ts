@@ -9,9 +9,11 @@ import * as moment from 'moment';
 /**
  * The return format for frontend use
  */
-interface IFormatedSummary extends DailySummary {
+interface IFormatedSummary {
     level: number;
+    date: string;
     timestamp: number;
+    duration: string;
 }
 
 @Injectable()
@@ -23,7 +25,7 @@ export class SummariesService {
         private projectRepository: Repository<Project>,
     ) {}
 
-    async getProjectIdByName(name: string): Promise<number> {
+    public async getProjectIdByName(name: string): Promise<number> {
         let project = await this.projectRepository.findOne({
             where: { name: name },
         });
@@ -31,11 +33,13 @@ export class SummariesService {
         return project.id;
     }
 
-    async getRawDailySummaries(
-        projectId: number,
+    public async getRawDailySummaries(
+        project: string = 'meditation',
         startDate: string,
         endDate: string,
     ): Promise<DailySummary[]> {
+        let projectId = await this.getProjectIdByName(project);
+
         return await this.dailySummaryRepository.find({
             where: [
                 {
@@ -46,29 +50,24 @@ export class SummariesService {
         });
     }
 
-    async getRangeDailySummaries(
-        project: string = 'meditation',
-        startDate: string,
-        endDate: string,
+    public async processTheRawSummaries(
+        rawData: DailySummary[],
     ): Promise<IFormatedSummary[]> {
-        let projectId = await this.getProjectIdByName(project);
-        let rawData = await this.getRawDailySummaries(
-            projectId,
-            startDate,
-            endDate,
-        );
-
         return rawData.map((entry) => {
             const level = this.calLevel(entry.duration);
             const timestamp = moment(entry.date, 'YYYY-MM-DD').valueOf();
-            const extraProperties = { level: level, timestamp: timestamp };
-            entry.date = moment(entry.date).format('MMM DD, YYYY');
+            const duration = this.convertRawDurationToFormat(entry.duration);
 
-            return Object.assign({}, entry, extraProperties);
+            return {
+                date: moment(entry.date).format('MMM DD, YYYY'),
+                level: level,
+                timestamp: timestamp,
+                duration: duration,
+            };
         });
     }
 
-    calLevel(duration: number): number {
+    private calLevel(duration: number): number {
         const MAX_DURATION_LEVEL_INDEX = 5;
         const MAX_DURATION_LEVEL = 4;
         const durationLevelMap = new Map([
@@ -84,5 +83,51 @@ export class SummariesService {
         return levelIndex > MAX_DURATION_LEVEL_INDEX
             ? MAX_DURATION_LEVEL
             : durationLevelMap.get(levelIndex);
+    }
+
+    private convertRawDurationToFormat(duration: number): string {
+        const durationInMinute = duration / 1000 / 60;
+
+        if (durationInMinute < 1) {
+            return '1m';
+        }
+
+        const hours = Math.floor(durationInMinute / 60);
+        const minutes = durationInMinute % 60;
+
+        if (hours == 0) return `${minutes}m`;
+
+        return `${hours}h${minutes}m`;
+    }
+
+    public getLongestDayRecord(
+        rawData: DailySummary[],
+    ): { date: string; duration: string } {
+        const longestRecord = rawData
+            .sort((a, b) => {
+                return b.duration - a.duration;
+            })[0];
+
+        return {
+            date: longestRecord.date,
+            duration: this.convertRawDurationToFormat(longestRecord.duration),
+        };
+    }
+
+    public getTotalDuration(rawData: DailySummary[]): number {
+        return rawData.reduce((sum, entry) => {
+            return sum += entry.duration;
+        }, 0);
+    }
+
+    public getTotalThisMonth(rawData: DailySummary[]): string {
+        const stingOfThisMonth = moment('2021-03-01').format('YYYY-MM');
+        console.log(rawData);
+
+        const sum = rawData.filter((entry) => {
+            return entry.date.includes(stingOfThisMonth);
+        }).reduce((sum, entry) => sum += entry.duration, 0);
+
+        return this.convertRawDurationToFormat(sum);
     }
 }
