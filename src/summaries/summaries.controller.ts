@@ -1,6 +1,7 @@
 import {
     Controller,
     Get,
+    Query,
     Post,
     Patch,
     Delete,
@@ -14,11 +15,15 @@ import { SummariesService } from './summaries.service';
 export class SummariesController {
     constructor(private summariesService: SummariesService) {}
 
-    @Get()
-    async showAllUsers() {
+    @Get(':project?')
+    async showAll(
+        @Param('project') projectName: string,
+        @Query('start_date') startDate: string,
+        @Query('end_date') endDate: string,
+    ) {
         return {
             statusCode: HttpStatus.OK,
-            data: await this.summariesService.showAll(),
+            data: await this.summariesService.getRangeDailySummaries(projectName, startDate, endDate),
         };
     }
 }
