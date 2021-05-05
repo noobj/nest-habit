@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThan, LessThan } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 
 import { DailySummary } from './daily_summary.entity';
 import { Project } from './project.entity';
 import * as moment from 'moment';
+import { IBasicService } from './interfaces/basic.service';
 
 /**
  * The return format for frontend use
@@ -17,13 +18,13 @@ interface IFormatedSummary {
 }
 
 @Injectable()
-export class SummariesService {
+export class SummariesService implements IBasicService {
     constructor(
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
-    ) {}
+    ){}
 
     public async getProjectIdByName(name: string): Promise<number> {
         let project = await this.projectRepository.findOne({
@@ -34,9 +35,9 @@ export class SummariesService {
     }
 
     public async getRawDailySummaries(
-        project: string = 'meditation',
         startDate: string,
         endDate: string,
+        project: string = 'meditation',
     ): Promise<DailySummary[]> {
         let projectId = await this.getProjectIdByName(project);
 
@@ -93,7 +94,7 @@ export class SummariesService {
         }
 
         const hours = Math.floor(durationInMinute / 60);
-        const minutes = durationInMinute % 60;
+        const minutes = Math.floor(durationInMinute % 60);
 
         if (hours == 0) return `${minutes}m`;
 
@@ -103,10 +104,9 @@ export class SummariesService {
     public getLongestDayRecord(
         rawData: DailySummary[],
     ): { date: string; duration: string } {
-        const longestRecord = rawData
-            .sort((a, b) => {
-                return b.duration - a.duration;
-            })[0];
+        const longestRecord = rawData.sort((a, b) => {
+            return b.duration - a.duration;
+        })[0];
 
         return {
             date: longestRecord.date,
@@ -114,19 +114,22 @@ export class SummariesService {
         };
     }
 
-    public getTotalDuration(rawData: DailySummary[]): number {
-        return rawData.reduce((sum, entry) => {
-            return sum += entry.duration;
-        }, 0);
+    public getTotalDuration(rawData: DailySummary[]): string {
+        return this.convertRawDurationToFormat(
+            rawData.reduce((sum, entry) => {
+                return (sum += entry.duration);
+            }, 0),
+        );
     }
 
     public getTotalThisMonth(rawData: DailySummary[]): string {
-        const stingOfThisMonth = moment('2021-03-01').format('YYYY-MM');
-        console.log(rawData);
+        const stingOfThisMonth = moment().format('YYYY-MM');
 
-        const sum = rawData.filter((entry) => {
-            return entry.date.includes(stingOfThisMonth);
-        }).reduce((sum, entry) => sum += entry.duration, 0);
+        const sum = rawData
+            .filter((entry) => {
+                return entry.date.includes(stingOfThisMonth);
+            })
+            .reduce((sum, entry) => (sum += entry.duration), 0);
 
         return this.convertRawDurationToFormat(sum);
     }

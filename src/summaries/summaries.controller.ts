@@ -5,10 +5,12 @@ import {
     Param,
     HttpStatus,
     ValidationPipe,
+    Inject,
 } from '@nestjs/common';
 
 import { IsDateString } from 'class-validator';
-import { SummariesService } from './summaries.service';
+import { IBasicService } from './interfaces/basic.service';
+import { Interfaces } from './types';
 
 class DateRange {
     @IsDateString()
@@ -20,7 +22,9 @@ class DateRange {
 
 @Controller('summaries')
 export class SummariesController {
-    constructor(private summariesService: SummariesService) {}
+    constructor(
+        @Inject(Interfaces.IBasicService) private summariesService: IBasicService,
+    ) {}
 
     @Get(':project?')
     async showAll(
@@ -28,9 +32,9 @@ export class SummariesController {
         @Query(new ValidationPipe()) dateRange: DateRange,
     ) {
         const rawData = await this.summariesService.getRawDailySummaries(
-            projectName,
             dateRange.start_date,
             dateRange.end_date,
+            projectName,
         );
 
         const summries = await this.summariesService.processTheRawSummaries(
