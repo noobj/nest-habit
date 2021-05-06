@@ -4,4 +4,7 @@ export default () => ({
         secret: process.env.JWT_SECRET || 'secret',
         expiration_time: process.env.JWT_EXPIRATION_TIME || 3600,
     },
+    session: {
+        secret: process.env.SESSION_SECRET || 'secret'
+    }
 });
