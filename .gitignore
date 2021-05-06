@@ -23,6 +23,7 @@ ormconfig.json
 /.idea
 .project
 .classpath
+.vscode/
 .c9/
 *.launch
 .settings/

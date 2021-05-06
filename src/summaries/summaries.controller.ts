@@ -6,11 +6,13 @@ import {
     HttpStatus,
     ValidationPipe,
     Inject,
+    UseGuards,
 } from '@nestjs/common';
 
 import { IsDateString } from 'class-validator';
 import { IBasicService } from './interfaces/basic.service';
-import { Interfaces } from './types';
+import { Interfaces } from './interfaces/types';
+import { AuthGuard } from '@nestjs/passport';
 
 class DateRange {
     @IsDateString()
@@ -23,9 +25,11 @@ class DateRange {
 @Controller('summaries')
 export class SummariesController {
     constructor(
-        @Inject(Interfaces.IBasicService) private summariesService: IBasicService,
+        @Inject(Interfaces.IBasicService)
+        private summariesService: IBasicService,
     ) {}
 
+    @UseGuards(AuthGuard('jwt'))
     @Get(':project?')
     async showAll(
         @Param('project') projectName: string,
