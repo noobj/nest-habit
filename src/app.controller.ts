@@ -11,7 +11,7 @@ export class AppController {
     @Post('auth/login')
     async login(@Request() req, @Res({ passthrough: true }) res: Response) {
         const token = await this.authService.login(req.user);
-        res.cookie('token', token.access_token);
+        req.session.token = token.access_token;
 
         return token;
     }
