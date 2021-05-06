@@ -56,6 +56,7 @@ export class SummariesController {
             total_last_year: totalYear,
             total_this_month: totalThisMonth,
         };
+
         return {
             statusCode: HttpStatus.OK,
             data: result,
