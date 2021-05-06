@@ -1,9 +1,5 @@
 export interface IBasicService {
-    getRawDailySummaries(
-        project: string,
-        startDate: string,
-        endDate: string,
-    );
+    getRawDailySummaries(project: string, startDate: string, endDate: string);
 
     processTheRawSummaries(rawData);
 

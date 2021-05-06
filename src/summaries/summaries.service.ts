@@ -24,7 +24,7 @@ export class SummariesService implements IBasicService {
         private dailySummaryRepository: Repository<DailySummary>,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
-    ){}
+    ) {}
 
     public async getProjectIdByName(name: string): Promise<number> {
         let project = await this.projectRepository.findOne({

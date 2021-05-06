@@ -9,6 +9,6 @@ export class Project {
     @Column()
     name: string;
 
-    @OneToMany(type => DailySummary, summary => summary.project)
+    @OneToMany((type) => DailySummary, (summary) => summary.project)
     summaries: DailySummary[];
 }

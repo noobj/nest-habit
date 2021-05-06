@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+} from 'typeorm';
 import { Project } from './project.entity';
 
 @Entity('daily_summaries')
@@ -9,10 +15,10 @@ export class DailySummary {
     @Column()
     date: string;
 
-    @ManyToOne(type => Project, project => project.summaries)
+    @ManyToOne((type) => Project, (project) => project.summaries)
     @JoinColumn({
-        name: "project_id",
-        referencedColumnName: "id"
+        name: 'project_id',
+        referencedColumnName: 'id',
     })
     project: number;
 
