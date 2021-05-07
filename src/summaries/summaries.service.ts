@@ -27,7 +27,7 @@ export class SummariesService implements IBasicService {
     ) {}
 
     public async getProjectIdByName(name: string): Promise<number> {
-        let project = await this.projectRepository.findOne({
+        const project = await this.projectRepository.findOne({
             where: { name: name },
         });
 
@@ -37,9 +37,9 @@ export class SummariesService implements IBasicService {
     public async getRawDailySummaries(
         startDate: string,
         endDate: string,
-        project: string = 'meditation',
+        project = 'meditation',
     ): Promise<DailySummary[]> {
-        let projectId = await this.getProjectIdByName(project);
+        const projectId = await this.getProjectIdByName(project);
 
         return await this.dailySummaryRepository.find({
             where: [
