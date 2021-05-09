@@ -52,11 +52,11 @@ export class TasksService {
         const result = Object.entries(tmp).map((key) => {
             return {
                 date: key[0],
-                projectId: projectId,
+                project: projectId,
                 duration: key[1].reduce((sum, entry) => sum + entry.dur, 0),
             };
         });
-console.log(result);
-        // this.summariesService.upsert(result);
+
+        await this.summariesService.upsert(result);
     }
 }

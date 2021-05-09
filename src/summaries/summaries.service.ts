@@ -6,6 +6,8 @@ import { DailySummary } from './daily_summary.entity';
 import { Project } from './project.entity';
 import * as moment from 'moment';
 import { IBasicService } from './interfaces/basic.service';
+import { DailySummaryDto } from './daily_summary_dto';
+import { TypeOrmUpsert } from '@nest-toolbox/typeorm-upsert';
 
 /**
  * The return format for frontend use
@@ -132,5 +134,18 @@ export class SummariesService implements IBasicService {
             .reduce((sum, entry) => (sum += entry.duration), 0);
 
         return this.convertRawDurationToFormat(sum);
+    }
+
+    public async upsert(data: DailySummaryDto[]) {
+        const updated = await TypeOrmUpsert(
+            this.dailySummaryRepository,
+            data,
+            'daily_summaries.uni_prj_date',
+            {
+                doNotUpsert: ['name'],
+            }
+        );
+
+        console.log(updated);
     }
 }

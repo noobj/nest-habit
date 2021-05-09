@@ -10,7 +10,7 @@ async function bootstrap() {
     const command = process.argv[2];
 
     switch (command) {
-        case 'FetchAndUpdateThirdParty':
+        case 'syncToggl':
             const tasksService = application.get(TasksService);
             await tasksService.syncWithToggl();
             break;
