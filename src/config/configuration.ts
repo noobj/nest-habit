@@ -5,6 +5,9 @@ export default () => ({
         expiration_time: process.env.JWT_EXPIRATION_TIME || 3600,
     },
     session: {
-        secret: process.env.SESSION_SECRET || 'secret'
-    }
+        secret: process.env.SESSION_SECRET || 'secret',
+    },
+    toggl: {
+        token: process.env.TOGGL_TOKEN || 'null',
+    },
 });

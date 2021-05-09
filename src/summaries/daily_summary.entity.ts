@@ -1,21 +1,23 @@
 import {
     Entity,
     Column,
-    PrimaryGeneratedColumn,
     ManyToOne,
     JoinColumn,
+    Unique,
+    PrimaryColumn,
 } from 'typeorm';
 import { Project } from './project.entity';
 
-@Entity('daily_summaries')
+@Entity({ name: 'daily_summaries' })
+@Unique('uni_prj_date', ['project', 'date'])
 export class DailySummary {
-    @PrimaryGeneratedColumn()
+    @PrimaryColumn({ generated: 'increment' })
     id: number;
 
     @Column()
     date: string;
 
-    @ManyToOne((type) => Project, (project) => project.summaries)
+    @ManyToOne(() => Project, (project) => project.summaries)
     @JoinColumn({
         name: 'project_id',
         referencedColumnName: 'id',

@@ -23,7 +23,7 @@ export class SummariesService implements IBasicService {
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
         @InjectRepository(Project)
-        private projectRepository: Repository<Project>,
+        private projectRepository: Repository<Project>
     ) {}
 
     public async getProjectIdByName(name: string): Promise<number> {
@@ -37,7 +37,7 @@ export class SummariesService implements IBasicService {
     public async getRawDailySummaries(
         startDate: string,
         endDate: string,
-        project = 'meditation',
+        project = 'meditation'
     ): Promise<DailySummary[]> {
         const projectId = await this.getProjectIdByName(project);
 
@@ -52,7 +52,7 @@ export class SummariesService implements IBasicService {
     }
 
     public async processTheRawSummaries(
-        rawData: DailySummary[],
+        rawData: DailySummary[]
     ): Promise<IFormatedSummary[]> {
         return rawData.map((entry) => {
             const level = this.calLevel(entry.duration);
@@ -102,7 +102,7 @@ export class SummariesService implements IBasicService {
     }
 
     public getLongestDayRecord(
-        rawData: DailySummary[],
+        rawData: DailySummary[]
     ): { date: string; duration: string } {
         const longestRecord = rawData.sort((a, b) => {
             return b.duration - a.duration;
@@ -118,7 +118,7 @@ export class SummariesService implements IBasicService {
         return this.convertRawDurationToFormat(
             rawData.reduce((sum, entry) => {
                 return (sum += entry.duration);
-            }, 0),
+            }, 0)
         );
     }
 

@@ -4,7 +4,7 @@ import { TasksService } from './tasks/tasks.service';
 
 async function bootstrap() {
     const application = await NestFactory.createApplicationContext(
-        ArtisanModule,
+        ArtisanModule
     );
 
     const command = process.argv[2];

@@ -1,14 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
 import { DailySummary } from './daily_summary.entity';
 
-@Entity('projects')
+@Entity({ name: 'projects' })
 export class Project {
-    @PrimaryGeneratedColumn()
+    @PrimaryColumn({ generated: 'increment' })
     id: number;
 
     @Column()
     name: string;
 
-    @OneToMany((type) => DailySummary, (summary) => summary.project)
+    @OneToMany(() => DailySummary, (summary) => summary.project)
     summaries: DailySummary[];
 }
