@@ -57,7 +57,7 @@ export class TasksService {
             };
         });
 
-        const result = this.summariesService.upsert(fetchedData);
+        const result = await this.summariesService.upsert(fetchedData);
 
         console.log(result);
     }
