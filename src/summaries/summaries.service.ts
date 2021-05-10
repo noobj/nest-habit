@@ -7,7 +7,6 @@ import { Project } from './project.entity';
 import * as moment from 'moment';
 import { IBasicService } from './interfaces/basic.service';
 import { DailySummaryDto } from './daily_summary_dto';
-import { TypeOrmUpsert } from '@nest-toolbox/typeorm-upsert';
 
 /**
  * The return format for frontend use
@@ -137,15 +136,20 @@ export class SummariesService implements IBasicService {
     }
 
     public async upsert(data: DailySummaryDto[]) {
-        const updated = await TypeOrmUpsert(
-            this.dailySummaryRepository,
-            data,
-            'daily_summaries.uni_prj_date',
-            {
-                doNotUpsert: ['name'],
-            }
-        );
+        const updated = await this.dailySummaryRepository
+            .createQueryBuilder()
+            .insert()
+            .values(data)
+            .orUpdate({
+                conflict_target: 'daily_summaries.uni_prj_date',
+                overwrite: ['duration'],
+            })
+            .execute()
+            .then((result) => result.raw)
+            .catch((e) => {
+                console.error(e);
+            });
 
-        console.log(updated);
+        return updated;
     }
 }

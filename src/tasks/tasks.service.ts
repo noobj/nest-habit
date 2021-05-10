@@ -49,7 +49,7 @@ export class TasksService {
             return moment(entry.start).format('YYYY-MM-DD');
         });
 
-        const result = Object.entries(tmp).map((key) => {
+        const fetchedData = Object.entries(tmp).map((key) => {
             return {
                 date: key[0],
                 project: projectId,
@@ -57,6 +57,8 @@ export class TasksService {
             };
         });
 
-        await this.summariesService.upsert(result);
+        const result = this.summariesService.upsert(fetchedData);
+
+        console.log(result);
     }
 }
