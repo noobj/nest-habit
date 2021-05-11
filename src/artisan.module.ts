@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TasksModule } from './tasks/tasks.module';
+import { CommandsModule } from './app/console/commands.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -21,7 +21,7 @@ import configuration from './config/configuration';
                 logging: configService.get<boolean>('database.logging'),
             }),
         }),
-        TasksModule,
+        CommandsModule,
         ConfigModule.forRoot({ load: [configuration] }),
     ],
 })

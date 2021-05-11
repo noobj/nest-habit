@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ArtisanModule } from './artisan.module';
-import { TasksService } from './tasks/tasks.service';
+import { CommandsService } from './app/console/commands.service';
 
 async function bootstrap() {
     const application = await NestFactory.createApplicationContext(
@@ -8,11 +8,11 @@ async function bootstrap() {
     );
 
     const command = process.argv[2];
+    const commandsService = application.get(CommandsService);
 
     switch (command) {
         case 'syncToggl':
-            const tasksService = application.get(TasksService);
-            await tasksService.syncWithToggl();
+            await commandsService.syncWithToggl();
             break;
         default:
             console.log('Command not found');

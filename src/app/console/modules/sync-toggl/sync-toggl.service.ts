@@ -1,21 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SummariesService } from '../summaries/summaries.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { SummariesService } from '../../../modules/summaries/summaries.service';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 import { TogglClient } from './TogglClient';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class TasksService {
-    private readonly logger = new Logger(TasksService.name);
+export class SyncTogglService {
+    private readonly logger = new Logger(SyncTogglService.name);
 
     constructor(
         private summariesService: SummariesService,
         private configService: ConfigService
     ) {}
 
-    @Cron(CronExpression.EVERY_DAY_AT_10PM)
     async syncWithToggl() {
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',

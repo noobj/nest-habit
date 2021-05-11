@@ -1,14 +1,14 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users/users.module';
-import { SummariesModule } from './summaries/summaries.module';
+import { UsersModule } from './app/modules/users/users.module';
+import { SummariesModule } from './app/modules/summaries/summaries.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
-import { SummariesController } from './summaries/summaries.controller';
-import { AuthModule } from './auth/auth.module';
+import { SummariesController } from './app/modules/summaries/summaries.controller';
+import { AuthModule } from './app/auth/auth.module';
 import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TasksModule } from './tasks/tasks.module';
+import { CommandsModule } from './app/console/commands.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -33,7 +33,7 @@ import configuration from './config/configuration';
         AuthModule,
         ConfigModule.forRoot({ load: [configuration] }),
         ScheduleModule.forRoot(),
-        TasksModule,
+        CommandsModule,
     ],
     controllers: [AppController],
 })

@@ -4,7 +4,6 @@ import {
     Table,
     TableForeignKey,
     TableIndex,
-    TableUnique,
 } from 'typeorm';
 
 export class CreateDailySummary1620638269906 implements MigrationInterface {
