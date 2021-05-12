@@ -29,6 +29,7 @@ ormconfig.json
 *.launch
 .settings/
 *.sublime-workspace
+workspace.code-workspace
 
 # IDE - VSCode
 .vscode/*

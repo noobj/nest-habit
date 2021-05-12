@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 
-import { DailySummary } from './daily_summary.entity';
-import { Project } from './project.entity';
+import { DailySummary } from './entities/daily_summary.entity';
+import { Project } from './entities/project.entity';
 import * as moment from 'moment';
 import { IBasicService } from './interfaces/basic.service';
 import { DailySummaryDto } from './daily_summary_dto';
