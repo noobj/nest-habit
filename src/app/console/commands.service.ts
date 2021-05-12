@@ -1,15 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { SyncTogglService } from './modules/sync-toggl/sync-toggl.service';
+import { ICommand } from './interfaces/command.interface';
 
 @Injectable()
 export class CommandsService {
     private readonly logger = new Logger(CommandsService.name);
 
-    constructor(private syncTogglService: SyncTogglService) {}
+    constructor(@Inject('COMMAND') private command: ICommand) {}
 
     @Cron(CronExpression.EVERY_DAY_AT_10PM)
-    async syncWithToggl() {
-        await this.syncTogglService.syncWithToggl();
+    async runCommand() {
+        await this.command.run();
     }
 }

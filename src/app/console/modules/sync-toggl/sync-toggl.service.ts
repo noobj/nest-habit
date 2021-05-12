@@ -4,9 +4,10 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 import { TogglClient } from './TogglClient';
 import { ConfigService } from '@nestjs/config';
+import { ICommand } from '../../interfaces/command.interface';
 
 @Injectable()
-export class SyncTogglService {
+export class SyncTogglService implements ICommand {
     private readonly logger = new Logger(SyncTogglService.name);
 
     constructor(
@@ -14,7 +15,7 @@ export class SyncTogglService {
         private configService: ConfigService
     ) {}
 
-    async syncWithToggl() {
+    async run() {
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
             timeout: 1000,
