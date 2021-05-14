@@ -1,9 +1,10 @@
 import { Module, DynamicModule } from '@nestjs/common';
-import { CommandsService } from './commands.service';
-import { SummariesModule } from '../modules/summaries/summaries.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SyncTogglModule } from './modules/sync-toggl/sync-toggl.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { CommandsService } from './commands.service';
+import { SummariesModule } from '../modules/summaries';
+import { SyncTogglModule } from './modules/sync-toggl';
 import configuration from 'src/config/configuration';
 
 @Module({})

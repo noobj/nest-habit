@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+
 import { DailySummary } from './daily_summary.entity';
 
 @Entity({ name: 'projects' })

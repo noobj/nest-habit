@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+
 import { ICommand } from './interfaces/command.interface';
 
 @Injectable()

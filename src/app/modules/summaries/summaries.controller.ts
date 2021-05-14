@@ -8,11 +8,11 @@ import {
     Inject,
     UseGuards,
 } from '@nestjs/common';
-
-import { IsDateString } from 'class-validator';
-import { IBasicService } from './interfaces/basic.service';
-import { Interfaces } from './interfaces/types';
 import { AuthGuard } from '@nestjs/passport';
+import { IsDateString } from 'class-validator';
+
+import { IBasicService } from './interfaces/basic.service';
+import { Interfaces } from './constants';
 
 class DateRange {
     @IsDateString()

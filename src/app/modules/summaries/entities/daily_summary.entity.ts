@@ -6,6 +6,7 @@ import {
     Unique,
     PrimaryColumn,
 } from 'typeorm';
+
 import { Project } from './project.entity';
 
 @Entity({ name: 'daily_summaries' })

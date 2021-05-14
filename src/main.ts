@@ -1,9 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import * as session from 'express-session';
 import { ConfigService } from '@nestjs/config';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
+
+import { AppModule } from './app.module';
 
 async function bootstrap() {
     const RedisStore = connectRedis(session);

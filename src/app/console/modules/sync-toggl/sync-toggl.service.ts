@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SummariesService } from '../../../modules/summaries/summaries.service';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import { TogglClient } from './TogglClient';
 import { ConfigService } from '@nestjs/config';
+
+import { SummariesService } from 'src/app/modules/summaries';
+import { TogglClient } from './TogglClient';
 import { ICommand } from '../../interfaces/command.interface';
 
 @Injectable()

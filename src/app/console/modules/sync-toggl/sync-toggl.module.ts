@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { SyncTogglService } from './sync-toggl.service';
-import { SummariesModule } from '../../../modules/summaries/summaries.module';
 import { ConfigModule } from '@nestjs/config';
+
+import { SyncTogglService } from './sync-toggl.service';
+import { SummariesModule } from 'src/app/modules/summaries';
 
 @Module({
     imports: [SummariesModule, ConfigModule],
