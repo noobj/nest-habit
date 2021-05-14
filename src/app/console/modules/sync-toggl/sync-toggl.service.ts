@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ImATeapotException } from '@nestjs/common';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 import { ConfigService } from '@nestjs/config';
@@ -16,7 +16,17 @@ export class SyncTogglService implements ICommand {
         private configService: ConfigService
     ) {}
 
-    async run() {
+    async run(argv: string[]) {
+        const days = +argv[0];
+        let since = null;
+
+        if (argv.length) {
+            if (isNaN(days))
+                throw new ImATeapotException('days must be a number');
+
+            since = moment().subtract(days, 'days').format('YYYY-MM-DD');
+        }
+
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
             timeout: 1000,
@@ -40,6 +50,7 @@ export class SyncTogglService implements ICommand {
             response = await togglClient.getDetails(workSpaceId, projectId, {
                 page: page++,
                 userAgent: 'Toggl NestJS Client',
+                since: since,
             });
 
             details = [...details, ...response.data];

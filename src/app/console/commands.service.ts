@@ -7,10 +7,13 @@ import { ICommand } from './interfaces/command.interface';
 export class CommandsService {
     private readonly logger = new Logger(CommandsService.name);
 
-    constructor(@Inject('COMMAND') private command: ICommand) {}
+    constructor(
+        @Inject('COMMAND') private command: ICommand,
+        @Inject('ARGV') private argv: string[]
+    ) {}
 
     @Cron(CronExpression.EVERY_DAY_AT_10PM)
     async runCommand() {
-        await this.command.run();
+        await this.command.run(this.argv);
     }
 }

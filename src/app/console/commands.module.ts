@@ -10,7 +10,7 @@ import configuration from 'src/config/configuration';
 @Module({})
 export class CommandsModule {
     static register(options): DynamicModule {
-        const serviceName = options + 'Service';
+        const serviceName = options.command + 'Service';
 
         return {
             imports: [
@@ -47,6 +47,10 @@ export class CommandsModule {
                         return service;
                     },
                     inject: [serviceName],
+                },
+                {
+                    provide: 'ARGV',
+                    useValue: options.argv,
                 },
                 CommandsService,
             ],

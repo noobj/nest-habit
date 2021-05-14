@@ -1,3 +1,3 @@
 export interface ICommand {
-    run();
+    run(argv: string[]);
 }
