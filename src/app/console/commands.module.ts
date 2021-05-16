@@ -6,6 +6,7 @@ import { CommandsService } from './commands.service';
 import { SummariesModule } from '../modules/summaries';
 import { SyncTogglModule } from './modules/sync-toggl';
 import configuration from 'src/config/configuration';
+import { SeedModule } from './modules/seed';
 
 @Module({})
 export class CommandsModule {
@@ -38,6 +39,7 @@ export class CommandsModule {
                 SummariesModule,
                 ConfigModule.forRoot({ load: [configuration] }),
                 SyncTogglModule,
+                SeedModule,
             ],
             module: CommandsModule,
             providers: [
