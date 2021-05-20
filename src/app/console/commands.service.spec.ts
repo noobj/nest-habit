@@ -2,17 +2,35 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CommandsService } from './commands.service';
 
 describe('CommandsService', () => {
-  let service: CommandsService;
+    let service: CommandsService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [CommandsService],
-    }).compile();
+    const mockCommand = {
+        run: jest.fn((argv) => Promise.resolve(argv)),
+    };
 
-    service = module.get<CommandsService>(CommandsService);
-  });
+    const mockArgv = ['test', '123'];
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                CommandsService,
+                {
+                    provide: 'COMMAND',
+                    useValue: mockCommand,
+                },
+                {
+                    provide: 'ARGV',
+                    useValue: mockArgv,
+                },
+            ],
+        }).compile();
+
+        service = module.get<CommandsService>(CommandsService);
+    });
+
+    it('should be defined and able to run', async () => {
+        expect(service).toBeDefined();
+        await service.runCommand();
+        expect(mockCommand.run).toBeCalledTimes(1);
+    });
 });
