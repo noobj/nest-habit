@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 
 import { DailySummary, Project } from './entities';
 import { IBasicService } from './interfaces';
@@ -24,7 +24,9 @@ export class SummariesService implements IBasicService {
         private dailySummaryRepository: Repository<DailySummary>,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>
-    ) {}
+    ) {
+        moment.tz.setDefault('Asia/Taipei');
+    }
 
     public async getProjectIdByName(name: string): Promise<number> {
         const project = await this.projectRepository.findOne({
@@ -51,9 +53,7 @@ export class SummariesService implements IBasicService {
         });
     }
 
-    public async processTheRawSummaries(
-        rawData: DailySummary[]
-    ): Promise<IFormatedSummary[]> {
+    public async processTheRawSummaries(rawData: DailySummary[]): Promise<IFormatedSummary[]> {
         return rawData.map((entry) => {
             const level = this.calLevel(entry.duration);
             const timestamp = moment(entry.date, 'YYYY-MM-DD').valueOf();
@@ -101,9 +101,7 @@ export class SummariesService implements IBasicService {
         return `${hours}h${minutes}m`;
     }
 
-    public getLongestDayRecord(
-        rawData: DailySummary[]
-    ): { date: string; duration: string } {
+    public getLongestDayRecord(rawData: DailySummary[]): { date: string; duration: string } {
         const longestRecord = rawData.sort((a, b) => {
             return b.duration - a.duration;
         })[0];
