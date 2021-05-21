@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
 
 import { DailySummary, Project } from './entities';
 import { IBasicService } from './interfaces';
-import { DailySummaryDto } from './daily_summary_dto';
+import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
+import { validate } from 'class-validator';
+import { ClassTransformer } from 'class-transformer';
 
 /**
  * The return format for frontend use
@@ -132,7 +134,15 @@ export class SummariesService implements IBasicService {
         return this.convertRawDurationToFormat(sum);
     }
 
-    public async upsert(data: DailySummaryDto[]) {
+    public async upsert(data: CreateDailySummaryDto[]) {
+        const classTransformer = new ClassTransformer();
+        const entity = classTransformer.plainToClass(CreateDailySummaryDto, data);
+        const wrapped = new WrapperCreateDailySummaryDto(entity);
+        const errors = await validate(wrapped);
+        if (errors.length > 0) {
+            throw new BadRequestException('Validation failed');
+        }
+
         const updated = await this.dailySummaryRepository
             .createQueryBuilder()
             .insert()
