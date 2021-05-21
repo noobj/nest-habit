@@ -51,7 +51,7 @@ export class SummariesController {
         const totalThisMonth = this.summariesService.getTotalThisMonth(rawData);
 
         const result = {
-            summries: summries,
+            summaries: summries,
             longest_record: longestRecord,
             total_last_year: totalYear,
             total_this_month: totalThisMonth,

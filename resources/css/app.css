@@ -1,0 +1,8 @@
+@tailwind base;
+
+html, body, #app {
+  @apply h-full;
+}
+
+@tailwind components;
+@tailwind utilities;

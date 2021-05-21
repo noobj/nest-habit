@@ -1,4 +1,4 @@
-import { Controller, Request, UseGuards, Get } from '@nestjs/common';
+import { Controller, Request, UseGuards, Get, Redirect } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 import { BasicAuthGuard } from './app/auth/basic-auth.guard';
@@ -10,6 +10,7 @@ export class AppController {
 
     @UseGuards(BasicAuthGuard)
     @Get('auth/login')
+    @Redirect('/', 302)
     async login(@Request() req) {
         const token = await this.authService.login(req.user);
         req.session.token = token.access_token;
