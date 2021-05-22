@@ -143,20 +143,19 @@ export class SummariesService implements IBasicService {
             throw new BadRequestException('Validation failed');
         }
 
-        const updated = await this.dailySummaryRepository
-            .createQueryBuilder()
-            .insert()
-            .values(data)
-            .orUpdate({
-                conflict_target: 'daily_summaries.uni_prj_date',
-                overwrite: ['duration'],
-            })
-            .execute()
-            .then((result) => result.raw)
-            .catch((e) => {
-                console.error(e);
-            });
-
-        return updated;
+        try {
+            return await this.dailySummaryRepository
+                .createQueryBuilder()
+                .insert()
+                .values(data)
+                .orUpdate({
+                    conflict_target: 'daily_summaries.uni_prj_date',
+                    overwrite: ['duration'],
+                })
+                .execute()
+                .then((result) => result.raw);
+        } catch (e) {
+            console.log('Upsert failed: ', e);
+        }
     }
 }

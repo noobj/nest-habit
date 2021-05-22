@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { DailySummary, Project } from './entities';
 import { SummariesService } from './summaries.service';
 import { Between } from 'typeorm';
+import { BadRequestException, ImATeapotException } from '@nestjs/common';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -167,5 +168,27 @@ describe('SummariesService', () => {
             protocol41: true,
             changedRows: 100,
         });
+    });
+
+    it('should upsert failed and throw Validation error', async () => {
+        await expect(async () => {
+            await service.upsert([{ project: 9, date: '123', duration: 1500000 }]);
+        }).rejects.toThrow(BadRequestException);
+    });
+
+    it('should upsert failed and console log error', async () => {
+        const spyMockDSRepo = jest
+            .spyOn(mockDailySummaryRepo, 'createQueryBuilder')
+            .mockImplementation(() => {
+                throw ImATeapotException;
+            });
+
+        const spyLog = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+        await service.upsert([{ project: 9, date: '2021-04-23', duration: 1500000 }]);
+
+        expect(spyLog.mock.calls[0][0]).toContain('Upsert failed:');
+
+        spyMockDSRepo.mockReset();
     });
 });
