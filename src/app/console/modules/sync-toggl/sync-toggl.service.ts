@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { SummariesService } from 'src/app/modules/summaries';
 import { TogglClient } from './TogglClient';
-import { ICommand } from '../../interfaces/command.interface';
+import { ICommand } from 'src/app/console/interfaces/command.interface';
 
 @Injectable()
 export class SyncTogglService implements ICommand {
