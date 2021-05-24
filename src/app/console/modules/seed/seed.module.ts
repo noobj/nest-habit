@@ -9,4 +9,4 @@ import { Project } from 'src/app/modules/summaries/entities';
     providers: [SeedService],
     exports: [SeedService],
 })
-export class SeedModule {}
+export default class SeedModule {}

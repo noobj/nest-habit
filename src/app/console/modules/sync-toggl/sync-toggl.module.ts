@@ -9,4 +9,4 @@ import { SummariesModule } from 'src/app/modules/summaries';
     providers: [SyncTogglService],
     exports: [SyncTogglService],
 })
-export class SyncTogglModule {}
+export default class SyncTogglModule {}

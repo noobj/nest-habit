@@ -29,7 +29,7 @@ export class SyncTogglService implements ICommand {
 
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
-            timeout: 1000,
+            timeout: 5000,
             auth: {
                 username: this.configService.get('toggl.token'),
                 password: 'api_token',

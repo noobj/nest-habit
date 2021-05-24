@@ -3,10 +3,7 @@ import { CommandsService } from './app/console/commands.service';
 import { CommandsModule } from './app/console/commands.module';
 
 async function bootstrap() {
-    let command = process.argv[2];
-
-    // capitalize the arg
-    command = command.charAt(0).toUpperCase() + command.slice(1);
+    const command = process.argv[2];
 
     const options = {
         command: command,
@@ -14,7 +11,8 @@ async function bootstrap() {
     };
 
     const application = await NestFactory.createApplicationContext(
-        CommandsModule.register(options)
+        CommandsModule.register(options),
+        { logger: false }
     );
 
     const commandsService = application.get(CommandsService);
