@@ -1,18 +1,28 @@
-import { Repository } from 'typeorm';
+import { Repository, Connection } from 'typeorm';
+import { ImATeapotException } from '@nestjs/common';
 
 import { Project } from 'src/app/modules/summaries/entities';
 import { ISeeder } from './seeder.interface';
+import { User } from 'src/app/modules/users';
 
 export class ProjectSeeder implements ISeeder {
-    constructor(public repository: Repository<Project>) {}
+    private projectRepository: Repository<Project>;
+    private userRepository: Repository<User>;
+
+    constructor(public connection: Connection) {
+        this.projectRepository = connection.getRepository(Project);
+        this.userRepository = connection.getRepository(User);
+    }
 
     async run() {
-        const projects = [
-            { name: 'Meditation', id: 157099012 },
-            { name: 'Productive', id: 92848653 },
-            { name: 'Workout', id: 154629151 },
-        ];
-        const result = await this.repository.save(projects);
+        const user = await this.userRepository.findOneOrFail({ account: 'jjj' });
+
+        if (!user) {
+            throw new ImATeapotException('No User Exist');
+        }
+
+        const projects = [{ name: 'Meditation', id: 157099012, user: user }];
+        const result = await this.projectRepository.save(projects);
         console.log(result);
     }
 }

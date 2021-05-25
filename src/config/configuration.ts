@@ -8,7 +8,7 @@ export default () => ({
         password: process.env.TYPEORM_PASSWORD || 'root',
         database: process.env.TYPEORM_DATABASE || 'test',
         entities: process.env.TYPEORM_ENTITIES || null,
-        synchronize: process.env.TYPEORM_SYNCHRONIZE || false,
+        synchronize: false,
         logging: process.env.TYPEORM_LOGGING || false,
     },
     jwt: {

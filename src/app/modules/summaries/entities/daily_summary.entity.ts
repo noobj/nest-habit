@@ -1,11 +1,5 @@
-import {
-    Entity,
-    Column,
-    ManyToOne,
-    JoinColumn,
-    Unique,
-    PrimaryColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Unique, PrimaryColumn } from 'typeorm';
+import { User } from '../../users';
 
 import { Project } from './project.entity';
 
@@ -27,4 +21,11 @@ export class DailySummary {
 
     @Column()
     duration: number;
+
+    @ManyToOne(() => User, (user) => user.summaries)
+    @JoinColumn({
+        name: 'user_id',
+        referencedColumnName: 'id',
+    })
+    user: User;
 }

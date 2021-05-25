@@ -14,19 +14,16 @@ export class SeedService implements ICommand {
 
     async run(argv: string[]) {
         const className = argv[0].charAt(0).toUpperCase() + argv[0].slice(1);
-        let repository;
         type Seeder = seeder.ISeeder;
 
         try {
-            repository = this.connection.getRepository(className);
+            this.connection.getRepository(className);
         } catch (err) {
-            console.log(`${className} seeder doesn't exist`);
+            console.log(`${className} entity doesn't exist`);
             process.exit(1);
         }
 
-        const projectSeeder: Seeder = new seeder[`${className}Seeder`](
-            repository
-        );
+        const projectSeeder: Seeder = new seeder[`${className}Seeder`](this.connection);
         await projectSeeder.run();
     }
 }

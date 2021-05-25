@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import { User } from '../../users';
 
 import { DailySummary } from './daily_summary.entity';
 
@@ -12,4 +13,11 @@ export class Project {
 
     @OneToMany(() => DailySummary, (summary) => summary.project)
     summaries: DailySummary[];
+
+    @OneToOne(() => User)
+    @JoinColumn({
+        name: 'user_id',
+        referencedColumnName: 'id',
+    })
+    user: User;
 }

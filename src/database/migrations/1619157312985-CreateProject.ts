@@ -32,7 +32,7 @@ export class CreateProject1619157312985 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropIndex('projects', 'uni_id_name');
+        await queryRunner.dropIndex('projects', 'uni_name');
         await queryRunner.dropTable('projects');
     }
 }

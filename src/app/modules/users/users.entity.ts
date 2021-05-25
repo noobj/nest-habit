@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { DailySummary } from '../summaries/entities';
 
 //pass the name of table inside @Entity() i.e "users", if you don't pass table name it will create "users_entity" table by default
 @Entity('users')
@@ -7,11 +8,17 @@ export class User {
     id: number;
 
     @Column()
-    name: string;
+    account: string;
 
     @Column()
     email: string;
 
     @Column()
     password: string;
+
+    @Column()
+    toggl_token: string;
+
+    @OneToMany(() => DailySummary, (summary) => summary.user)
+    summaries: DailySummary[];
 }
