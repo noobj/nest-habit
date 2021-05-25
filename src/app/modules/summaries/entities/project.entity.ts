@@ -20,4 +20,7 @@ export class Project {
         referencedColumnName: 'id',
     })
     user: User;
+
+    @Column()
+    last_updated: Date;
 }

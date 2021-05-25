@@ -1,4 +1,5 @@
 import { IsDateString, IsInt, ValidateNested } from 'class-validator';
+import { User } from '../users';
 
 export class CreateDailySummaryDto {
     @IsDateString()
@@ -9,6 +10,8 @@ export class CreateDailySummaryDto {
 
     @IsInt()
     duration: number;
+
+    user: User;
 }
 
 // for validating CreateDailySummaryDto array only

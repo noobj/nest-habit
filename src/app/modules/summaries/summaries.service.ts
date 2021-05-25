@@ -38,6 +38,21 @@ export class SummariesService implements IBasicService {
         return project.id;
     }
 
+    public async getLeastUpdatedProjects(limit: number): Promise<Project[]> {
+        return await this.projectRepository.find({
+            relations: ['user'],
+            order: {
+                last_updated: 'DESC',
+            },
+            take: limit,
+        });
+    }
+
+    public async updateProjectLastUpdated(project: Project) {
+        project.last_updated = new Date();
+        await this.projectRepository.save(project);
+    }
+
     public async getRawDailySummaries(
         startDate: string,
         endDate: string,
@@ -55,7 +70,9 @@ export class SummariesService implements IBasicService {
         });
     }
 
-    public async processTheRawSummaries(rawData: DailySummary[]): Promise<IFormatedSummary[]> {
+    public async processTheRawSummaries(
+        rawData: DailySummary[]
+    ): Promise<IFormatedSummary[]> {
         return rawData.map((entry) => {
             const level = this.calLevel(entry.duration);
             const timestamp = moment(entry.date, 'YYYY-MM-DD').valueOf();
@@ -103,7 +120,10 @@ export class SummariesService implements IBasicService {
         return `${hours}h${minutes}m`;
     }
 
-    public getLongestDayRecord(rawData: DailySummary[]): { date: string; duration: string } {
+    public getLongestDayRecord(rawData: DailySummary[]): {
+        date: string;
+        duration: string;
+    } {
         const longestRecord = rawData.sort((a, b) => {
             return b.duration - a.duration;
         })[0];
