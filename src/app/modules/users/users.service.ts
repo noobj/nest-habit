@@ -10,9 +10,9 @@ export class UsersService {
         @InjectRepository(User)
         private usersRepository: Repository<User>,
     ) {}
-    async findOne(username: string): Promise<User | undefined> {
+    async findOne(account: string): Promise<User | undefined> {
         return await this.usersRepository.findOne({
-            where: { name: username },
+            where: { account: account },
         });
     }
 }
