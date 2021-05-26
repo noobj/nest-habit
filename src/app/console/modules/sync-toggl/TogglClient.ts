@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as moment from 'moment';
+import { HttpException } from '@nestjs/common';
 
 export class TogglClient {
     private client;
@@ -20,21 +21,17 @@ export class TogglClient {
             .get('api/v8/workspaces')
             .then((res) => res.data[0].id)
             .catch((err) => {
-                throw err;
+                const message = `fetch from Toggl failed: [${err.request.res.statusCode} ${err.request.res.statusMessage}]`;
+
+                throw new HttpException(message, err.request.res.statusCode);
             });
     }
 
-    public async getDetails(
-        workspaceId: number,
-        projectId: number,
-        { ...options }
-    ) {
+    public async getDetails(workspaceId: number, projectId: number, { ...options }) {
         const userAgent = options?.userAgent ?? 'testing';
         const page = options?.page ?? 1;
-        const since =
-            options?.since ?? moment().subtract(1, 'year').format('YYYY-MM-DD');
-        const until =
-            options?.until ?? moment().add(1, 'day').format('YYYY-MM-DD');
+        const since = options?.since ?? moment().subtract(1, 'year').format('YYYY-MM-DD');
+        const until = options?.until ?? moment().add(1, 'day').format('YYYY-MM-DD');
 
         return await this.client
             .get(

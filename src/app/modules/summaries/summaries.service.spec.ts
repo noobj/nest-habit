@@ -4,9 +4,18 @@ import { DailySummary, Project } from './entities';
 import { SummariesService } from './summaries.service';
 import { Between } from 'typeorm';
 import { BadRequestException, ImATeapotException } from '@nestjs/common';
+import { User } from '../users';
 
 describe('SummariesService', () => {
     let service: SummariesService;
+
+    const user: Omit<User, 'summaries'> = {
+        id: 1,
+        account: 'jjj',
+        email: 'test',
+        password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+        toggl_token: 'e61f97013c7f984c38fdc4b1736bd748',
+    }
 
     const mockDailySummaryRepo = {
         createQueryBuilder: jest.fn().mockReturnThis(),
@@ -32,25 +41,25 @@ describe('SummariesService', () => {
         ),
         find: jest.fn(() =>
             Promise.resolve<Omit<DailySummary, 'project'>[]>([
-                { id: 9, date: '2021-04-23', duration: 1500000 },
-                { id: 10, date: '2021-04-21', duration: 12000000 },
-                { id: 11, date: '2021-04-20', duration: 3300000 },
-                { id: 12, date: '2021-04-19', duration: 1800000 },
-                { id: 13, date: '2021-04-17', duration: 2700000 },
-                { id: 14, date: '2021-04-13', duration: 2700000 },
-                { id: 15, date: '2021-04-12', duration: 1800000 },
-                { id: 16, date: '2021-04-11', duration: 2700000 },
-                { id: 17, date: '2021-04-10', duration: 1800000 },
-                { id: 18, date: '2021-04-09', duration: 3000000 },
-                { id: 19, date: '2021-04-07', duration: 2700000 },
-                { id: 20, date: '2021-04-03', duration: 2700000 },
-                { id: 21, date: '2021-04-02', duration: 16200000 },
-                { id: 22, date: '2021-03-31', duration: 2700000 },
-                { id: 23, date: '2021-03-30', duration: 1800000 },
-                { id: 24, date: '2021-03-16', duration: 2700000 },
-                { id: 25, date: '2021-03-09', duration: 1800000 },
-                { id: 26, date: '2021-03-05', duration: 5400000 },
-                { id: 27, date: '2021-03-01', duration: 2700000 },
+                { id: 9, date: '2021-04-23', duration: 1500000, user: user },
+                { id: 10, date: '2021-04-21', duration: 12000000, user: user },
+                { id: 11, date: '2021-04-20', duration: 3300000, user: user },
+                { id: 12, date: '2021-04-19', duration: 1800000, user: user },
+                { id: 13, date: '2021-04-17', duration: 2700000, user: user },
+                { id: 14, date: '2021-04-13', duration: 2700000, user: user },
+                { id: 15, date: '2021-04-12', duration: 1800000, user: user },
+                { id: 16, date: '2021-04-11', duration: 2700000, user: user },
+                { id: 17, date: '2021-04-10', duration: 1800000, user: user },
+                { id: 18, date: '2021-04-09', duration: 3000000, user: user },
+                { id: 19, date: '2021-04-07', duration: 2700000, user: user },
+                { id: 20, date: '2021-04-03', duration: 2700000, user: user },
+                { id: 21, date: '2021-04-02', duration: 16200000, user: user },
+                { id: 22, date: '2021-03-31', duration: 2700000, user: user },
+                { id: 23, date: '2021-03-30', duration: 1800000, user: user },
+                { id: 24, date: '2021-03-16', duration: 2700000, user: user },
+                { id: 25, date: '2021-03-09', duration: 1800000, user: user },
+                { id: 26, date: '2021-03-05', duration: 5400000, user: user },
+                { id: 27, date: '2021-03-01', duration: 2700000, user: user },
             ])
         ),
     };

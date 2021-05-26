@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, ImATeapotException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -160,7 +160,7 @@ export class SummariesService implements IBasicService {
         const wrapped = new WrapperCreateDailySummaryDto(entity);
         const errors = await validate(wrapped);
         if (errors.length > 0) {
-            throw new BadRequestException('Validation failed');
+            throw new ImATeapotException('Validation failed');
         }
 
         try {
@@ -175,7 +175,7 @@ export class SummariesService implements IBasicService {
                 .execute()
                 .then((result) => result.raw);
         } catch (e) {
-            console.log('Upsert failed: ', e);
+            throw new ImATeapotException('Upsert failed');
         }
     }
 }

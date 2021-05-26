@@ -1,7 +1,6 @@
 import { Injectable, Logger, ImATeapotException } from '@nestjs/common';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import { ConfigService } from '@nestjs/config';
 
 import { CreateDailySummaryDto, SummariesService } from 'src/app/modules/summaries';
 import { TogglClient } from './TogglClient';
@@ -12,10 +11,7 @@ import { Project } from 'src/app/modules/summaries/entities';
 export class SyncTogglService implements ICommand {
     private readonly logger = new Logger(SyncTogglService.name);
 
-    constructor(
-        private summariesService: SummariesService,
-        private configService: ConfigService
-    ) {}
+    constructor(private summariesService: SummariesService) {}
 
     async run(argv: string[]) {
         const days = +argv[0];
@@ -41,7 +37,10 @@ export class SyncTogglService implements ICommand {
 
                 await this.summariesService.updateProjectLastUpdated(project);
             })
-        );
+        ).catch((err) => {
+            console.log('Sync Failed...', err.response);
+            process.exit(1);
+        });
     }
 
     private processFetchedData(
