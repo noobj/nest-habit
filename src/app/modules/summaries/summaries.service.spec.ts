@@ -13,9 +13,9 @@ describe('SummariesService', () => {
         id: 1,
         account: 'jjj',
         email: 'test',
-        password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-        toggl_token: 'e61f97013c7f984c38fdc4b1736bd748',
-    }
+        password: 'DGAF',
+        toggl_token: 'DGAF',
+    };
 
     const mockDailySummaryRepo = {
         createQueryBuilder: jest.fn().mockReturnThis(),
@@ -40,7 +40,7 @@ describe('SummariesService', () => {
             })
         ),
         find: jest.fn(() =>
-            Promise.resolve<Omit<DailySummary, 'project'>[]>([
+            Promise.resolve<Partial<DailySummary>[]>([
                 { id: 9, date: '2021-04-23', duration: 1500000, user: user },
                 { id: 10, date: '2021-04-21', duration: 12000000, user: user },
                 { id: 11, date: '2021-04-20', duration: 3300000, user: user },
@@ -90,34 +90,36 @@ describe('SummariesService', () => {
     });
 
     it('should return id of the project', async () => {
-        const result = await service.getProjectIdByName('test');
+        const result = await service.getProjectIdByUser(user);
 
         expect(mockProjectRepo.findOne).toBeCalledWith({
-            where: { name: 'test' },
+            where: { user: user },
         });
         expect(result).toEqual(123);
     });
 
     it('should return raw data of daily summaries', async () => {
-        const result = await service.getRawDailySummaries('startDate', 'endDate', 'Meditation');
+        const result = await service.getRawDailySummaries('startDate', 'endDate', user);
 
         expect(result[0]).toEqual({
             id: 9,
             date: '2021-04-23',
             duration: 1500000,
+            user: user,
         });
         expect(mockDailySummaryRepo.find).toBeCalledWith({
             where: [
                 {
                     date: Between('startDate', 'endDate'),
                     project: 123,
+                    user: user,
                 },
             ],
         });
     });
 
     it('should return processed summaries', async () => {
-        const rawData = await service.getRawDailySummaries('startDate', 'endDate', 'Meditation');
+        const rawData = await service.getRawDailySummaries('startDate', 'endDate', user);
         const result = await service.processTheRawSummaries(rawData);
 
         expect(result[0]).toEqual({
@@ -135,7 +137,7 @@ describe('SummariesService', () => {
     });
 
     it('should return longest day summary', async () => {
-        const rawData = await service.getRawDailySummaries('startDate', 'endDate', 'Meditation');
+        const rawData = await service.getRawDailySummaries('startDate', 'endDate', user);
         const result = await service.getLongestDayRecord(rawData);
 
         expect(result).toEqual({
@@ -145,7 +147,7 @@ describe('SummariesService', () => {
     });
 
     it('should return total duration', async () => {
-        const rawData = await service.getRawDailySummaries('startDate', 'endDate', 'Meditation');
+        const rawData = await service.getRawDailySummaries('startDate', 'endDate', user);
         const result = await service.getTotalDuration(rawData);
 
         expect(result).toEqual('20h0m');
@@ -154,7 +156,7 @@ describe('SummariesService', () => {
     it('should return total duration of April 2021', async () => {
         const globalDate = Date;
         Date.now = jest.fn(() => new Date(Date.UTC(2021, 3, 8)).valueOf());
-        const rawData = await service.getRawDailySummaries('startDate', 'endDate', 'Meditation');
+        const rawData = await service.getRawDailySummaries('startDate', 'endDate', user);
         const result = await service.getTotalThisMonth(rawData);
 
         expect(result).toEqual('15h15m');
@@ -164,7 +166,7 @@ describe('SummariesService', () => {
 
     it('should return upsert result', async () => {
         const result = await service.upsert([
-            { project: 9, date: '2021-04-23', duration: 1500000 },
+            { project: 9, date: '2021-04-23', duration: 1500000, user: user },
         ]);
 
         expect(result).toEqual({
@@ -181,8 +183,10 @@ describe('SummariesService', () => {
 
     it('should upsert failed and throw Validation error', async () => {
         await expect(async () => {
-            await service.upsert([{ project: 9, date: '123', duration: 1500000 }]);
-        }).rejects.toThrow(BadRequestException);
+            await service.upsert([
+                { project: 9, date: '123', duration: 1500000, user: user },
+            ]);
+        }).rejects.toThrow(ImATeapotException);
     });
 
     it('should upsert failed and console log error', async () => {
@@ -192,12 +196,11 @@ describe('SummariesService', () => {
                 throw ImATeapotException;
             });
 
-        const spyLog = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-        await service.upsert([{ project: 9, date: '2021-04-23', duration: 1500000 }]);
-
-        expect(spyLog.mock.calls[0][0]).toContain('Upsert failed:');
-
+        await expect(async () => {
+            await service.upsert([
+                { project: 9, date: '2021-04-23', duration: 1500000, user: user },
+            ]);
+        }).rejects.toThrow(ImATeapotException);
         spyMockDSRepo.mockReset();
     });
 });

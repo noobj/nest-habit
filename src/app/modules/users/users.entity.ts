@@ -20,5 +20,5 @@ export class User {
     toggl_token: string;
 
     @OneToMany(() => DailySummary, (summary) => summary.user)
-    summaries: DailySummary[];
+    summaries?: DailySummary[];
 }

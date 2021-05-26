@@ -8,6 +8,7 @@ import { IBasicService } from './interfaces';
 import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
 import { validate } from 'class-validator';
 import { ClassTransformer } from 'class-transformer';
+import { User } from '../users';
 
 /**
  * The return format for frontend use
@@ -30,9 +31,9 @@ export class SummariesService implements IBasicService {
         moment.tz.setDefault('Asia/Taipei');
     }
 
-    public async getProjectIdByName(name: string): Promise<number> {
+    public async getProjectIdByUser(user: Partial<User>): Promise<number> {
         const project = await this.projectRepository.findOne({
-            where: { name: name },
+            where: { user: user },
         });
 
         return project.id;
@@ -56,15 +57,16 @@ export class SummariesService implements IBasicService {
     public async getRawDailySummaries(
         startDate: string,
         endDate: string,
-        project = 'meditation'
+        user: Partial<User>
     ): Promise<DailySummary[]> {
-        const projectId = await this.getProjectIdByName(project);
+        const projectId = await this.getProjectIdByUser(user);
 
         return await this.dailySummaryRepository.find({
             where: [
                 {
                     date: Between(startDate, endDate),
                     project: projectId,
+                    user: user,
                 },
             ],
         });

@@ -2,11 +2,11 @@ import {
     Controller,
     Get,
     Query,
-    Param,
     HttpStatus,
     ValidationPipe,
     Inject,
     UseGuards,
+    Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { IsDateString } from 'class-validator';
@@ -26,27 +26,26 @@ class DateRange {
 export class SummariesController {
     constructor(
         @Inject(Interfaces.IBasicService)
-        private summariesService: IBasicService,
+        private summariesService: IBasicService
     ) {}
 
     @UseGuards(AuthGuard('jwt'))
     @Get(':project?')
-    async showAll(
-        @Param('project') projectName: string,
-        @Query(new ValidationPipe()) dateRange: DateRange,
-    ) {
+    async showAll(@Query(new ValidationPipe()) dateRange: DateRange, @Request() req) {
         const rawData = await this.summariesService.getRawDailySummaries(
             dateRange.start_date,
             dateRange.end_date,
-            projectName,
+            req.user
         );
 
-        const summries = await this.summariesService.processTheRawSummaries(
-            rawData,
-        );
-        const longestRecord = this.summariesService.getLongestDayRecord(
-            rawData,
-        );
+        if (rawData.length === 0) {
+            return {
+                statusCode: HttpStatus.NO_CONTENT,
+                data: 'No Data',
+            };
+        }
+        const summries = await this.summariesService.processTheRawSummaries(rawData);
+        const longestRecord = this.summariesService.getLongestDayRecord(rawData);
         const totalYear = this.summariesService.getTotalDuration(rawData);
         const totalThisMonth = this.summariesService.getTotalThisMonth(rawData);
 

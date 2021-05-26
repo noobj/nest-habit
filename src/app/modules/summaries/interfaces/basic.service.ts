@@ -1,5 +1,7 @@
+import { User } from '../../users';
+
 export interface IBasicService {
-    getRawDailySummaries(project: string, startDate: string, endDate: string);
+    getRawDailySummaries(startDate: string, endDate: string, user: User);
 
     processTheRawSummaries(rawData);
 
