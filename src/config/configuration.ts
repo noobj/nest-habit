@@ -9,7 +9,7 @@ export default () => ({
         database: process.env.TYPEORM_DATABASE || 'test',
         entities: process.env.TYPEORM_ENTITIES || null,
         synchronize: false,
-        logging: process.env.TYPEORM_LOGGING || false,
+        logging: process.env.TYPEORM_LOGGING === 'true' || false,
     },
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',
