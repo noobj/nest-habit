@@ -57,6 +57,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
+    "sharp": "^0.28.3",
     "tailwindcss": "^2.1.1",
     "typeorm": "^0.2.32",
     "vue": "^2.6.12",
@@ -74,6 +75,7 @@
     "@types/jest": "^26.0.22",
     "@types/joi": "^17.2.3",
     "@types/lodash": "^4.14.169",
+    "@types/multer": "^1.4.5",
     "@types/node": "^14.17.0",
     "@types/passport-jwt": "^3.0.5",
     "@types/passport-local": "^1.0.33",
@@ -109,7 +111,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-        "src/(.*)": "<rootDir>/$1"
+      "src/(.*)": "<rootDir>/$1"
     }
   }
 }

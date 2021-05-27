@@ -2,7 +2,7 @@
   <div
     class="date relative aspect-w-1 aspect-h-1 rounded-sm"
     :class="{
-      0: 'bg-gray-200',
+      0: 'bg-gray-600',
       1: 'bg-yellow-600',
       2: 'bg-yellow-700',
       3: 'bg-yellow-800',

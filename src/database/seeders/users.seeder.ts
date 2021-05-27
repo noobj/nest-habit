@@ -16,6 +16,7 @@ export class UserSeeder implements ISeeder {
                 account: 'jjj',
                 email: 'marley.lemke@example.org',
                 password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+                toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
             },
         ];
         const result = await this.repository.save(users);
