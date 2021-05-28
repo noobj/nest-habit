@@ -3,6 +3,7 @@ require('mix-tailwindcss');
 
 mix.js('resources/js/app.js', 'dist/public/js')
     .copy(['resources/favicon.ico', 'resources/*.html'], 'dist/public')
+    .copy('resources/default.jpg', 'dist/public/img')
     .vue()
     .postCss('resources/css/app.css', 'dist/public/css')
     .tailwind()

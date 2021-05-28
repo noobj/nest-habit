@@ -5,12 +5,15 @@ import * as moment from 'moment-timezone';
 
 import { Project } from './entities';
 import { User } from '../users';
+import { TogglClient } from 'src/app/console/modules/sync-toggl';
+import { UsersService } from '../users';
 
 @Injectable()
 export class ProjectService {
     constructor(
         @InjectRepository(Project)
-        private projectRepository: Repository<Project>
+        private projectRepository: Repository<Project>,
+        private usersService: UsersService
     ) {
         moment.tz.setDefault('Asia/Taipei');
     }
@@ -38,5 +41,20 @@ export class ProjectService {
     public async updateProjectLastUpdated(project: Project) {
         project.last_updated = new Date();
         await this.projectRepository.save(project);
+    }
+
+    public async getAllProjects(user: Partial<User>) {
+        user = await this.usersService.findOne(user.account);
+
+        const togglClient = new TogglClient({
+            baseURL: 'https://api.track.toggl.com/',
+            timeout: 5000,
+            auth: {
+                username: user.toggl_token,
+                password: 'api_token',
+            },
+        });
+
+        return await togglClient.getProjects();
     }
 }

@@ -16,7 +16,7 @@ import configuration from './config/configuration';
 @Module({
     imports: [
         ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', 'public'),
+            rootPath: join(__dirname, 'public'),
             renderPath: '/',
         }),
         TypeOrmModule.forRootAsync({

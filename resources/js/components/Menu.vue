@@ -14,6 +14,14 @@
             <input type="file" id="file" ref="file" v-on:change="handleFileUpload()" />
             <br />
             <br />
+
+            <select
+                class="border border-gray-300 rounded-full text-gray-600 h-10 pl-5 pr-10 bg-white hover:border-gray-400 focus:outline-none appearance-none" v-on:change="changeProject(this)"
+            >
+                <option v-for="project in projects" :selected="project == currentPrj"> {{ project }} </option>
+            </select>
+
+            <br /><br />
             <button
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
                 v-on:click="logout()"
@@ -31,21 +39,24 @@ export default {
     data() {
         return {
             avatarFileName: "default.jpg",
-            toggle: true,
+            toggle: false,
+            projects: [],
+            currentPrj: null,
         };
     },
     computed: {},
     filters: {},
     methods: {
         logout() {
-            fetch('/logout')
-            .then((res) => {
-                if (res.status != 200) throw new Error();
+            fetch("/logout")
+                .then((res) => {
+                    if (res.status != 200) throw new Error();
 
-                window.location.href = '/login.html';
-            }).catch(() => {
-                alert('logout failed, you have been traped here.');
-            })
+                    window.location.href = "/login.html";
+                })
+                .catch(() => {
+                    alert("logout failed, you have been traped here.");
+                });
         },
         handleFileUpload() {
             const file = this.$refs.file.files[0];
@@ -95,6 +106,14 @@ export default {
                 if (fetchAvatar.status == 404) return;
 
                 this.avatarFileName = `${user.id}.jpg`;
+            });
+
+        fetch("/projects")
+            .then((res) => res.json())
+            .then((res) => {
+                console.log(res);
+                this.projects = res.data.allProjects;
+                this.currentPrj = res.data.currentProject;
             });
     },
 };

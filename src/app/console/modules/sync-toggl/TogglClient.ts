@@ -27,6 +27,16 @@ export class TogglClient {
             });
     }
 
+    public async getProjects() {
+        const workspaceId = await this.getWorkSpaceId();
+        return await this.client
+            .get(`api/v8/workspaces/${workspaceId}/projects`)
+            .then((res) => {
+                console.log(res);
+                return res.data.map((entry) => entry.name);
+            });
+    }
+
     public async getDetails(workspaceId: number, projectId: number, { ...options }) {
         const userAgent = options?.userAgent ?? 'testing';
         const page = options?.page ?? 1;

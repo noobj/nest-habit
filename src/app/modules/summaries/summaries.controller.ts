@@ -23,7 +23,7 @@ class DateRange {
     end_date: string;
 }
 
-@Controller('summaries')
+@Controller()
 export class SummariesController {
     constructor(
         @Inject(Interfaces.IBasicService)
@@ -32,18 +32,24 @@ export class SummariesController {
     ) {}
 
     @UseGuards(AuthGuard('jwt'))
-    @Get('project_name')
+    @Get('projects')
     async getProjectNameByUser(@Request() req) {
-        const project = await this.projectService.getProjectByUser(req.user);
+        const curretProject = await this.projectService.getProjectByUser(req.user);
+        const allProjects = await this.projectService.getAllProjects(req.user);
+
+        const result = {
+            allProjects: allProjects,
+            currentProject: curretProject.name,
+        };
 
         return {
             statusCode: HttpStatus.OK,
-            data: project.name,
+            data: result,
         };
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Get()
+    @Get('summaries')
     async showAll(@Query(new ValidationPipe()) dateRange: DateRange, @Request() req) {
         const rawData = await this.summariesService.getRawDailySummaries(
             dateRange.start_date,

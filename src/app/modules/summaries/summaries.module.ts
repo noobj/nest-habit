@@ -6,9 +6,10 @@ import { SummariesController } from './summaries.controller';
 import { ProjectService } from './projects.service';
 import { Project, DailySummary } from './entities';
 import { Interfaces } from './constants';
+import { UsersModule } from '../users';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([DailySummary, Project])],
+    imports: [TypeOrmModule.forFeature([DailySummary, Project]), UsersModule],
     providers: [
         SummariesService,
         ProjectService,
