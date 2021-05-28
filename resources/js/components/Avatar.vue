@@ -52,10 +52,16 @@ export default {
                     return res.json();
                 })
                 .then((res) => {
-                    this.avatarFileName = res.filename ?? "default.jpg";
+                    this.avatarFileName = "default.jpg";
                     alert("upload success");
+                    return res;
+                }).then((res) => {
+                    // due to the same filename, the img won't refresh after uploaded,
+                    // so we need to set it to default first, and set back to filename
+                    this.avatarFileName = res.filename;
                 })
-                .catch(() => {
+                .catch((e) => {
+                    console.log(e);
                     alert("upload failed");
                 });
         },
