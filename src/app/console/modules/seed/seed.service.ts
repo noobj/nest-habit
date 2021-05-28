@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 
 import { ICommand } from '../../interfaces/command.interface';
-import * as seeder from 'src/database/seeders';
+import * as Seeder from 'src/database/seeders';
 
 @Injectable()
 export class SeedService implements ICommand {
@@ -13,17 +13,23 @@ export class SeedService implements ICommand {
     ) {}
 
     async run(argv: string[]) {
-        const className = argv[0].charAt(0).toUpperCase() + argv[0].slice(1);
-        type Seeder = seeder.ISeeder;
+        let className = argv[0]
+            ? argv[0].charAt(0).toUpperCase() + argv[0].slice(1)
+            : null;
+        type ISeeder = Seeder.ISeeder;
 
-        try {
-            this.connection.getRepository(className);
-        } catch (err) {
-            console.log(`${className} entity doesn't exist`);
-            process.exit(1);
+        if (className != null) {
+            try {
+                this.connection.getRepository(className);
+            } catch (err) {
+                console.log(`${className} entity doesn't exist`);
+                process.exit(1);
+            }
+        } else {
+            className = 'Default';
         }
 
-        const projectSeeder: Seeder = new seeder[`${className}Seeder`](this.connection);
-        await projectSeeder.run();
+        const seeder: ISeeder = new Seeder[`${className}Seeder`](this.connection);
+        await seeder.run();
     }
 }

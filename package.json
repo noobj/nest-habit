@@ -21,7 +21,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "artisan": "node dist/src/artisan.js",
     "mix": "mix",
-    "migrate": "typeorm migration:run"
+    "migrate": "typeorm migration:run",
+    "seed": "node dist/src/artisan.js seed",
+    "preinit": "nest build && mix",
+    "init": "typeorm migration:run",
+    "postinit": "node dist/src/artisan.js seed && node dist/src/artisan.js syncToggl"
   },
   "dependencies": {
     "@nestjs/common": "^7.6.17",

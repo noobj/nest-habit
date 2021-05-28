@@ -12,15 +12,12 @@
 
 ## Installing for dev
 * cp .env.example .env
-* cp ormconfig.env.example ormconfig.env
-* fill the connection info of env files
+* fill the connection info of env file
 * npm install
 * Create new mysql user and database
-* npm run migrate
-* vendor/bin/sail php artisan db:seed ProjectTableSeeder
-* vendor/bin/sail php artisan schedule:FetchAndUpdateThirdParty 10
-* vendor/bin/sail php artisan db:seed DatabaseSeeder
-* open the page http://127.0.0.1/, and log in using jjj/passowrd
+* npm run init
+* npm run start
+* open the page http://127.0.0.1:3000/, and log in using jjj/passowrd
 
 * (If you are using vm or access from the other domain, please put your domain name into SANCTUM_STATEFUL_DOMAINS in the .env, or you won't able to pass the authentication)
 
