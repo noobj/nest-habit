@@ -17,6 +17,7 @@ import configuration from './config/configuration';
     imports: [
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'public'),
+            renderPath: '/',
         }),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
@@ -44,8 +45,6 @@ import configuration from './config/configuration';
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer
-            .apply(LoggerMiddleware)
-            .forRoutes(SummariesController, AppController);
+        consumer.apply(LoggerMiddleware).forRoutes(SummariesController, AppController);
     }
 }

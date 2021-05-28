@@ -51,7 +51,7 @@ const getSummaries = async () => {
     })
         .then(async function (response) {
             if (response.status == 401) {
-                window.location.href = '/auth/login';
+                window.location.href = '/login.html';
             }
 
             return response.json();

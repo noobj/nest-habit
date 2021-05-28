@@ -8,27 +8,45 @@
             />
         </div>
         <div
-            class="absolute float-right bg-gray-500 w-96 z-10 right-0 h-screen place-self-center"
+            class="absolute float-right bg-gray-500 w-96 z-10 right-0 h-screen"
             v-if="toggle"
         >
             <input type="file" id="file" ref="file" v-on:change="handleFileUpload()" />
+            <br />
+            <br />
+            <button
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+                v-on:click="logout()"
+            >
+                Logout
+            </button>
         </div>
     </div>
 </template>
 
 <script>
 export default {
-    name: "Avatar",
+    name: "Menu",
     props: {},
     data() {
         return {
-            avatarFileName: 'default.jpg',
+            avatarFileName: "default.jpg",
             toggle: true,
         };
     },
     computed: {},
     filters: {},
     methods: {
+        logout() {
+            fetch('/logout')
+            .then((res) => {
+                if (res.status != 200) throw new Error();
+
+                window.location.href = '/login.html';
+            }).catch(() => {
+                alert('logout failed, you have been traped here.');
+            })
+        },
         handleFileUpload() {
             const file = this.$refs.file.files[0];
 
@@ -55,7 +73,8 @@ export default {
                     this.avatarFileName = "default.jpg";
                     alert("upload success");
                     return res;
-                }).then((res) => {
+                })
+                .then((res) => {
                     // due to the same filename, the img won't refresh after uploaded,
                     // so we need to set it to default first, and set back to filename
                     this.avatarFileName = res.filename;

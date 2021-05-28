@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="flex flex-col items-center dark:text-white dark:bg-gray-800">
-    <Avatar />
+    <Menu />
     <div class="grid grid-cols-3 w-11/12 text-center">
       <div
         v-if="totalLastYear !== ''"
@@ -39,7 +39,7 @@
 
 <script>
 import Date from './Date'
-import Avatar from './Avatar'
+import Menu from './Menu'
 import {
   getDates,
   getSummaries
@@ -47,7 +47,7 @@ import {
 
 export default {
   name: 'Dates',
-  components: { Date, Avatar },
+  components: { Date, Menu },
   data () {
     return {
       dates: getDates(),

@@ -26,8 +26,8 @@ import { HttpExceptionFilter } from './common/exception-filters/http-exception.f
 export class AppController {
     constructor(private authService: AuthService) {}
 
-    @UseGuards(BasicAuthGuard)
-    @Get('auth/login')
+    @UseGuards(AuthGuard('local'))
+    @Post('auth/login')
     @Redirect('/', 302)
     async login(@Request() req) {
         const token = await this.authService.login(req.user);
@@ -54,8 +54,6 @@ export class AppController {
     )
     @UseFilters(new HttpExceptionFilter())
     async uploadFile(@Request() req, @UploadedFile() file: Express.Multer.File) {
-        const { filename } = file;
-
         await sharp(file.path)
             .resize(200, 200)
             .jpeg({ quality: 90 })
@@ -68,5 +66,12 @@ export class AppController {
         };
 
         return response;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('logout')
+    logout(@Request() req) {
+        req.session.cookie.expires = Date.now();
+        req.session.cookie.maxAge = 0;
     }
 }
