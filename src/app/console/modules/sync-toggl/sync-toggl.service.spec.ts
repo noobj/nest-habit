@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SyncTogglService } from './sync-toggl.service';
 import configuration from 'src/config/configuration';
 import { ConfigModule } from '@nestjs/config';
-import { SummariesService } from 'src/app/modules/summaries';
+import { ProjectService, SummariesService } from 'src/app/modules/summaries';
 import { User } from 'src/app/modules/users';
 
 jest.mock('./TogglClient', () => {
@@ -44,6 +44,14 @@ describe('SyncTogglService', () => {
     };
 
     const mockSummariesService = {
+        upsert: jest.fn(() =>
+            Promise.resolve({
+                affectedRows: 1,
+            })
+        ),
+    };
+
+    const mockProjectService = {
         getLeastUpdatedProjects: jest.fn(() =>
             Promise.resolve([
                 {
@@ -53,11 +61,6 @@ describe('SyncTogglService', () => {
                     user: user,
                 },
             ])
-        ),
-        upsert: jest.fn(() =>
-            Promise.resolve({
-                affectedRows: 1,
-            })
         ),
         updateProjectLastUpdated: jest.fn(() => {}),
     };
@@ -71,6 +74,10 @@ describe('SyncTogglService', () => {
                 {
                     provide: SummariesService,
                     useValue: mockSummariesService,
+                },
+                {
+                    provide: ProjectService,
+                    useValue: mockProjectService,
                 },
             ],
         }).compile();

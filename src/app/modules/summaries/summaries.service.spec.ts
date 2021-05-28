@@ -3,8 +3,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { DailySummary, Project } from './entities';
 import { SummariesService } from './summaries.service';
 import { Between } from 'typeorm';
-import { BadRequestException, ImATeapotException } from '@nestjs/common';
+import { ImATeapotException } from '@nestjs/common';
 import { User } from '../users';
+import { ProjectService } from './projects.service';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -71,6 +72,13 @@ describe('SummariesService', () => {
         })),
     };
 
+    const mockProjectService = {
+        getProjectByUser: jest.fn((name: string) => ({
+            name: name,
+            id: 123,
+        })),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -83,19 +91,14 @@ describe('SummariesService', () => {
                     provide: getRepositoryToken(Project),
                     useValue: mockProjectRepo,
                 },
+                {
+                    provide: ProjectService,
+                    useValue: mockProjectService,
+                }
             ],
         }).compile();
 
         service = module.get<SummariesService>(SummariesService);
-    });
-
-    it('should return id of the project', async () => {
-        const result = await service.getProjectIdByUser(user);
-
-        expect(mockProjectRepo.findOne).toBeCalledWith({
-            where: { user: user },
-        });
-        expect(result).toEqual(123);
     });
 
     it('should return raw data of daily summaries', async () => {

@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
 
-import { DailySummary, Project } from './entities';
+import { DailySummary } from './entities';
 import { IBasicService } from './interfaces';
 import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
 import { validate } from 'class-validator';
+import { ProjectService } from './projects.service';
 import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
 
@@ -25,33 +26,9 @@ export class SummariesService implements IBasicService {
     constructor(
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
-        @InjectRepository(Project)
-        private projectRepository: Repository<Project>
+        private projectService: ProjectService
     ) {
         moment.tz.setDefault('Asia/Taipei');
-    }
-
-    public async getProjectIdByUser(user: Partial<User>): Promise<number> {
-        const project = await this.projectRepository.findOne({
-            where: { user: user },
-        });
-
-        return project.id;
-    }
-
-    public async getLeastUpdatedProjects(limit: number): Promise<Project[]> {
-        return await this.projectRepository.find({
-            relations: ['user'],
-            order: {
-                last_updated: 'DESC',
-            },
-            take: limit,
-        });
-    }
-
-    public async updateProjectLastUpdated(project: Project) {
-        project.last_updated = new Date();
-        await this.projectRepository.save(project);
     }
 
     public async getRawDailySummaries(
@@ -59,7 +36,7 @@ export class SummariesService implements IBasicService {
         endDate: string,
         user: Partial<User>
     ): Promise<DailySummary[]> {
-        const projectId = await this.getProjectIdByUser(user);
+        const { id: projectId } = await this.projectService.getProjectByUser(user);
 
         return await this.dailySummaryRepository.find({
             where: [

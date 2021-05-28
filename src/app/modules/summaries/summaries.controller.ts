@@ -13,6 +13,7 @@ import { IsDateString } from 'class-validator';
 
 import { IBasicService } from './interfaces/basic.service';
 import { Interfaces } from './constants';
+import { ProjectService } from './projects.service';
 
 class DateRange {
     @IsDateString()
@@ -26,11 +27,23 @@ class DateRange {
 export class SummariesController {
     constructor(
         @Inject(Interfaces.IBasicService)
-        private summariesService: IBasicService
+        private summariesService: IBasicService,
+        private projectService: ProjectService
     ) {}
 
     @UseGuards(AuthGuard('jwt'))
-    @Get(':project?')
+    @Get('project_name')
+    async getProjectNameByUser(@Request() req) {
+        const project = await this.projectService.getProjectByUser(req.user);
+
+        return {
+            statusCode: HttpStatus.OK,
+            data: project.name,
+        };
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get()
     async showAll(@Query(new ValidationPipe()) dateRange: DateRange, @Request() req) {
         const rawData = await this.summariesService.getRawDailySummaries(
             dateRange.start_date,

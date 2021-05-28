@@ -2,7 +2,11 @@ import { Injectable, Logger, ImATeapotException } from '@nestjs/common';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 
-import { CreateDailySummaryDto, SummariesService } from 'src/app/modules/summaries';
+import {
+    CreateDailySummaryDto,
+    SummariesService,
+    ProjectService,
+} from 'src/app/modules/summaries';
 import { TogglClient } from './TogglClient';
 import { ICommand } from 'src/app/console/interfaces/command.interface';
 import { Project } from 'src/app/modules/summaries/entities';
@@ -11,7 +15,10 @@ import { Project } from 'src/app/modules/summaries/entities';
 export class SyncTogglService implements ICommand {
     private readonly logger = new Logger(SyncTogglService.name);
 
-    constructor(private summariesService: SummariesService) {}
+    constructor(
+        private summariesService: SummariesService,
+        private projectService: ProjectService
+    ) {}
 
     async run(argv: string[]) {
         const days = +argv[0];
@@ -23,7 +30,7 @@ export class SyncTogglService implements ICommand {
             since = moment().subtract(days, 'days').format('YYYY-MM-DD');
         }
 
-        const projects = await this.summariesService.getLeastUpdatedProjects(10);
+        const projects = await this.projectService.getLeastUpdatedProjects(10);
 
         await Promise.all(
             projects.map(async (project: Project) => {
@@ -35,7 +42,7 @@ export class SyncTogglService implements ICommand {
                     `User ${project.user.account} Updated ${result.affectedRows} rows`
                 );
 
-                await this.summariesService.updateProjectLastUpdated(project);
+                await this.projectService.updateProjectLastUpdated(project);
             })
         ).catch((err) => {
             console.log('Sync Failed...', err.response);
