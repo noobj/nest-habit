@@ -20,6 +20,10 @@ ormconfig.json
 /coverage
 /.nyc_output
 
+# laravel-mix
+hot
+mix-manifest.json
+
 # IDEs and editors
 /.idea
 .project
