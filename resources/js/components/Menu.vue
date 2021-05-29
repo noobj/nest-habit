@@ -1,6 +1,19 @@
 <template>
     <div class="relative self-end m-4">
-        <div class="place-content-end cursor-pointer">
+        <div
+                class="py-2 px-4 text-center whitespace-nowrap font-bold inline-block"
+            >
+                Current Project:
+                <select
+                    class="border rounded-full font-bold text-gray-600 h-10 pl-5 pr-10"
+                    v-on:change="changeProject($event)"
+                >
+                    <option class="text-gray-600 font-bold" v-for="project in projects" :key="project" :selected="project == currentPrj">
+                        {{ project }}
+                    </option>
+                </select>
+            </div>
+        <div class="place-content-end cursor-pointer inline-block">
             <img
                 class="rounded-full w-16 h-16"
                 v-on:click="toggle = !toggle"
@@ -20,18 +33,7 @@
                     @change="handleFileUpload()"
                 />
             </div>
-            <div
-                class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
-            >
-                <select
-                    class="border border-gray-300 rounded-full text-gray-600 h-10 pl-5 pr-10 bg-white hover:border-gray-400 focus:outline-none appearance-none"
-                    v-on:change="changeProject(this)"
-                >
-                    <option class="text-gray-600 font-bold" v-for="project in projects" :key="project" :selected="project == currentPrj">
-                        {{ project }}
-                    </option>
-                </select>
-            </div>
+
             <div
                 class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
                 @click="logout()"
@@ -57,6 +59,22 @@ export default {
   computed: {},
   filters: {},
   methods: {
+    changeProject(event) {
+        fetch('/project', {
+            method: "Post",
+            credentials: "same-origin",
+            body: new URLSearchParams({
+                'project_name': event.target.value,
+            }),
+        }).then((res) => {
+            if (res.status != 201) throw new Error();
+
+            alert('project updated');
+            location.reload();
+        }).catch(() => {
+            alert('project update failed');
+        });
+    },
     logout() {
       fetch('/logout')
         .then((res) => {
@@ -119,7 +137,6 @@ export default {
         fetch("/projects")
             .then((res) => res.json())
             .then((res) => {
-                console.log(res);
                 this.projects = res.data.allProjects;
                 this.currentPrj = res.data.currentProject;
             });

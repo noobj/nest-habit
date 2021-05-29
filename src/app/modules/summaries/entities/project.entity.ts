@@ -12,7 +12,7 @@ export class Project {
     name: string;
 
     @OneToMany(() => DailySummary, (summary) => summary.project)
-    summaries: DailySummary[];
+    summaries?: DailySummary[];
 
     @OneToOne(() => User)
     @JoinColumn({

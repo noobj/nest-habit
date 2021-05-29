@@ -2,28 +2,31 @@
   <div class="flex flex-col w-full items-center dark:text-white dark:bg-gray-800">
     <div class="grid grid-cols-3 w-11/12 text-center">
       <div
-        v-if="totalLastYear !== ''"
+        v-if="totalLastYear"
         class="m-2 border border-gray-200 rounded-lg"
       >
         <div class="py-2 border-b border-gray-200">Last Year</div>
         <div class="py-2 text-2xl text-yellow-600 font-bold">{{totalLastYear}}</div>
       </div>
       <div
-        v-if="totalThisMonth !== ''"
+        v-if="totalThisMonth"
         class="m-2 border border-gray-200 rounded-lg"
       >
         <div class="py-2 border-b border-gray-200">This Month</div>
         <div class="py-2 text-2xl text-yellow-600 font-bold">{{totalThisMonth}}</div>
       </div>
       <div
-        v-if="longestRecord !== ''"
+        v-if="longestRecord"
         class="m-2 border border-gray-200 rounded-lg"
       >
         <div class="py-2 border-b border-gray-200">The Longest Record</div>
         <div class="py-2 text-2xl text-yellow-600 font-bold">{{longestRecord}}</div>
       </div>
     </div>
-    <div class="flex-grow-0 grid grid-flow-col grid-rows-7 grid-cols-53 gap-1 w-11/12 pt-6 px-10">
+    <div class="font-bold">
+      No Data
+    </div>
+    <div v-if="summaries != undefined" class="flex-grow-0 grid grid-flow-col grid-rows-7 grid-cols-53 gap-1 w-11/12 pt-6 px-10">
       <Date
         v-for="(date, index) in dates"
         :key="date.getTime()"
@@ -77,7 +80,7 @@ export default {
     this.summaries = summaries
     this.totalLastYear = total_last_year
     this.totalThisMonth = total_this_month
-    this.longestRecord = `${longest_record.duration} on ${longest_record.date}`
+    this.longestRecord = longest_record ? `${longest_record.duration} on ${longest_record.date}` : null;
   }
 }
 </script>

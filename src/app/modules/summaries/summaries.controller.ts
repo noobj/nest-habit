@@ -7,6 +7,8 @@ import {
     Inject,
     UseGuards,
     Request,
+    Post,
+    Body,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { IsDateString } from 'class-validator';
@@ -32,15 +34,31 @@ export class SummariesController {
     ) {}
 
     @UseGuards(AuthGuard('jwt'))
+    @Post('project')
+    async setCurrentProjectByName(@Request() req, @Body('project_name') projectName) {
+        await this.projectService.setCurrentProject(req.user, projectName);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
     @Get('projects')
     async getProjectNameByUser(@Request() req) {
         const curretProject = await this.projectService.getProjectByUser(req.user);
-        const allProjects = await this.projectService.getAllProjects(req.user);
+        const allProjects = await this.projectService
+            .getAllProjects(req.user)
+            .then((res) => {
+                return res.data.map((entry) => entry.name);
+            });
 
-        const result = {
-            allProjects: allProjects,
-            currentProject: curretProject.name,
-        };
+        const result =
+            curretProject == undefined
+                ? {
+                      allProjects: allProjects,
+                      currentProject: null,
+                  }
+                : {
+                      allProjects: allProjects,
+                      currentProject: curretProject.name,
+                  };
 
         return {
             statusCode: HttpStatus.OK,

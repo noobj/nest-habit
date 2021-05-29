@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { SummariesService } from './summaries.service';
@@ -7,9 +7,14 @@ import { ProjectService } from './projects.service';
 import { Project, DailySummary } from './entities';
 import { Interfaces } from './constants';
 import { UsersModule } from '../users';
+import SyncTogglModule from 'src/app/console/modules/sync-toggl/sync-toggl.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([DailySummary, Project]), UsersModule],
+    imports: [
+        TypeOrmModule.forFeature([DailySummary, Project]),
+        UsersModule,
+        forwardRef(() => SyncTogglModule),
+    ],
     providers: [
         SummariesService,
         ProjectService,

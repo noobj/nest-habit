@@ -1,4 +1,4 @@
-import { Injectable, ImATeapotException } from '@nestjs/common';
+import { Injectable, ImATeapotException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -7,10 +7,13 @@ import { Project } from './entities';
 import { User } from '../users';
 import { TogglClient } from 'src/app/console/modules/sync-toggl/TogglClient';
 import { UsersService } from '../users';
+import { SyncTogglService } from 'src/app/console/modules/sync-toggl/sync-toggl.service';
 
 @Injectable()
 export class ProjectService {
     constructor(
+        @Inject(forwardRef(() => SyncTogglService))
+        private syncTogglService: SyncTogglService,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
         private usersService: UsersService
@@ -22,8 +25,6 @@ export class ProjectService {
         const project = await this.projectRepository.findOne({
             where: { user: user },
         });
-
-        if (project == undefined) throw new ImATeapotException('Project Not Found');
 
         return project;
     }
@@ -56,5 +57,34 @@ export class ProjectService {
         });
 
         return await togglClient.getProjects();
+    }
+
+    public async deleteProjectByUser(user: Partial<User>) {
+        await this.projectRepository
+            .createQueryBuilder()
+            .delete()
+            .where('user_id = :id', { id: user.id })
+            .execute();
+    }
+
+    public async setCurrentProject(user: Partial<User>, projectName: string) {
+        const userWhole: User = await this.usersService.findOne(user.account);
+        const { data: projects } = await this.getAllProjects(user);
+        // delete the original project
+        await this.deleteProjectByUser(user);
+        const fetchedProject = projects
+            .filter((project) => project.name == projectName)
+            .pop();
+
+        if (!fetchedProject) throw new ImATeapotException('Project Not Found');
+        const project: Project = {
+            id: fetchedProject.id,
+            name: projectName,
+            user: userWhole,
+            last_updated: new Date(),
+        };
+        await this.projectRepository.save(project);
+
+        await this.syncTogglService.run(['180']);
     }
 }

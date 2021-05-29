@@ -29,11 +29,7 @@ export class TogglClient {
 
     public async getProjects() {
         const workspaceId = await this.getWorkSpaceId();
-        return await this.client
-            .get(`api/v8/workspaces/${workspaceId}/projects`)
-            .then((res) => {
-                return res.data.map((entry) => entry.name);
-            });
+        return await this.client.get(`api/v8/workspaces/${workspaceId}/projects`);
     }
 
     public async getDetails(workspaceId: number, projectId: number, { ...options }) {

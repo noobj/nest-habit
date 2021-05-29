@@ -1,4 +1,4 @@
-import { Injectable, ImATeapotException } from '@nestjs/common';
+import { Injectable, ImATeapotException, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -26,6 +26,7 @@ export class SummariesService implements IBasicService {
     constructor(
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
+        @Inject(forwardRef(() => ProjectService))
         private projectService: ProjectService
     ) {
         moment.tz.setDefault('Asia/Taipei');
