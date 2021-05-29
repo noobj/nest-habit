@@ -1,8 +1,8 @@
 import Vue from 'vue'
-import Dates from './components/Dates'
+import Main from './Main'
 
 Vue.config.productionTip = false
 
 new Vue({
-  render: h => h(Dates)
-}).$mount('#app')
+  render: h => h(Main)
+}).$mount('#main')

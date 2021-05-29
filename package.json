@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "artisan": "node dist/artisan.js",
     "mix": "mix",
+    "mix:watch": "mix watch",
     "migrate": "typeorm migration:run",
     "seed": "node dist/artisan.js seed",
     "preinit": "nest build && mix",
