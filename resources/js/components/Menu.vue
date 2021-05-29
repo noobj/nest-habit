@@ -1,6 +1,6 @@
 <template>
-  <div class="relative self-end">
-    <div class="place-content-end">
+  <div class="relative self-end m-4">
+    <div class="place-content-end cursor-pointer">
       <img
         class="rounded-full w-16 h-16"
         v-on:click="toggle = !toggle"
@@ -8,23 +8,28 @@
       />
     </div>
     <div
-      class="absolute float-right bg-gray-500 w-96 z-10 right-0 h-screen"
+      class="absolute right-0 z-10 mt-2 overflow-hidden rounded"
       v-if="toggle"
     >
-      <input
-        type="file"
-        id="file"
-        ref="file"
-        v-on:change="handleFileUpload()"
-      />
-      <br />
-      <br />
-      <button
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        v-on:click="logout()"
+
+      <div
+        class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
+        @click="$refs.file.click()"
+      >
+        Upload Avatar
+        <input
+          class="hidden"
+          type="file"
+          ref="file"
+          @change="handleFileUpload()"
+        />
+      </div>
+      <div
+        class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
+        @click="logout()"
       >
         Logout
-      </button>
+      </div>
     </div>
   </div>
 </template>
@@ -36,7 +41,7 @@ export default {
   data() {
     return {
       avatarFileName: "default.jpg",
-      toggle: true,
+      toggle: false,
     };
   },
   computed: {},
