@@ -5,7 +5,7 @@ import * as moment from 'moment-timezone';
 
 import { Project } from './entities';
 import { User } from '../users';
-import { TogglClient } from 'src/app/console/modules/sync-toggl';
+import { TogglClient } from 'src/app/console/modules/sync-toggl/TogglClient';
 import { UsersService } from '../users';
 
 @Injectable()

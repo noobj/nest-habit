@@ -13,9 +13,8 @@ class IntermediateModule {
 
         const moduleName = this.convertToFileFormat(commandName);
         const filePath = `./modules/${moduleName}/${moduleName}.module`;
-        let module;
         try {
-            module = await import(filePath);
+            const module = await import(filePath);
 
             return {
                 module: IntermediateModule,
@@ -42,7 +41,8 @@ class IntermediateModule {
 export class CommandsModule {
     static register(options): DynamicModule {
         // capitalize the arg
-        const commandName = options.command.charAt(0).toUpperCase() + options.command.slice(1);
+        const commandName =
+            options.command.charAt(0).toUpperCase() + options.command.slice(1);
         const serviceName = commandName + 'Service';
 
         return {
