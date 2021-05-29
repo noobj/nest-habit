@@ -1,6 +1,6 @@
 @tailwind base;
 
-html, body, #app {
+html, body, #main {
   @apply h-full;
 }
 
