@@ -32,7 +32,6 @@ export class TogglClient {
         return await this.client
             .get(`api/v8/workspaces/${workspaceId}/projects`)
             .then((res) => {
-                console.log(res);
                 return res.data.map((entry) => entry.name);
             });
     }

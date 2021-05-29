@@ -6,7 +6,6 @@
                 v-on:click="toggle = !toggle"
                 v-bind:src="'/img/' + avatarFileName"
             />
-            >>>>>>> origin/layout-refactor
         </div>
         <div class="absolute right-0 z-10 mt-2 overflow-hidden rounded" v-if="toggle">
             <div
@@ -28,7 +27,7 @@
                     class="border border-gray-300 rounded-full text-gray-600 h-10 pl-5 pr-10 bg-white hover:border-gray-400 focus:outline-none appearance-none"
                     v-on:change="changeProject(this)"
                 >
-                    <option v-for="project in projects" :selected="project == currentPrj">
+                    <option class="text-gray-600 font-bold" v-for="project in projects" :key="project" :selected="project == currentPrj">
                         {{ project }}
                     </option>
                 </select>
@@ -101,7 +100,6 @@ export default {
           this.avatarFileName = res.filename;
         })
         .catch((e) => {
-          console.log(e);
           alert("upload failed");
         });
     },

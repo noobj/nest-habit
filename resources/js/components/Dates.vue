@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="flex flex-col items-center dark:text-white dark:bg-gray-800">
+  <div class="flex flex-col w-full items-center dark:text-white dark:bg-gray-800">
     <div class="grid grid-cols-3 w-11/12 text-center">
       <div
         v-if="totalLastYear !== ''"
