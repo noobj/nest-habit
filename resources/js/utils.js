@@ -1,4 +1,11 @@
-import { startOfToday, eachDayOfInterval, subYears, subDays, isSunday, format } from 'date-fns';
+import {
+    startOfToday,
+    eachDayOfInterval,
+    subYears,
+    subDays,
+    isSunday,
+    format,
+} from 'date-fns';
 
 // get start of today
 const endDate = startOfToday();
@@ -43,7 +50,7 @@ const getSummaries = async () => {
     params.set('end_date', format(endDate, 'yyyy-MM-dd'));
     return await fetch(`/summaries?${params.toString()}`, {
         method: 'GET',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',

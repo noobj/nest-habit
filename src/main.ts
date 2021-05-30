@@ -12,7 +12,16 @@ async function bootstrap() {
     const RedisStore = connectRedis(session);
     const redisClient = redis.createClient();
 
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+        cors: {
+            origin: [
+                'http://192.168.56.101:3001',
+                'http://localhost:3001',
+                'http://127.0.0.1:3001',
+            ],
+            credentials: true,
+        },
+    });
     app.use(staticChecker);
     const configService = app.get(ConfigService);
     app.use(
