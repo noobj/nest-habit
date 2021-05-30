@@ -5,6 +5,7 @@ import configuration from 'src/config/configuration';
 import { ConfigModule } from '@nestjs/config';
 import { ProjectService, SummariesService } from 'src/app/modules/summaries';
 import { User } from 'src/app/modules/users';
+import { ModuleRef } from '@nestjs/core';
 
 jest.mock('./TogglClient', () => {
     return {
@@ -65,6 +66,12 @@ describe('SyncTogglService', () => {
         updateProjectLastUpdated: jest.fn(() => {}),
     };
 
+    const mockModuleRef = {
+        get: jest.fn(() => {
+            return mockProjectService;
+        }),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [ConfigModule.forRoot({ load: [configuration] })],
@@ -79,10 +86,15 @@ describe('SyncTogglService', () => {
                     provide: ProjectService,
                     useValue: mockProjectService,
                 },
+                {
+                    provide: ModuleRef,
+                    useValue: mockModuleRef,
+                }
             ],
         }).compile();
 
         service = module.get<SyncTogglService>(SyncTogglService);
+        service.onModuleInit();
     });
 
     it('should run the command', async () => {

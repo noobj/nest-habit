@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { DailySummary, Project } from './entities';
+import { DailySummary } from './entities';
 import { SummariesService } from './summaries.service';
 import { Between } from 'typeorm';
 import { ImATeapotException } from '@nestjs/common';
 import { User } from '../users';
 import { ProjectService } from './projects.service';
+import { ModuleRef } from '@nestjs/core';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -65,18 +66,18 @@ describe('SummariesService', () => {
         ),
     };
 
-    const mockProjectRepo = {
-        findOne: jest.fn((name: string) => ({
-            name: name,
-            id: 123,
-        })),
-    };
-
     const mockProjectService = {
         getProjectByUser: jest.fn((name: string) => ({
             name: name,
             id: 123,
         })),
+        getLeastUpdatedProjects: jest.fn(),
+    };
+
+    const mockModuleRef = {
+        get: jest.fn(() => {
+            return mockProjectService;
+        }),
     };
 
     beforeEach(async () => {
@@ -88,17 +89,18 @@ describe('SummariesService', () => {
                     useValue: mockDailySummaryRepo,
                 },
                 {
-                    provide: getRepositoryToken(Project),
-                    useValue: mockProjectRepo,
-                },
-                {
                     provide: ProjectService,
                     useValue: mockProjectService,
-                }
+                },
+                {
+                    provide: ModuleRef,
+                    useValue: mockModuleRef,
+                },
             ],
         }).compile();
 
         service = module.get<SummariesService>(SummariesService);
+        service.onModuleInit();
     });
 
     it('should return raw data of daily summaries', async () => {
@@ -192,7 +194,7 @@ describe('SummariesService', () => {
         }).rejects.toThrow(ImATeapotException);
     });
 
-    it('should upsert failed and console log error', async () => {
+    it('should upsert failed and throw out exception', async () => {
         const spyMockDSRepo = jest
             .spyOn(mockDailySummaryRepo, 'createQueryBuilder')
             .mockImplementation(() => {
