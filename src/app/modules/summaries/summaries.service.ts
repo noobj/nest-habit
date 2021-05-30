@@ -1,4 +1,4 @@
-import { Injectable, ImATeapotException, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, ImATeapotException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -10,6 +10,7 @@ import { validate } from 'class-validator';
 import { ProjectService } from './projects.service';
 import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
+import { ModuleRef } from '@nestjs/core';
 
 /**
  * The return format for frontend use
@@ -22,14 +23,18 @@ interface IFormatedSummary {
 }
 
 @Injectable()
-export class SummariesService implements IBasicService {
+export class SummariesService implements IBasicService, OnModuleInit {
+    private projectService: ProjectService;
     constructor(
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
-        @Inject(forwardRef(() => ProjectService))
-        private projectService: ProjectService
+        private moduleRef: ModuleRef
     ) {
         moment.tz.setDefault('Asia/Taipei');
+    }
+
+    onModuleInit() {
+        this.projectService = this.moduleRef.get(ProjectService);
     }
 
     public async getRawDailySummaries(

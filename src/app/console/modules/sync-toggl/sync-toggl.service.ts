@@ -1,10 +1,4 @@
-import {
-    Injectable,
-    Logger,
-    ImATeapotException,
-    forwardRef,
-    Inject,
-} from '@nestjs/common';
+import { Injectable, Logger, ImATeapotException, OnModuleInit } from '@nestjs/common';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 
@@ -13,16 +7,21 @@ import { CreateDailySummaryDto, ProjectService } from 'src/app/modules/summaries
 import { TogglClient } from './TogglClient';
 import { ICommand } from 'src/app/console/interfaces/command.interface';
 import { Project } from 'src/app/modules/summaries/entities';
+import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
-export class SyncTogglService implements ICommand {
+export class SyncTogglService implements ICommand, OnModuleInit {
     private readonly logger = new Logger(SyncTogglService.name);
+    private projectService: ProjectService;
 
     constructor(
-        @Inject(forwardRef(() => ProjectService))
-        private projectService: ProjectService,
+        private moduleRef: ModuleRef,
         private summariesService: SummariesService
     ) {}
+
+    onModuleInit() {
+        this.projectService = this.moduleRef.get(ProjectService, { strict: false });
+    }
 
     async run(argv: string[]) {
         const days = +argv[0];

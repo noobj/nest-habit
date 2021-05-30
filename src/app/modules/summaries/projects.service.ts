@@ -1,4 +1,4 @@
-import { Injectable, ImATeapotException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, ImATeapotException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -12,7 +12,6 @@ import { SyncTogglService } from 'src/app/console/modules/sync-toggl/sync-toggl.
 @Injectable()
 export class ProjectService {
     constructor(
-        @Inject(forwardRef(() => SyncTogglService))
         private syncTogglService: SyncTogglService,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
