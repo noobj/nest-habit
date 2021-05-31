@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     devServer: {
@@ -21,15 +22,17 @@ module.exports = {
             template: 'resources/login.html',
         },
     },
-    // chainWebpack: (config) => {
-    //     config.plugin('copy').tap((args) => {
-    //         args[0].push({
-    //             from: path.resolve(__dirname, 'resources/img'),
-    //             to: path.resolve(__dirname, 'dist/public/img'),
-    //             toType: 'dir',
-    //             ignore: ['.DS_Store'],
-    //         });
-    //         return args;
-    //     });
-    // },
+    configureWebpack: {
+        plugins: [
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: path.resolve(__dirname, 'resources/img'),
+                        to: path.resolve(__dirname, 'dist/public/img'),
+                        toType: 'dir',
+                    },
+                ],
+            }),
+        ],
+    },
 };
