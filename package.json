@@ -20,13 +20,13 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "artisan": "node dist/artisan.js",
-    "mix": "mix",
-    "mix:watch": "mix watch",
     "migrate": "typeorm migration:run",
     "seed": "node dist/artisan.js seed",
-    "preinit": "nest build && mix",
+    "preinit": "nest build && vue-cli-service build --no-clean",
     "init": "typeorm migration:run",
-    "postinit": "node dist/artisan.js seed && node dist/artisan.js syncToggl"
+    "postinit": "node dist/artisan.js seed && node dist/artisan.js syncToggl",
+    "vue:serve": "vue-cli-service serve",
+    "vue:build": "vue-cli-service build --no-clean"
   },
   "dependencies": {
     "@nestjs/common": "^7.6.17",
@@ -38,18 +38,15 @@
     "@nestjs/schedule": "^0.4.3",
     "@nestjs/serve-static": "^2.1.4",
     "@nestjs/typeorm": "^7.1.5",
-    "@tailwindcss/aspect-ratio": "^0.2.0",
     "axios": "^0.21",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "connect-redis": "^5.2.0",
-    "date-fns": "^2.20.0",
+    "date-fns": "^2.22.1",
     "express-session": "^1.17.2",
     "joi": "^17.4.0",
-    "laravel-mix": "^6.0.6",
     "lodash": "^4.17.21",
-    "mix-tailwindcss": "^1.3.0",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
     "mysql": "^2.18.1",
@@ -57,47 +54,52 @@
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
-    "postcss": "^8.2.15",
     "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
     "sharp": "^0.28.3",
-    "tailwindcss": "^2.1.1",
     "typeorm": "^0.2.32",
-    "vue": "^2.6.12",
-    "vue-loader": "^15.9.6",
-    "vue-template-compiler": "^2.6.12"
+    "vue": "^2.6.12"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.6.0",
     "@nestjs/schematics": "^7.3.0",
     "@nestjs/testing": "^7.6.17",
+    "@tailwindcss/aspect-ratio": "^0.2.1",
     "@types/bcrypt": "^3.0.1",
     "@types/cron": "^1.7.2",
-    "@types/express": "^4.17.11",
+    "@types/express": "^4.17.12",
     "@types/express-session": "^1.17.3",
     "@types/jest": "^26.0.22",
     "@types/joi": "^17.2.3",
-    "@types/lodash": "^4.14.169",
+    "@types/lodash": "^4.14.170",
     "@types/multer": "^1.4.5",
-    "@types/node": "^14.17.0",
+    "@types/node": "^14.17.1",
     "@types/passport-jwt": "^3.0.5",
     "@types/passport-local": "^1.0.33",
     "@types/supertest": "^2.0.10",
-    "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
-    "eslint": "^7.26.0",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "@vue/cli-service": "~4.5.0",
+    "autoprefixer": "^9.8.6",
+    "copy-webpack-plugin": "^6.4.1",
+    "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
     "jest": "^26.6.3",
+    "postcss": "^7.0.35",
     "prettier": "^2.3.0",
     "supertest": "^6.1.3",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.1.2",
     "ts-jest": "^26.5.6",
     "ts-loader": "^8.3.0",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^4.2.3"
+    "typescript": "^4.3.2",
+    "vue-loader": "^15.9.7",
+    "vue-template-compiler": "^2.6.12",
+    "webpack": "^4.46.0"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -118,5 +120,16 @@
     "moduleNameMapper": {
       "src/(.*)": "<rootDir>/$1"
     }
-  }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {},
+      "tailwindcss": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }

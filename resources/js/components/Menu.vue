@@ -53,7 +53,7 @@ export default {
       avatarFileName: "default.jpg",
       toggle: false,
       projects: [],
-        currentPrj: null,
+      currentPrj: null,
     };
   },
   computed: {},
@@ -62,7 +62,7 @@ export default {
     changeProject(event) {
         fetch('/project', {
             method: "Post",
-            credentials: "same-origin",
+            credentials: "include",
             body: new URLSearchParams({
                 'project_name': event.target.value,
             }),

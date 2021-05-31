@@ -1,5 +1,11 @@
 module.exports = {
-    purge: ['./resources/**/*.blade.php', './resources/**/*.js', './resources/**/*.vue'],
+    purge: [
+        './resources/*.html',
+        './resources/**/*.js',
+        './resources/**/*.vue'
+    ],
     darkMode: 'media',
-    plugins: [require('@tailwindcss/aspect-ratio')],
+    plugins: [
+        require('@tailwindcss/aspect-ratio')
+    ],
 };

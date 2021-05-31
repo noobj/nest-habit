@@ -5,14 +5,33 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>habit-tracker</title>
-  <link href="./css/app.css" rel="stylesheet">
+  <script  src="http://code.jquery.com/jquery-3.3.1.min.js"   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="   crossorigin="anonymous"></script>
 </head>
 <body class="dark:bg-gray-800 dark:text-white">
-    <form action="/auth/login" method="post">
+    <form id="myForm" action="http://192.168.56.101:3000/auth/login">
         <label for="account">Account:</label><br>
         <input type="text" class="text-black" id="account" name="account"><br>
         <label for="password">Password:</label><br>
         <input type="password" class="text-black" id="password" name="password"><br><br>
         <input type="submit" class="text-black" value="Submit">
-      </form>
+    </form>
+
+    <script type="application/javascript">
+        $("#myForm").submit(function (e) {
+            e.preventDefault();
+            var url = 'http://192.168.56.101:3000/auth/login';
+            fetch(url, {
+                method: "Post",
+                credentials: "include",
+                body: new URLSearchParams({
+                    'account': $( "#account" ).val(),
+                    'password': $( "#password" ).val()
+                }),
+            }).then((res) => {
+                if (res.status != 201) throw new Error();
+            }).catch(() => {
+                alert('login failed');
+            });
+        });
+    </script>
 </body>
