@@ -28,7 +28,6 @@ export class AppController {
 
     @UseGuards(AuthGuard('local'))
     @Post('auth/login')
-    @Redirect('/', 302)
     async login(@Request() req) {
         const token = await this.authService.login(req.user);
         req.session.token = token.access_token;

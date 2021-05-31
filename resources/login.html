@@ -8,7 +8,7 @@
   <script  src="http://code.jquery.com/jquery-3.3.1.min.js"   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="   crossorigin="anonymous"></script>
 </head>
 <body class="dark:bg-gray-800 dark:text-white">
-    <form id="myForm" action="http://192.168.56.101:3000/auth/login">
+    <form id="myForm">
         <label for="account">Account:</label><br>
         <input type="text" class="text-black" id="account" name="account"><br>
         <label for="password">Password:</label><br>
@@ -19,7 +19,7 @@
     <script type="application/javascript">
         $("#myForm").submit(function (e) {
             e.preventDefault();
-            var url = 'http://192.168.56.101:3000/auth/login';
+            var url = '/auth/login';
             fetch(url, {
                 method: "Post",
                 credentials: "include",
@@ -29,6 +29,7 @@
                 }),
             }).then((res) => {
                 if (res.status != 201) throw new Error();
+                window.location.href = '/';
             }).catch(() => {
                 alert('login failed');
             });
