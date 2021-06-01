@@ -26,8 +26,10 @@ describe('SummariesController (e2e)', () => {
                     imports: [ConfigModule],
                     inject: [ConfigService],
                     useFactory: async (configService: ConfigService) => ({
-                        type: 'sqlite',
-                        database: ':memory:',
+                        type: 'mysql',
+                        database: 'test',
+                        username: 'root',
+                        password: 'root',
                         entities: [User, DailySummary, Project],
                         synchronize: true,
                         logging: false,
