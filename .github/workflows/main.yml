@@ -30,12 +30,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ env.NODE_VERSION }}
-<<<<<<< HEAD
-=======
-      - name: Create DB and schemas
-        run: |
-          touch db.sqlite
->>>>>>> origin/main
       - name: npm install, build, and test
         run: |
           npm install
