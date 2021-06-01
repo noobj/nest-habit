@@ -25,7 +25,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Create DB and schemas
         run: |
-        touch db.sqlite
+          touch db.sqlite
       - name: npm install, build, and test
         run: |
           npm install
