@@ -3,7 +3,6 @@ import {
     Request,
     UseGuards,
     Get,
-    Redirect,
     Post,
     UploadedFile,
     UseInterceptors,
@@ -15,7 +14,6 @@ import { resolve } from 'path';
 import * as sharp from 'sharp';
 import { unlinkSync } from 'fs';
 
-import { BasicAuthGuard } from './app/auth/basic-auth.guard';
 import { AuthService } from './app/auth/auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';

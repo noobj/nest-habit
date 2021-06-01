@@ -3,9 +3,10 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './../src/app/modules/users/users.entity';
+
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/configuration';
+import { User } from './../src/app/modules/users/users.entity';
 import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
 import { Project } from 'src/app/modules/summaries/entities/project.entity';
 import { Repository } from 'typeorm';
@@ -13,7 +14,7 @@ import * as session from 'express-session';
 import { join } from 'path';
 import * as fs from 'fs';
 
-describe('AppController (e2e)', () => {
+describe('SummariesController (e2e)', () => {
     let app: INestApplication;
     let cookies;
 
@@ -78,63 +79,17 @@ describe('AppController (e2e)', () => {
             });
     });
 
-    it('/POST upload_avatar', async (done) => {
-        const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
-
+    it('/GET projects', (done) => {
         return request(app.getHttpServer())
-            .post('/upload_avatar')
-            .set('Cookie', cookies)
-            .attach('file', buffer, { filename: 'display.png' })
-            .then((res) => {
-                expect(res.body.filename).toEqual('222.jpg');
-                expect(res.body.originalname).toEqual('display.png');
-
-                done();
-            });
-    });
-
-    it('/POST upload_avatar unsupported file extension', async (done) => {
-        const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
-
-        return request(app.getHttpServer())
-            .post('/upload_avatar')
-            .set('Cookie', cookies)
-            .attach('file', buffer, { filename: 'display.pig' })
-            .then((res) => {
-                expect(res.status).toEqual(418);
-                expect(res.body.message).toEqual('Only image files are allowed!');
-                done();
-            });
-    });
-
-    it('/GET profile', (done) => {
-        return request(app.getHttpServer())
-            .get('/profile')
+            .get('/projects')
             .set('Cookie', cookies)
             .send()
             .expect(200)
             .end((err, res) => {
-                expect(res.body.id).toEqual(222);
-                expect(res.body.account).toEqual('jjj');
-
+                expect(res.body.data.allProjects).toEqual(['ffff', 'ggg', 'meditation']);
+                expect(res.body.data.currentProject).toEqual(null);
                 done();
             });
-    });
-
-    it('/GET logout', () => {
-        return request(app.getHttpServer())
-            .get('/logout')
-            .set('Cookie', cookies)
-            .send()
-            .expect(200);
-    });
-
-    it('/GET profile Unauthorized and logout', () => {
-        return request(app.getHttpServer())
-            .get('/profile')
-            .set('Cookie', cookies)
-            .send()
-            .expect(401);
     });
 
     afterAll(async () => {
