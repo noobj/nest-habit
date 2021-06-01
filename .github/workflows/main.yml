@@ -22,7 +22,6 @@ jobs:
           MYSQL_DATABASE: test
           MYSQL_USER: linuxj
           MYSQL_PASSWORD: 1234
-          MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306
         options: >-
@@ -33,6 +32,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+
+      - name: Verify MySQL connection from host
+        run: |
+          sudo apt-get install -y mysql-client
+          mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -ulinuxj -p1234 -e "SHOW DATABASES"
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ env.NODE_VERSION }}
