@@ -20,18 +20,12 @@ describe('AppController (e2e)', () => {
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
-                TypeOrmModule.forRootAsync({
-                    imports: [ConfigModule],
-                    inject: [ConfigService],
-                    useFactory: async (configService: ConfigService) => ({
-                        type: 'sqlite',
-                        database: ':memory:',
-                        // username: 'root',
-                        // password: 'root',
-                        entities: [User, DailySummary, Project],
-                        synchronize: true,
-                        logging: false,
-                    }),
+                TypeOrmModule.forRoot({
+                    type: 'sqlite',
+                    database: ':memory:',
+                    entities: [User, DailySummary, Project],
+                    synchronize: true,
+                    logging: false,
                 }),
                 AppModule,
                 ConfigModule.forRoot({ load: [configuration] }),
