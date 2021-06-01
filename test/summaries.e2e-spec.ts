@@ -19,7 +19,6 @@ describe('SummariesController (e2e)', () => {
     let cookies;
 
     beforeAll(async () => {
-        process.env.TYPEORM_CONNECTION = 'sqlite';
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
                 TypeOrmModule.forRootAsync({
