@@ -25,8 +25,10 @@ describe('AppController (e2e)', () => {
                     imports: [ConfigModule],
                     inject: [ConfigService],
                     useFactory: async (configService: ConfigService) => ({
-                        type: 'sqlite',
-                        database: 'db.sqlite',
+                        type: 'mysql',
+                        database: 'test',
+                        username: 'linuxj',
+                        password: '1234',
                         entities: [User, DailySummary, Project],
                         synchronize: true,
                         logging: false,
