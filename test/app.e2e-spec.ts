@@ -27,8 +27,8 @@ describe('AppController (e2e)', () => {
                     useFactory: async (configService: ConfigService) => ({
                         type: 'mysql',
                         database: 'test',
-                        username: 'linuxj',
-                        password: '1234',
+                        username: 'root',
+                        password: 'root',
                         entities: [User, DailySummary, Project],
                         synchronize: true,
                         logging: false,

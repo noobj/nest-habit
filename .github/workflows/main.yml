@@ -7,6 +7,9 @@ on: push
 
 env:
   NODE_VERSION: '14.x'
+  DB_DATABASE: test
+  DB_USER: root
+  DB_PASSWORD: root
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -15,28 +18,13 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
 
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_DATABASE: test
-          MYSQL_USER: linuxj
-          MYSQL_PASSWORD: 1234
-        ports:
-          - 3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
-      - name: Verify MySQL connection from host
+      - name: Set up MySQL
         run: |
-          sudo apt-get install -y mysql-client
-          mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -ulinuxj -p1234 -e "SHOW DATABASES"
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ env.NODE_VERSION }}
