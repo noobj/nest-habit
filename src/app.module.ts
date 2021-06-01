@@ -45,6 +45,9 @@ import configuration from './config/configuration';
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(LoggerMiddleware).forRoutes(SummariesController, AppController);
+        if (process.env.NODE_ENV !== 'test')
+            consumer
+                .apply(LoggerMiddleware)
+                .forRoutes(SummariesController, AppController);
     }
 }

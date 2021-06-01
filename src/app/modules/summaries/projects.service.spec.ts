@@ -10,16 +10,18 @@ jest.mock('../../console/modules/sync-toggl/TogglClient', () => {
     return {
         TogglClient: jest.fn().mockImplementation(() => {
             return {
-                getProjects: () => [
-                    {
-                        id: 2,
-                        name: 'sleep',
-                    },
-                    {
-                        id: 1,
-                        name: 'meditation',
-                    },
-                ],
+                getProjects: () => ({
+                    data: [
+                        {
+                            id: 2,
+                            name: 'sleep',
+                        },
+                        {
+                            id: 1,
+                            name: 'meditation',
+                        },
+                    ],
+                }),
             };
         }),
     };
@@ -68,6 +70,10 @@ describe('ProjectService', () => {
         findOne: jest.fn(() => Promise.resolve<Partial<Project>>(mockProject)),
         find: jest.fn(() => Promise.resolve<Partial<Project>[]>(mockProjects)),
         save: jest.fn(),
+        createQueryBuilder: jest.fn().mockReturnThis(),
+        delete: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockReturnThis(),
     };
 
     const mockSyncTogglService = {
@@ -76,6 +82,7 @@ describe('ProjectService', () => {
             id: 123,
         })),
         getLeastUpdatedProjects: jest.fn(),
+        run: jest.fn(),
     };
 
     const mockUsersService = {
@@ -131,7 +138,7 @@ describe('ProjectService', () => {
     });
 
     it('should update last_updated', async () => {
-        const mockDate = new Date(1466424490000);
+        const mockDate = new Date(1466424490000).toISOString();
         const spyOnDate = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
         await service.updateProjectLastUpdated(mockProject);
         expect(mockProjectRepo.save).toBeCalledWith({
@@ -145,16 +152,38 @@ describe('ProjectService', () => {
 
     it('should get all projects of the user', async () => {
         const result = await service.getAllProjects(user);
-        expect(result).toEqual([
-            {
-                id: 2,
-                name: 'sleep',
-            },
-            {
-                id: 1,
-                name: 'meditation',
-            },
-        ]);
+        expect(result).toEqual({
+            data: [
+                {
+                    id: 2,
+                    name: 'sleep',
+                },
+                {
+                    id: 1,
+                    name: 'meditation',
+                },
+            ],
+        });
     });
 
+    it('should delete the current project of the user', async () => {
+        await service.deleteProjectByUser(user);
+        expect(mockProjectRepo.delete).toBeCalledTimes(1);
+        expect(mockProjectRepo.where).toBeCalledWith('user_id = :id', { id: user.id });
+    });
+
+    it('should set the given project and delete the current one', async () => {
+        const mockDate = new Date(1466424490000).toISOString();
+        const spyOnDate = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
+        await service.setCurrentProject(user, 'meditation');
+        expect(mockProjectRepo.delete).toBeCalledTimes(2);
+        expect(mockProjectRepo.save).toBeCalledWith({
+            id: 1,
+            name: 'meditation',
+            user: user,
+            last_updated: new Date(1466424490000),
+        });
+        expect(mockSyncTogglService.run).toBeCalledTimes(1);
+        spyOnDate.mockRestore();
+    });
 });

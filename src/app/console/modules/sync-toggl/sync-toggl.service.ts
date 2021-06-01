@@ -38,7 +38,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
         await Promise.all(
             projects.map(async (project: Project) => {
                 const details = await this.fetchDataFromToggl(project, since);
-                if (!details.length) return;
+                if (!details.length) throw new ImATeapotException('no data');
 
                 const fetchedData = this.processFetchedData(details, project);
                 const result = await this.summariesService.upsert(fetchedData);
