@@ -28,6 +28,7 @@ jobs:
           npm install
           npm run build --if-present
           npm run test:cov --if-present
+          npm run test:e2e
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
