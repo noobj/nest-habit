@@ -26,7 +26,7 @@ describe('AppController (e2e)', () => {
                     inject: [ConfigService],
                     useFactory: async (configService: ConfigService) => ({
                         type: 'sqlite',
-                        database: ':memory:',
+                        database: 'db.sqlite',
                         entities: [User, DailySummary, Project],
                         synchronize: true,
                         logging: false,
