@@ -10,7 +10,6 @@
     "src/(.*)": "<rootDir>/src/$1"
   },
   "collectCoverage": true,
-  "coverageReporters": ["lcov"],
   "coverageDirectory": "./coverage",
   "collectCoverageFrom": ["src/**/*.(t|j)s"],
   "coveragePathIgnorePatterns": [
