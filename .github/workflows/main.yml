@@ -25,7 +25,8 @@ jobs:
         run: |
           sudo /etc/init.d/mysql start
           mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
-          mysql -e "CREATE USER 'linuxj'@'localhost' IDENTIFIED WITH mysql_native_password BY '1234';" -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          mysql -e "CREATE USER 'linuxj'@'localhost' IDENTIFIED BY '1234';" -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          mysql -e "ALTER USER 'linuxj'@'localhost' IDENTIFIED WITH mysql_native_password BY '1234';" -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ env.NODE_VERSION }}

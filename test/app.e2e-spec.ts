@@ -8,7 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/test.config';
 import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
 import { Project } from 'src/app/modules/summaries/entities/project.entity';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { join } from 'path';
 import * as fs from 'fs';
@@ -133,6 +133,7 @@ describe('AppController (e2e)', () => {
     });
 
     afterAll(async () => {
+        await getConnection().synchronize(true); // clean up all data
         app.close();
     });
 });

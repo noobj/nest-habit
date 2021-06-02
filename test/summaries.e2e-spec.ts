@@ -9,7 +9,7 @@ import configuration from 'src/config/test.config';
 import { User } from './../src/app/modules/users/users.entity';
 import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
 import { Project } from 'src/app/modules/summaries/entities/project.entity';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { join } from 'path';
 import * as fs from 'fs';
@@ -94,6 +94,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     it('/POST project', (done) => {
+        const spyLog = jest.spyOn(console, 'log').mockImplementation();
         const payload = {
             project_name: 'meditation',
         };
@@ -103,11 +104,14 @@ describe('SummariesController (e2e)', () => {
             .send(payload)
             .expect(201)
             .end((err, res) => {
+                expect(spyLog).toBeCalledWith('User jjj Updated 3 rows');
+
                 done();
             });
     });
 
     afterAll(async () => {
+        await getConnection().synchronize(true); // clean up all data
         app.close();
     });
 });
