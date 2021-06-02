@@ -5,7 +5,7 @@ import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import configuration from 'src/config/configuration';
+import configuration from 'src/config/test.config';
 import { User } from './../src/app/modules/users/users.entity';
 import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
 import { Project } from 'src/app/modules/summaries/entities/project.entity';
@@ -19,16 +19,22 @@ describe('SummariesController (e2e)', () => {
     let cookies;
 
     beforeAll(async () => {
-        process.env.TYPEORM_CONNECTION = 'sqlite';
-        process.env.TYPEORM_DATABASE = ':memory:';
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
-                TypeOrmModule.forRoot({
-                    type: 'sqlite',
-                    database: ':memory:',
-                    entities: [User, DailySummary, Project],
-                    synchronize: true,
-                    logging: false,
+                TypeOrmModule.forRootAsync({
+                    imports: [ConfigModule],
+                    inject: [ConfigService],
+                    useFactory: async (configService: ConfigService) => ({
+                        type: configService.get('database.type') as 'mysql',
+                        host: configService.get('database.host'),
+                        port: configService.get('database.port'),
+                        username: configService.get('database.username'),
+                        password: configService.get<string>('database.password'),
+                        database: configService.get<string>('database.database'),
+                        entities: [User, DailySummary, Project],
+                        synchronize: true,
+                        logging: configService.get<boolean>('database.logging'),
+                    }),
                 }),
                 AppModule,
                 ConfigModule.forRoot({ load: [configuration] }),
@@ -67,9 +73,7 @@ describe('SummariesController (e2e)', () => {
         return request(app.getHttpServer())
             .post('/auth/login')
             .send(payload)
-            .expect(201)
             .end(function (err, res) {
-                expect(res.body.access_token).toBeDefined();
                 // Save the cookie to use it later to retrieve the session
                 cookies = res.headers['set-cookie'].pop().split(';')[0];
                 done();
@@ -85,6 +89,20 @@ describe('SummariesController (e2e)', () => {
             .end((err, res) => {
                 expect(res.body.data.allProjects).toEqual(['ffff', 'ggg', 'meditation']);
                 expect(res.body.data.currentProject).toEqual(null);
+                done();
+            });
+    });
+
+    it('/POST project', (done) => {
+        const payload = {
+            project_name: 'meditation',
+        };
+        return request(app.getHttpServer())
+            .post('/project')
+            .set('Cookie', cookies)
+            .send(payload)
+            .expect(201)
+            .end((err, res) => {
                 done();
             });
     });

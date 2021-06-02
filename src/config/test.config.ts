@@ -1,10 +1,12 @@
 export default () => ({
     port: parseInt(process.env.PORT, 10) || 3000,
     database: {
-        type: 'sqlite',
-        username: 'root',
-        password: 'root',
-        database: ':memory:',
+        type: 'mysql',
+        host: process.env.TYPEORM_HOST || '127.0.0.1',
+        port: process.env.TYPEORM_PORT || 3306,
+        database: 'test',
+        username: process.env.TYPEORM_USERNAME || 'root',
+        password: process.env.TYPEORM_PASSWORD || 'root',
         entities: process.env.TYPEORM_ENTITIES,
         synchronize: false,
         logging: false,
