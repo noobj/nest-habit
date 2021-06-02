@@ -18,6 +18,18 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
 
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: test
+          MYSQL_USER: linuxj
+          MYSQL_PASSWORD: 1234
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
