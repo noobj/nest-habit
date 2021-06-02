@@ -8,8 +8,10 @@ on: push
 env:
   NODE_VERSION: '14.x'
   DB_DATABASE: test
-  TEST_DB_USERNAME: root
-  TEST_DB_PASSWORD: root
+  DB_USER: linuxj
+  DB_PASSWORD: 1234
+  TEST_DB_USERNAME: linuxj
+  TEST_DB_PASSWORD: 1234
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
