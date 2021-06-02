@@ -5,7 +5,7 @@ import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './../src/app/modules/users/users.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import configuration from 'src/config/configuration';
+import configuration from 'src/config/test.config';
 import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
 import { Project } from 'src/app/modules/summaries/entities/project.entity';
 import { Repository } from 'typeorm';
