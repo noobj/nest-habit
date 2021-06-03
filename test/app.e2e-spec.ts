@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { ImATeapotException, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -64,8 +64,8 @@ describe('AppController (e2e)', () => {
         return request(app.getHttpServer())
             .post('/auth/login')
             .send(payload)
-            .expect(201)
             .end(function (err, res) {
+                expect(res.status).toEqual(201);
                 expect(res.body.access_token).toBeDefined();
                 // Save the cookie to use it later to retrieve the session
                 cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -90,14 +90,18 @@ describe('AppController (e2e)', () => {
 
     it('/POST upload_avatar unsupported file extension', async (done) => {
         const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
-
+        const spyLog = jest.spyOn(console, 'log').mockImplementation();
         return request(app.getHttpServer())
             .post('/upload_avatar')
             .set('Cookie', cookies)
             .attach('file', buffer, { filename: 'display.pig' })
             .then((res) => {
+                expect(spyLog).toBeCalledWith(
+                    new ImATeapotException('Only image files are allowed!')
+                );
                 expect(res.status).toEqual(418);
                 expect(res.body.message).toEqual('Only image files are allowed!');
+                spyLog.mockRestore();
                 done();
             });
     });
@@ -107,8 +111,8 @@ describe('AppController (e2e)', () => {
             .get('/profile')
             .set('Cookie', cookies)
             .send()
-            .expect(200)
             .end((err, res) => {
+                expect(res.status).toEqual(200);
                 expect(res.body.id).toEqual(222);
                 expect(res.body.account).toEqual('jjj');
 

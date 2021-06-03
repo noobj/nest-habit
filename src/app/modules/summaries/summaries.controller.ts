@@ -9,6 +9,7 @@ import {
     Request,
     Post,
     Body,
+    UseFilters,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { IsDateString } from 'class-validator';
@@ -16,6 +17,7 @@ import { IsDateString } from 'class-validator';
 import { IBasicService } from './interfaces/basic.service';
 import { Interfaces } from './constants';
 import { ProjectService } from './projects.service';
+import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception.filter';
 
 class DateRange {
     @IsDateString()
@@ -35,6 +37,7 @@ export class SummariesController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('project')
+    @UseFilters(new HttpExceptionFilter())
     async setCurrentProjectByName(@Request() req, @Body('project_name') projectName) {
         await this.projectService.setCurrentProject(req.user, projectName);
     }

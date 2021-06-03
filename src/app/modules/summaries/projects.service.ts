@@ -69,13 +69,13 @@ export class ProjectService {
     public async setCurrentProject(user: Partial<User>, projectName: string) {
         const userWhole: User = await this.usersService.findOne(user.account);
         const { data: projects } = await this.getAllProjects(user);
-        // delete the original project
-        await this.deleteProjectByUser(user);
         const fetchedProject = projects
             .filter((project) => project.name == projectName)
             .pop();
 
         if (!fetchedProject) throw new ImATeapotException('Project Not Found');
+        // delete the original project
+        await this.deleteProjectByUser(user);
         const project: Project = {
             id: fetchedProject.id,
             name: projectName,

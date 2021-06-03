@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { ImATeapotException, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -85,8 +85,8 @@ describe('SummariesController (e2e)', () => {
             .get('/projects')
             .set('Cookie', cookies)
             .send()
-            .expect(200)
             .end((err, res) => {
+                expect(res.status).toEqual(200);
                 expect(res.body.data.allProjects).toEqual(['ffff', 'ggg', 'meditation']);
                 expect(res.body.data.currentProject).toEqual(null);
                 done();
@@ -102,10 +102,106 @@ describe('SummariesController (e2e)', () => {
             .post('/project')
             .set('Cookie', cookies)
             .send(payload)
-            .expect(201)
             .end((err, res) => {
+                expect(res.status).toEqual(201);
                 expect(spyLog).toBeCalledWith('User jjj Updated 3 rows');
+                spyLog.mockRestore();
+                done();
+            });
+    });
 
+    it('/POST project with nonexist project', (done) => {
+        const payload = {
+            project_name: 'jjj',
+        };
+        const spyLog = jest.spyOn(console, 'log').mockImplementation();
+        return request(app.getHttpServer())
+            .post('/project')
+            .set('Cookie', cookies)
+            .send(payload)
+            .end((err, res) => {
+                expect(res.status).toEqual(418);
+                expect(spyLog).toBeCalledWith(
+                    new ImATeapotException('Project Not Found')
+                );
+                expect(res.body.message).toEqual('Project Not Found');
+                spyLog.mockRestore();
+                done();
+            });
+    });
+
+    it('/GET summaries', (done) => {
+        const query = {
+            start_date: '2021-05-22',
+            end_date: '2021-05-26',
+        };
+        jest.useFakeTimers('modern').setSystemTime(new Date('2021-05-01').getTime());
+        return request(app.getHttpServer())
+            .get('/summaries')
+            .set('Cookie', cookies)
+            .query(query)
+            .end((err, res) => {
+                expect(res.body.data.summaries).toEqual([
+                    {
+                        date: 'May 25, 2021',
+                        level: 4,
+                        timestamp: 1621872000000,
+                        duration: '3h0m',
+                    },
+                    {
+                        date: 'May 24, 2021',
+                        level: 3,
+                        timestamp: 1621785600000,
+                        duration: '2h0m',
+                    },
+                    {
+                        date: 'May 23, 2021',
+                        level: 3,
+                        timestamp: 1621699200000,
+                        duration: '1h0m',
+                    },
+                ]);
+                expect(res.body.data.longest_record).toEqual({
+                    date: '2021-05-25',
+                    duration: '3h0m',
+                });
+                expect(res.body.data.total_last_year).toEqual('6h0m');
+                expect(res.status).toEqual(200);
+                jest.useRealTimers();
+                done();
+            });
+    });
+
+    it('/GET summaries wrong format of dates', (done) => {
+        const query = {
+            start_date: '2021-02',
+            end_date: '2021-26',
+        };
+        return request(app.getHttpServer())
+            .get('/summaries')
+            .set('Cookie', cookies)
+            .query(query)
+            .end((err, res) => {
+                expect(res.status).toEqual(400);
+                expect(res.body.message).toEqual([
+                    'end_date must be a valid ISO 8601 date string',
+                ]);
+                done();
+            });
+    });
+
+    it('/GET summaries no data in given date range', (done) => {
+        const query = {
+            start_date: '2012-05-22',
+            end_date: '2012-05-26',
+        };
+        return request(app.getHttpServer())
+            .get('/summaries')
+            .set('Cookie', cookies)
+            .query(query)
+            .end((err, res) => {
+                expect(res.body.statusCode).toEqual(204);
+                expect(res.body.data).toEqual('No Data');
                 done();
             });
     });

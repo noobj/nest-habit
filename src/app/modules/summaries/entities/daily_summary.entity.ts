@@ -12,7 +12,7 @@ export class DailySummary {
     @Column()
     date: string;
 
-    @ManyToOne(() => Project, (project) => project.summaries)
+    @ManyToOne(() => Project, (project) => project.summaries, { onDelete: 'CASCADE' })
     @JoinColumn({
         name: 'project_id',
         referencedColumnName: 'id',
@@ -22,7 +22,7 @@ export class DailySummary {
     @Column()
     duration: number;
 
-    @ManyToOne(() => User, (user) => user.summaries)
+    @ManyToOne(() => User, (user) => user.summaries, { onDelete: 'CASCADE' })
     @JoinColumn({
         name: 'user_id',
         referencedColumnName: 'id',
