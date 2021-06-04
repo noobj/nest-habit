@@ -23,8 +23,14 @@ export class SyncTogglService implements ICommand, OnModuleInit {
         this.projectService = this.moduleRef.get(ProjectService, { strict: false });
     }
 
+    /**
+     * Usage - npm run artisan syncToggl 180 user
+     * @param argv[0] optional - how many days prior to today to fetch
+     * @param argv[1] optional - pass the specific user's account for fetching
+     */
     async run(argv: string[]) {
         const days = +argv[0];
+        const userName = argv[1] ?? null;
         let since = null;
 
         if (argv.length) {
@@ -33,7 +39,10 @@ export class SyncTogglService implements ICommand, OnModuleInit {
             since = moment().subtract(days, 'days').format('YYYY-MM-DD');
         }
 
-        const projects = await this.projectService.getLeastUpdatedProjects(10);
+        const arg = userName ?? 10;
+        const projects = await this.projectService.getLeastUpdatedProjects(arg);
+
+        if (projects.length == 0) throw new ImATeapotException('No project found');
 
         await Promise.all(
             projects.map(async (project: Project) => {

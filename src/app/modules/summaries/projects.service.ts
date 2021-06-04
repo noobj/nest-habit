@@ -28,14 +28,26 @@ export class ProjectService {
         return project;
     }
 
-    public async getLeastUpdatedProjects(limit: number): Promise<Project[]> {
-        return await this.projectRepository.find({
-            relations: ['user'],
-            order: {
-                last_updated: 'DESC',
-            },
-            take: limit,
-        });
+    public async getLeastUpdatedProjects(arg: number | string): Promise<Project[]>;
+    public async getLeastUpdatedProjects(arg: any): Promise<Project[]> {
+        if (typeof arg == 'number')
+            return await this.projectRepository.find({
+                relations: ['user'],
+                order: {
+                    last_updated: 'DESC',
+                },
+                take: arg,
+            });
+        else if (typeof arg == 'string') {
+            const user = await this.usersService.findOne(arg);
+            if (user == undefined) throw new ImATeapotException('Invalid user');
+            const result = await this.projectRepository.findOne(
+                { user: user },
+                { relations: ['user'] }
+            );
+
+            return [result];
+        }
     }
 
     public async updateProjectLastUpdated(project: Project) {
@@ -84,6 +96,6 @@ export class ProjectService {
         };
         await this.projectRepository.save(project);
 
-        await this.syncTogglService.run(['180']);
+        await this.syncTogglService.run(['365', userWhole.account]);
     }
 }

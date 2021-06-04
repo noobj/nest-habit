@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Project } from './entities';
-import { ImATeapotException } from '@nestjs/common';
 import { User, UsersService } from '../users';
 import { ProjectService } from './projects.service';
 import { SyncTogglService } from 'src/app/console/modules/sync-toggl';
+import { ImATeapotException } from '@nestjs/common';
 
 jest.mock('../../console/modules/sync-toggl/TogglClient', () => {
     return {
@@ -124,7 +124,7 @@ describe('ProjectService', () => {
     });
 
     it('should return least update project', async () => {
-        // 2021/5/30 Note: sould find out a better way like check the argv and return certain amount of data
+        // 2021/5/30 Note: sould find out a better way to check the argv and return certain amount of data
         const result = await service.getLeastUpdatedProjects(1);
         expect(result).toEqual(mockProjects);
 
@@ -135,6 +135,29 @@ describe('ProjectService', () => {
             },
             take: 1,
         });
+    });
+
+    it('should using user for fetching project', async () => {
+        const result = await service.getLeastUpdatedProjects('jjj');
+        expect(result).toEqual([mockProject]);
+        expect(mockUsersService.findOne).toBeCalledWith('jjj');
+
+        expect(mockProjectRepo.findOne).toBeCalledWith(
+            { user: user },
+            { relations: ['user'] }
+        );
+    });
+
+    it('should not be able to find user and throw exception', async () => {
+        const spyOnUserService = jest
+            .spyOn(mockUsersService, 'findOne')
+            .mockImplementation(() => null);
+
+        await expect(async () => {
+            await service.getLeastUpdatedProjects('jjj');
+        }).rejects.toThrow(ImATeapotException);
+
+        spyOnUserService.mockImplementation(() => user);
     });
 
     it('should update last_updated', async () => {
