@@ -12,6 +12,7 @@ import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { join } from 'path';
 import * as fs from 'fs';
+import { staticChecker } from 'src/common/middleware/static-file-checker.middleware';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
@@ -34,6 +35,7 @@ describe('AppController (e2e)', () => {
 
         app = moduleFixture.createNestApplication();
 
+        app.use(staticChecker);
         const configService = app.get(ConfigService);
         app.use(
             session({
@@ -134,6 +136,14 @@ describe('AppController (e2e)', () => {
             .set('Cookie', cookies)
             .send()
             .expect(401);
+    });
+
+    it('/GET static nonexist img', () => {
+        return request(app.getHttpServer())
+            .get('/img/abc.jpg')
+            .set('Cookie', cookies)
+            .send()
+            .expect(404);
     });
 
     afterAll(async () => {

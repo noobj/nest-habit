@@ -80,7 +80,7 @@ describe('SummariesController (e2e)', () => {
             });
     });
 
-    it('/GET projects', (done) => {
+    it('/GET projects no current project', (done) => {
         return request(app.getHttpServer())
             .get('/projects')
             .set('Cookie', cookies)
@@ -106,6 +106,19 @@ describe('SummariesController (e2e)', () => {
                 expect(res.status).toEqual(201);
                 expect(spyLog).toBeCalledWith('User jjj Updated 3 rows');
                 spyLog.mockRestore();
+                done();
+            });
+    });
+
+    it('/GET projects', (done) => {
+        return request(app.getHttpServer())
+            .get('/projects')
+            .set('Cookie', cookies)
+            .send()
+            .end((err, res) => {
+                expect(res.status).toEqual(200);
+                expect(res.body.data.allProjects).toEqual(['ffff', 'ggg', 'meditation']);
+                expect(res.body.data.currentProject).toEqual('meditation');
                 done();
             });
     });
