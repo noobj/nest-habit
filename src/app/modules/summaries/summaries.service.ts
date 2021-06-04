@@ -160,7 +160,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
                 .execute()
                 .then((result) => result.raw);
         } catch (e) {
-            throw new ImATeapotException('Upsert failed');
+            throw new ImATeapotException(e.sqlMessage);
         }
     }
 }

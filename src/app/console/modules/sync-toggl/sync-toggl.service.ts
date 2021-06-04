@@ -50,8 +50,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
                 await this.projectService.updateProjectLastUpdated(project);
             })
         ).catch((err) => {
-            console.log('Sync Failed...', err);
-            process.exit(1);
+            return Promise.reject(err);
         });
     }
 
