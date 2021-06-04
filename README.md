@@ -2,6 +2,7 @@
 <a href="https://github.com/noobj/nest-habit/actions"><img src="https://github.com/noobj/nest-habit/actions/workflows/main.yml/badge.svg" alt="Build Status"></a>
 [![Coverage Status](https://coveralls.io/repos/github/noobj/nest-habit/badge.png?branch=main)](https://coveralls.io/github/noobj/nest-habit?branch=main)
 ![GitHub](https://img.shields.io/github/license/noobj/nest-habit?color=blue)
+[![codebeat badge](https://codebeat.co/badges/0e9aa8a1-d23d-41df-8067-55b0cb19a17a)](https://codebeat.co/projects/github-com-noobj-nest-habit-main)
 
 * [System requirements](#system-requirements)
 * [Installing for dev](#installing-for-dev)
