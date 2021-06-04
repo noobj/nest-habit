@@ -44,7 +44,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
         if (projects.length == 0) throw new ImATeapotException('No project found');
 
-        await Promise.all(
+        return await Promise.all(
             projects.map(async (project: Project) => {
                 const details = await this.fetchDataFromToggl(project, since);
                 if (!details.length) throw new ImATeapotException('no data');
@@ -56,7 +56,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
                     `User ${project.user.account} Updated ${result.affectedRows} rows`
                 );
 
-                await this.projectService.updateProjectLastUpdated(project);
+                return await this.projectService.updateProjectLastUpdated(project);
             })
         ).catch((err) => {
             return Promise.reject(err);

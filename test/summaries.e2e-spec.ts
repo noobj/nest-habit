@@ -118,7 +118,7 @@ describe('SummariesController (e2e)', () => {
             .end((err, res) => {
                 expect(res.status).toEqual(200);
                 expect(res.body.data.allProjects).toEqual(['ffff', 'ggg', 'meditation']);
-                expect(res.body.data.currentProject).toEqual('meditation');
+                expect(res.body.data.currentProject.name).toEqual('meditation');
                 done();
             });
     });

@@ -1,5 +1,12 @@
 <template>
   <div class="relative self-end m-4">
+    <div class="inline-block">
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-on:click="syncProject()">Sync Now</button>
+    </div>
+    <div class="py-2 px-4 whitespace-nowrap font-bold inline-block">
+        Last Updated: {{ lastUpdated }}
+    </div>
+
     <div class="py-2 px-4 text-center whitespace-nowrap font-bold inline-block">
       Current Project:
       <select
@@ -10,7 +17,7 @@
           class="text-gray-600 font-bold"
           v-for="project in projects"
           :key="project"
-          :selected="project == currentPrj"
+          :selected="project == currentPrj.name"
         >
           {{ project }}
         </option>
@@ -60,6 +67,7 @@ export default {
       toggle: false,
       projects: [],
       currentPrj: null,
+      lastUpdated: null
     };
   },
   computed: {},
@@ -79,6 +87,22 @@ export default {
         location.reload();
       }).catch(() => {
         alert('project update failed');
+      });
+    },
+    syncProject() {
+      fetch('/project', {
+        method: "Post",
+        credentials: "include",
+        body: new URLSearchParams({
+          'project_name': this.currentPrj.name,
+        }),
+      }).then((res) => {
+        if (res.status != 201) throw new Error();
+
+        alert('sync success');
+        location.reload();
+      }).catch(() => {
+        alert('sync failed');
       });
     },
     logout() {
@@ -145,6 +169,8 @@ export default {
       .then((res) => {
         this.projects = res.data.allProjects;
         this.currentPrj = res.data.currentProject;
+        const tmpDate = new Date(res.data.currentProject.last_updated);
+        this.lastUpdated = tmpDate.toString().split(/[a-zA-Z]{3}\+/)[0]
       });
   },
 };

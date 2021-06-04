@@ -52,7 +52,7 @@ export class ProjectService {
 
     public async updateProjectLastUpdated(project: Project) {
         project.last_updated = new Date();
-        await this.projectRepository.save(project);
+        return await this.projectRepository.save(project);
     }
 
     public async getAllProjects(user: Partial<User>) {
@@ -80,22 +80,28 @@ export class ProjectService {
 
     public async setCurrentProject(user: Partial<User>, projectName: string) {
         const userWhole: User = await this.usersService.findOne(user.account);
-        const { data: projects } = await this.getAllProjects(user);
-        const fetchedProject = projects
-            .filter((project) => project.name == projectName)
-            .pop();
+        const currentProject = await this.getProjectByUser(user);
 
-        if (!fetchedProject) throw new ImATeapotException('Project Not Found');
-        // delete the original project
-        await this.deleteProjectByUser(user);
-        const project: Project = {
-            id: fetchedProject.id,
-            name: projectName,
-            user: userWhole,
-            last_updated: new Date(),
-        };
-        await this.projectRepository.save(project);
+        // if current project equals to passed project, then only sync data
+        if (!currentProject || currentProject.name !== projectName) {
+            const { data: projects } = await this.getAllProjects(user);
+            const fetchedProject = projects
+                .filter((project) => project.name == projectName)
+                .pop();
 
-        await this.syncTogglService.run(['365', userWhole.account]);
+            if (!fetchedProject) throw new ImATeapotException('Project Not Found');
+
+            // delete the original project
+            await this.deleteProjectByUser(user);
+            const project: Project = {
+                id: fetchedProject.id,
+                name: projectName,
+                user: userWhole,
+                last_updated: new Date(),
+            };
+            await this.projectRepository.save(project);
+        }
+
+        return (await this.syncTogglService.run(['365', userWhole.account])).pop();
     }
 }

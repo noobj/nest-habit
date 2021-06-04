@@ -60,7 +60,7 @@ export class SummariesController {
                   }
                 : {
                       allProjects: allProjects,
-                      currentProject: curretProject.name,
+                      currentProject: curretProject,
                   };
 
         return {

@@ -82,7 +82,7 @@ describe('ProjectService', () => {
             id: 123,
         })),
         getLeastUpdatedProjects: jest.fn(),
-        run: jest.fn(),
+        run: jest.fn(() => [mockProject]),
     };
 
     const mockUsersService = {
@@ -199,7 +199,6 @@ describe('ProjectService', () => {
         const mockDate = new Date(1466424490000).toISOString();
         const spyOnDate = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
         await service.setCurrentProject(user, 'meditation');
-        expect(mockProjectRepo.delete).toBeCalledTimes(2);
         expect(mockProjectRepo.save).toBeCalledWith({
             id: 1,
             name: 'meditation',
