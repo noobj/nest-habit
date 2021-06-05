@@ -1,9 +1,13 @@
 <template>
   <div class="relative self-end m-4">
     <div class="inline-block">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-on:click="syncProject()">Sync Now</button>
+        <img
+        class="rounded-full w-6 h-6 cursor-pointer"
+        v-on:click="syncProject()"
+        v-bind:src="'/img/sync.png'"
+      />
     </div>
-    <div class="py-2 px-4 whitespace-nowrap font-bold inline-block">
+    <div class="py-2 px-4 whitespace-nowrap font-bold inline-block mr-48">
         Last Updated: {{ lastUpdated }}
     </div>
 
