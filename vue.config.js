@@ -6,7 +6,7 @@ module.exports = {
                 changeOrigin: true
             },
         },
-        public: '0.0.0.0:3001'
+        public: '0.0.0.0'
     },
     outputDir: 'dist/public',
     pages: {

@@ -27,7 +27,7 @@
     "preinit": "nest build && vue-cli-service build --no-clean",
     "init": "typeorm migration:run",
     "postinit": "node dist/artisan.js seed && node dist/artisan.js syncToggl",
-    "vue:serve": "vue-cli-service serve",
+    "vue:serve": "vue-cli-service serve --port 3001",
     "vue:build": "vue-cli-service build --no-clean"
   },
   "dependencies": {
