@@ -30,7 +30,7 @@ import configuration from './config/configuration';
                 password: configService.get<string>('database.password'),
                 database: configService.get<string>('database.database'),
                 entities: configService.get('database.entities'),
-                synchronize: false,
+                synchronize: configService.get<boolean>('database.synchronize'),
                 logging: configService.get<boolean>('database.logging'),
             }),
         }),
