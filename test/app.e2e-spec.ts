@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImATeapotException, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+
 import { AppModule } from './../src/app.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './../src/app/modules/users/users.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/test.config';
-import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
-import { Project } from 'src/app/modules/summaries/entities/project.entity';
 import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { join } from 'path';
@@ -20,17 +18,7 @@ describe('AppController (e2e)', () => {
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [
-                TypeOrmModule.forRoot({
-                    type: 'sqlite',
-                    database: ':memory:',
-                    entities: [User, DailySummary, Project],
-                    synchronize: true,
-                    logging: false,
-                }),
-                AppModule,
-                ConfigModule.forRoot({ load: [configuration] }),
-            ],
+            imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })],
         }).compile();
 
         app = moduleFixture.createNestApplication();
@@ -122,6 +110,29 @@ describe('AppController (e2e)', () => {
             });
     });
 
+    it('/GET static nonexist img', () => {
+        return request(app.getHttpServer())
+            .get('/img/abc.jpg')
+            .set('Cookie', cookies)
+            .send()
+            .expect(404);
+    });
+
+    it('/POST api_token', (done) => {
+        const payload = {
+            api_token: '1234',
+        };
+
+        return request(app.getHttpServer())
+            .post('/api_token')
+            .send(payload)
+            .set('Cookie', cookies)
+            .end(function (err, res) {
+                expect(res.status).toEqual(201);
+                done();
+            });
+    });
+
     it('/GET logout', () => {
         return request(app.getHttpServer())
             .get('/logout')
@@ -136,14 +147,6 @@ describe('AppController (e2e)', () => {
             .set('Cookie', cookies)
             .send()
             .expect(401);
-    });
-
-    it('/GET static nonexist img', () => {
-        return request(app.getHttpServer())
-            .get('/img/abc.jpg')
-            .set('Cookie', cookies)
-            .send()
-            .expect(404);
     });
 
     afterAll(async () => {

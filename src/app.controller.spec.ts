@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AuthService } from './app/auth/auth.service';
+import { UsersService } from './app/modules/users/users.service';
 
 describe('AppController', () => {
     let appController: AppController;
@@ -11,13 +12,19 @@ describe('AppController', () => {
         })),
     };
 
+    const mockUsersService = {
+        setToken: jest.fn(() => {}),
+    };
+
     beforeEach(async () => {
         const app: TestingModule = await Test.createTestingModule({
-            providers: [AuthService],
+            providers: [AuthService, UsersService],
             controllers: [AppController],
         })
             .overrideProvider(AuthService)
             .useValue(mockAuthService)
+            .overrideProvider(UsersService)
+            .useValue(mockUsersService)
             .compile();
 
         appController = app.get<AppController>(AppController);
@@ -34,9 +41,7 @@ describe('AppController', () => {
             expect(result.access_token).toEqual('123');
             expect(fakeRequest.session.token).toEqual('123');
             expect(mockAuthService.login).toHaveBeenCalledTimes(1);
-            expect(mockAuthService.login).toHaveBeenCalledWith(
-                fakeRequest.user
-            );
+            expect(mockAuthService.login).toHaveBeenCalledWith(fakeRequest.user);
         });
     });
 });

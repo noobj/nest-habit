@@ -7,7 +7,7 @@ export default () => ({
         username: process.env.TYPEORM_USERNAME || 'root',
         password: process.env.TYPEORM_PASSWORD || 'root',
         database: process.env.TYPEORM_DATABASE || 'test',
-        entities: process.env.TYPEORM_ENTITIES || null,
+        entities: [process.env.TYPEORM_ENTITIES] || null,
         synchronize: false,
         logging: process.env.TYPEORM_LOGGING === 'true' || false,
     },

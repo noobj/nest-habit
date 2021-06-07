@@ -7,6 +7,7 @@ import {
     UploadedFile,
     UseInterceptors,
     UseFilters,
+    Body,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Express } from 'express';
@@ -19,10 +20,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { imageFileFilter } from './common/helpers/file-upload.utils';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
+import { UsersService } from 'src/app/modules/users/users.service';
 
 @Controller()
 export class AppController {
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService, private userService: UsersService) {}
 
     @UseGuards(AuthGuard('local'))
     @Post('auth/login')
@@ -63,6 +65,12 @@ export class AppController {
         };
 
         return response;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Post('api_token')
+    async setToken(@Request() req, @Body('api_token') apiToken) {
+        await this.userService.setToken(req.user.id, apiToken);
     }
 
     @UseGuards(AuthGuard('jwt'))

@@ -29,7 +29,7 @@ import configuration from './config/configuration';
                 username: configService.get('database.username'),
                 password: configService.get<string>('database.password'),
                 database: configService.get<string>('database.database'),
-                entities: [configService.get('database.entities')],
+                entities: configService.get('database.entities'),
                 synchronize: false,
                 logging: configService.get<boolean>('database.logging'),
             }),
