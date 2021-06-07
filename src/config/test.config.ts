@@ -12,7 +12,7 @@ export default () => ({
         username: process.env.DB_USER || 'linuxj', // fetch the main.yml setting for github actions
         password: process.env.DB_PASSWORD || '1234', // fetch the main.yml setting for github actions
         entities: [User, DailySummary, Project],
-        synchronize: false,
+        synchronize: true,
         logging: false,
     },
     jwt: {
