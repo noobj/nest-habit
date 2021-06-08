@@ -4,10 +4,10 @@ import * as moment from 'moment';
 
 import { SummariesService } from 'src/app/modules/summaries/summaries.service';
 import { CreateDailySummaryDto, ProjectService } from 'src/app/modules/summaries';
-import { TogglClient } from './TogglClient';
 import { ICommand } from 'src/app/console/interfaces/command.interface';
 import { Project } from 'src/app/modules/summaries/entities';
 import { ModuleRef } from '@nestjs/core';
+import { TogglService } from 'src/app/modules/toggl/toggl.service';
 
 @Injectable()
 export class SyncTogglService implements ICommand, OnModuleInit {
@@ -16,7 +16,8 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
     constructor(
         private moduleRef: ModuleRef,
-        private summariesService: SummariesService
+        private summariesService: SummariesService,
+        private togglService: TogglService
     ) {}
 
     onModuleInit() {
@@ -46,7 +47,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
         return await Promise.all(
             projects.map(async (project: Project) => {
-                const details = await this.fetchDataFromToggl(project, since);
+                const details = await this.togglService.fetch(project, since);
                 if (!details.length) throw new ImATeapotException('no data');
 
                 const fetchedData = this.processFetchedData(details, project);
@@ -79,34 +80,5 @@ export class SyncTogglService implements ICommand, OnModuleInit {
                 user: project.user,
             };
         });
-    }
-
-    private async fetchDataFromToggl(project: Project, since: string): Promise<any[]> {
-        const togglClient = new TogglClient({
-            baseURL: 'https://api.track.toggl.com/',
-            timeout: 5000,
-            auth: {
-                username: project.user.toggl_token,
-                password: 'api_token',
-            },
-        });
-
-        const workSpaceId = await togglClient.getWorkSpaceId();
-
-        let page = 1;
-        let details = [];
-        let response;
-
-        do {
-            response = await togglClient.getDetails(workSpaceId, project.id, {
-                page: page++,
-                userAgent: 'Toggl NestJS Client',
-                since: since,
-            });
-
-            details = [...details, ...response.data];
-        } while (details.length < response.total_count);
-
-        return details;
     }
 }

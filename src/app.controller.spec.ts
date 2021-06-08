@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AuthService } from './app/auth/auth.service';
 import { ProjectService } from './app/modules/summaries';
+import { TogglService } from './app/modules/toggl/toggl.service';
 import { UsersService } from './app/modules/users/users.service';
 
 describe('AppController', () => {
@@ -19,6 +20,8 @@ describe('AppController', () => {
 
     const mockProjectService = {};
 
+    const mockTogglService = {};
+
     beforeEach(async () => {
         const app: TestingModule = await Test.createTestingModule({
             providers: [
@@ -28,6 +31,10 @@ describe('AppController', () => {
                     provide: ProjectService,
                     useValue: mockProjectService,
                 },
+                {
+                    provide: TogglService,
+                    useValue: mockTogglService,
+                }
             ],
             controllers: [AppController],
         })

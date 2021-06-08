@@ -8,12 +8,14 @@ import { Project, DailySummary } from './entities';
 import { Interfaces } from './constants';
 import { UsersModule } from '../users';
 import SyncTogglModule from 'src/app/console/modules/sync-toggl/sync-toggl.module';
+import { TogglModule } from '../toggl/toggl.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([DailySummary, Project]),
         UsersModule,
         SyncTogglModule,
+        TogglModule,
     ],
     providers: [
         SummariesService,

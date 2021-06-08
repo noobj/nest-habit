@@ -6,33 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ProjectService, SummariesService } from 'src/app/modules/summaries';
 import { User } from 'src/app/modules/users';
 import { ModuleRef } from '@nestjs/core';
-
-jest.mock('./TogglClient', () => {
-    return {
-        TogglClient: jest.fn().mockImplementation(() => {
-            return {
-                getWorkSpaceId: () => 123,
-                getDetails: () => ({
-                    data: [
-                        {
-                            start: '2021-01-10T11:00:51+08:00',
-                            dur: 1000,
-                        },
-                        {
-                            start: '2021-01-10T11:00:51+08:00',
-                            dur: 1000,
-                        },
-                        {
-                            start: '2021-01-11T11:00:51+08:00',
-                            dur: 1000,
-                        },
-                    ],
-                    total_count: 3,
-                }),
-            };
-        }),
-    };
-});
+import { TogglService } from 'src/app/modules/toggl/toggl.service';
 
 describe('SyncTogglService', () => {
     let service: SyncTogglService;
@@ -42,6 +16,23 @@ describe('SyncTogglService', () => {
         email: 'marley.lemke@example.org',
         password: 'DGAF',
         toggl_token: 'DGAF',
+    };
+
+    const mockTogglService = {
+        fetch: () => [
+            {
+                start: '2021-01-10T11:00:51+08:00',
+                dur: 1000,
+            },
+            {
+                start: '2021-01-10T11:00:51+08:00',
+                dur: 1000,
+            },
+            {
+                start: '2021-01-11T11:00:51+08:00',
+                dur: 1000,
+            },
+        ],
     };
 
     const mockSummariesService = {
@@ -89,7 +80,11 @@ describe('SyncTogglService', () => {
                 {
                     provide: ModuleRef,
                     useValue: mockModuleRef,
-                }
+                },
+                {
+                    provide: TogglService,
+                    useValue: mockTogglService,
+                },
             ],
         }).compile();
 

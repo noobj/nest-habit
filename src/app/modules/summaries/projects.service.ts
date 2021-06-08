@@ -5,9 +5,9 @@ import * as moment from 'moment-timezone';
 
 import { Project } from './entities';
 import { User } from '../users';
-import { TogglClient } from 'src/app/console/modules/sync-toggl/TogglClient';
 import { UsersService } from '../users';
 import { SyncTogglService } from 'src/app/console/modules/sync-toggl/sync-toggl.service';
+import { TogglService } from '../toggl/toggl.service';
 
 @Injectable()
 export class ProjectService {
@@ -15,7 +15,8 @@ export class ProjectService {
         private syncTogglService: SyncTogglService,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
-        private usersService: UsersService
+        private usersService: UsersService,
+        private togglService: TogglService
     ) {
         moment.tz.setDefault('Asia/Taipei');
     }
@@ -58,16 +59,7 @@ export class ProjectService {
     public async getAllProjects(user: Partial<User>) {
         user = await this.usersService.findOne(user.account);
 
-        const togglClient = new TogglClient({
-            baseURL: 'https://api.track.toggl.com/',
-            timeout: 5000,
-            auth: {
-                username: user.toggl_token,
-                password: 'api_token',
-            },
-        });
-
-        return await togglClient.getProjects();
+        return await this.togglService.getProjects(user);
     }
 
     public async deleteProjectByUser(user: Partial<User>) {

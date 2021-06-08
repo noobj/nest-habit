@@ -5,27 +5,7 @@ import { User, UsersService } from '../users';
 import { ProjectService } from './projects.service';
 import { SyncTogglService } from 'src/app/console/modules/sync-toggl';
 import { ImATeapotException } from '@nestjs/common';
-
-jest.mock('../../console/modules/sync-toggl/TogglClient', () => {
-    return {
-        TogglClient: jest.fn().mockImplementation(() => {
-            return {
-                getProjects: () => ({
-                    data: [
-                        {
-                            id: 2,
-                            name: 'sleep',
-                        },
-                        {
-                            id: 1,
-                            name: 'meditation',
-                        },
-                    ],
-                }),
-            };
-        }),
-    };
-});
+import { TogglService } from '../toggl/toggl.service';
 
 describe('ProjectService', () => {
     let service: ProjectService;
@@ -36,6 +16,21 @@ describe('ProjectService', () => {
         email: 'test',
         password: 'DGAF',
         toggl_token: 'DGAF',
+    };
+
+    const mockTogglService = {
+        getProjects: () => ({
+            data: [
+                {
+                    id: 2,
+                    name: 'sleep',
+                },
+                {
+                    id: 1,
+                    name: 'meditation',
+                },
+            ],
+        }),
     };
 
     const mockProject = {
@@ -105,6 +100,10 @@ describe('ProjectService', () => {
                     provide: UsersService,
                     useValue: mockUsersService,
                 },
+                {
+                    provide: TogglService,
+                    useValue: mockTogglService,
+                }
             ],
         }).compile();
 

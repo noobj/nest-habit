@@ -22,15 +22,16 @@ import { diskStorage } from 'multer';
 import { imageFileFilter } from './common/helpers/file-upload.utils';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
 import { UsersService } from 'src/app/modules/users/users.service';
-import { TogglClient } from 'src/app/console/modules/sync-toggl/TogglClient';
 import { ProjectService } from 'src/app/modules/summaries/projects.service';
+import { TogglService } from './app/modules/toggl/toggl.service';
 
 @Controller()
 export class AppController {
     constructor(
         private authService: AuthService,
         private userService: UsersService,
-        private projectService: ProjectService
+        private projectService: ProjectService,
+        private togglService: TogglService
     ) {}
 
     @UseGuards(AuthGuard('local'))
@@ -77,17 +78,7 @@ export class AppController {
     @UseGuards(AuthGuard('jwt'))
     @Post('api_token')
     async setToken(@Request() req, @Body('api_token') apiToken) {
-        const togglClient = new TogglClient({
-            baseURL: 'https://api.track.toggl.com/',
-            timeout: 5000,
-            auth: {
-                username: apiToken,
-                password: 'api_token',
-            },
-        });
-
-        const workSpaceId = await togglClient.getWorkSpaceId();
-        if (!workSpaceId) throw new HttpException('Invalid api token', 400);
+        await this.togglService.checkTokenValid(apiToken);
 
         await this.userService.setToken(req.user.id, apiToken);
         await this.projectService.deleteProjectByUser(req.user);

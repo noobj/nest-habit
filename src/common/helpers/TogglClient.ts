@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import { HttpException } from '@nestjs/common';
 
 export class TogglClient {
-    private client;
+    public client;
 
     constructor({ baseURL, timeout, auth, ...rest }) {
         this.client = axios.create({

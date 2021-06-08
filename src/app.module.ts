@@ -12,6 +12,7 @@ import { AuthModule } from './app/auth/auth.module';
 import { AppController } from './app.controller';
 import { CommandsModule } from './app/console/commands.module';
 import configuration from './config/configuration';
+import { TogglModule } from './app/modules/toggl/toggl.module';
 
 @Module({
     imports: [
@@ -34,6 +35,7 @@ import configuration from './config/configuration';
                 logging: configService.get<boolean>('database.logging'),
             }),
         }),
+        TogglModule,
         UsersModule,
         SummariesModule,
         AuthModule,
