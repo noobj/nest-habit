@@ -53,6 +53,13 @@
 
       <div
         class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
+        @click="setApiToken()"
+      >
+        Set Api Token
+      </div>
+
+      <div
+        class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
         @click="logout()"
       >
         Logout
@@ -70,13 +77,33 @@ export default {
       avatarFileName: "default.jpg",
       toggle: false,
       projects: [],
-      currentPrj: null,
+      currentPrj: {name: null, last_updated: null},
       lastUpdated: null
     };
   },
   computed: {},
   filters: {},
   methods: {
+    setApiToken() {
+        const apiToken = prompt('Please enter the new token:');
+        const check = confirm('This will delete all the existing, Are you sure?')
+        if (check) {
+          fetch('/api_token', {
+            method: "Post",
+            credentials: "include",
+            body: new URLSearchParams({
+              'api_token': apiToken,
+            }),
+          }).then((res) => {
+            if (res.status != 201) throw new Error();
+
+            alert('token updated');
+            location.reload();
+          }).catch(() => {
+            alert('token update failed');
+          })
+        }
+    },
     changeProject(event) {
       fetch('/project', {
         method: "Post",
@@ -172,9 +199,12 @@ export default {
       .then((res) => res.json())
       .then((res) => {
         this.projects = res.data.allProjects;
-        this.currentPrj = res.data.currentProject;
-        const tmpDate = new Date(res.data.currentProject.last_updated);
-        this.lastUpdated = tmpDate.toString().split(/[a-zA-Z]{3}\+/)[0]
+
+        if (res.data.currentProject) {
+          this.currentPrj = res.data.currentProject;
+          const tmpDate = new Date(res.data.currentProject.last_updated);
+          this.lastUpdated = tmpDate.toString().split(/[a-zA-Z]{3}\+/)[0];
+        }
       });
   },
 };

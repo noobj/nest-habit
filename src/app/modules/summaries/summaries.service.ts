@@ -42,7 +42,8 @@ export class SummariesService implements IBasicService, OnModuleInit {
         endDate: string,
         user: Partial<User>
     ): Promise<DailySummary[]> {
-        const { id: projectId } = await this.projectService.getProjectByUser(user);
+        const { id: projectId } =
+            (await this.projectService.getProjectByUser(user)) || {};
 
         return await this.dailySummaryRepository.find({
             where: [

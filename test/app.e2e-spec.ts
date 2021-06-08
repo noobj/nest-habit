@@ -120,7 +120,7 @@ describe('AppController (e2e)', () => {
 
     it('/POST api_token', (done) => {
         const payload = {
-            api_token: '1234',
+            api_token: '1cf1a1e2b149f8465373bfcacb7a831e',
         };
 
         return request(app.getHttpServer())

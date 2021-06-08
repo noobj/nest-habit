@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AuthService } from './app/auth/auth.service';
+import { ProjectService } from './app/modules/summaries';
 import { UsersService } from './app/modules/users/users.service';
 
 describe('AppController', () => {
@@ -16,9 +17,18 @@ describe('AppController', () => {
         setToken: jest.fn(() => {}),
     };
 
+    const mockProjectService = {};
+
     beforeEach(async () => {
         const app: TestingModule = await Test.createTestingModule({
-            providers: [AuthService, UsersService],
+            providers: [
+                AuthService,
+                UsersService,
+                {
+                    provide: ProjectService,
+                    useValue: mockProjectService,
+                },
+            ],
             controllers: [AppController],
         })
             .overrideProvider(AuthService)

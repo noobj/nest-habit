@@ -76,7 +76,7 @@ export default {
       total_last_year,
       total_this_month,
       longest_record
-    } = await getSummaries()
+    } = await getSummaries() || {};
     this.summaries = summaries
     this.totalLastYear = total_last_year
     this.totalThisMonth = total_this_month
