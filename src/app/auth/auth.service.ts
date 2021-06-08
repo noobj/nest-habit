@@ -24,10 +24,13 @@ export class AuthService {
     }
 
     async login(user: any) {
-        const payload = { account: user.account, sub: user.id };
+        const payload = {
+            account: user.account,
+            sub: user.id,
+        };
 
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token: this.jwtService.sign(payload, { expiresIn: '5h' }),
         };
     }
 }
