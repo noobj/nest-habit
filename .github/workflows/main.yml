@@ -14,7 +14,7 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  test:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
 
@@ -36,10 +36,12 @@ jobs:
         uses: supercharge/redis-github-action@1.2.0
         with:
           redis-version: 5
-      - name: npm install, build, and test
+      - name: npm install, build
         run: |
           npm install
           npm run build --if-present
+      - name: testing
+        run: |
           npm run test:overall --if-present
       - name: Coveralls
         uses: coverallsapp/github-action@master
