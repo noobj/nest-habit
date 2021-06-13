@@ -4,7 +4,7 @@ import { User } from '../../users';
 import { Project } from './project.entity';
 
 @Entity({ name: 'daily_summaries' })
-@Unique('uni_prj_date', ['project', 'date'])
+@Unique('uni_prj_date_user', ['project', 'date', 'user'])
 export class DailySummary {
     @PrimaryColumn({ generated: 'increment' })
     id: number;

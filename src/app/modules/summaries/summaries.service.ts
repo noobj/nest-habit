@@ -155,7 +155,6 @@ export class SummariesService implements IBasicService, OnModuleInit {
                 .insert()
                 .values(data)
                 .orUpdate({
-                    conflict_target: 'daily_summaries.uni_prj_date',
                     overwrite: ['duration'],
                 })
                 .execute()
