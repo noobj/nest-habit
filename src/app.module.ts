@@ -7,6 +7,7 @@ import { join } from 'path';
 
 import { UsersModule } from './app/modules/users/users.module';
 import { SummariesModule, SummariesController } from './app/modules/summaries';
+import { SummariesGateway } from './app/modules/summaries/summaries.gateway';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AuthModule } from './app/auth/auth.module';
 import { AppController } from './app.controller';

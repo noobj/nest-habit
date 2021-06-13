@@ -81,11 +81,29 @@ export default {
       lastUpdated: null
     };
   },
+  sockets: {
+    connect: () => {
+      console.log('socket connected')
+    },
+    sync: function (data) {
+      alert('Sync Success');
+      const result = JSON.parse(data);
+      const tmpDate = new Date(result.current_project.last_updated);
+      this.lastUpdated = tmpDate.toString().split(/[a-zA-Z]{3}\+/)[0];
+    },
+    exception: (data) => {
+      alert('Sync failed')
+    },
+    disconnect: () => {
+      console.log('disconnect');
+    }
+  },
   computed: {},
   filters: {},
   methods: {
     setApiToken() {
         const apiToken = prompt('Please enter the new token:');
+        if (!apiToken) return;
         const check = confirm('This will delete all the existing, Are you sure?')
         if (check) {
           fetch('/api_token', {
@@ -121,20 +139,7 @@ export default {
       });
     },
     syncProject() {
-      fetch('/project', {
-        method: "Post",
-        credentials: "include",
-        body: new URLSearchParams({
-          'project_name': this.currentPrj.name,
-        }),
-      }).then((res) => {
-        if (res.status != 201) throw new Error();
-
-        alert('sync success');
-        location.reload();
-      }).catch(() => {
-        alert('sync failed');
-      });
+      this.$socket.emit("sync", { projectName: this.currentPrj.name })
     },
     logout() {
       fetch('/logout')

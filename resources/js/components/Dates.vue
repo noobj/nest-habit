@@ -23,7 +23,7 @@
         <div class="py-2 text-2xl text-yellow-600 font-bold">{{longestRecord}}</div>
       </div>
     </div>
-    <div class="font-bold">
+    <div class="font-bold" v-if="!summaries">
       No Data
     </div>
     <div v-if="summaries != undefined" class="flex-grow-0 grid grid-flow-col grid-rows-7 grid-cols-53 gap-1 w-11/12 pt-6 px-10">
@@ -57,6 +57,21 @@ export default {
       totalThisMonth: '',
       longestRecord: ''
     }
+  },
+  sockets: {
+    sync: function (data) {
+      let {
+        summaries,
+        total_last_year,
+        total_this_month,
+        longest_record
+      } = JSON.parse(data) || {};
+
+      this.summaries = summaries
+      this.totalLastYear = total_last_year
+      this.totalThisMonth = total_this_month
+      this.longestRecord = longest_record ? `${longest_record.duration} on ${longest_record.date}` : null;
+    },
   },
   methods: {
     findDuration (date) {

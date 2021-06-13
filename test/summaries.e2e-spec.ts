@@ -3,27 +3,36 @@ import { ImATeapotException, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import configuration from 'src/config/test.config';
 import { User } from './../src/app/modules/users/users.entity';
 import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
+import { SocketIoAdapter } from 'src/common/adapters/socket.io.adapter';
+import * as io from 'socket.io-client';
+import * as redis from 'redis';
+import * as connectRedis from 'connect-redis';
 
 describe('SummariesController (e2e)', () => {
     let app: INestApplication;
     let cookies;
+    let socketIoServer;
+    let redisClient;
 
     beforeAll(async () => {
+        const RedisStore = connectRedis(session);
+        redisClient = redis.createClient();
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })],
         }).compile();
 
         app = moduleFixture.createNestApplication();
+        socketIoServer = app.useWebSocketAdapter(new SocketIoAdapter(app));
 
-        const configService = app.get(ConfigService);
         app.use(
             session({
-                secret: configService.get('session.secret'),
+                store: new RedisStore({ client: redisClient }),
+                secret: 'secret',
                 resave: false,
                 saveUninitialized: false,
             })
@@ -120,6 +129,25 @@ describe('SummariesController (e2e)', () => {
             });
     });
 
+    it('/WS sync', (done) => {
+        const opts = {
+            extraHeaders: {
+                Cookie: cookies,
+            },
+        };
+        const socket = io('ws://localhost:3002', opts);
+
+        socket.on('connect', () => {
+            socket.emit('sync', { projectName: 'meditation' });
+        });
+
+        socket.on('sync', (data) => {
+            expect(data).toBeDefined();
+            socket.disconnect();
+            done();
+        });
+    });
+
     it('/GET summaries', (done) => {
         const query = {
             start_date: '2021-05-22',
@@ -199,5 +227,14 @@ describe('SummariesController (e2e)', () => {
     afterAll(async () => {
         await getConnection().synchronize(true); // clean up all data
         app.close();
+        await socketIoServer.close();
+        await new Promise<void>((resolve) => {
+            redisClient.quit(() => {
+                resolve();
+            });
+        });
+        // redis.quit() creates a thread to close the connection.
+        // We wait until all threads have been run once to ensure the connection closes.
+        await new Promise<void>((resolve) => setImmediate(resolve));
     });
 });

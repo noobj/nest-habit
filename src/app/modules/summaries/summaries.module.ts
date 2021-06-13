@@ -9,6 +9,7 @@ import { Interfaces } from './constants';
 import { UsersModule } from '../users';
 import SyncTogglModule from 'src/app/console/modules/sync-toggl/sync-toggl.module';
 import { TogglModule } from '../toggl/toggl.module';
+import { SummariesGateway } from './summaries.gateway';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { TogglModule } from '../toggl/toggl.module';
     providers: [
         SummariesService,
         ProjectService,
+        SummariesGateway,
         { provide: Interfaces.IBasicService, useClass: SummariesService },
     ],
     controllers: [SummariesController],
