@@ -22,11 +22,11 @@ describe('ProjectService', () => {
         getProjects: () => ({
             data: [
                 {
-                    id: 2,
+                    id: 223,
                     name: 'sleep',
                 },
                 {
-                    id: 1,
+                    id: 123,
                     name: 'meditation',
                 },
             ],
@@ -38,6 +38,7 @@ describe('ProjectService', () => {
         name: 'meditation',
         last_updated: new Date('2021-05-30 02:49:54'),
         user: user,
+        project_id: 123,
     };
 
     const mockProjects = [
@@ -46,18 +47,21 @@ describe('ProjectService', () => {
             name: 'meditation',
             last_updated: new Date('2021-05-30 02:49:54'),
             user: user,
+            project_id: 123,
         },
         {
             id: 2,
             name: 'sleep',
             last_updated: new Date('2021-05-30 02:49:54'),
             user: user,
+            project_id: 223,
         },
         {
             id: 3,
             name: 'eat',
             last_updated: new Date('2021-05-30 02:49:54'),
             user: user,
+            project_id: 323,
         },
     ];
 
@@ -163,12 +167,7 @@ describe('ProjectService', () => {
         const mockDate = new Date(1466424490000).toISOString();
         const spyOnDate = jest.spyOn(global, 'Date').mockImplementation(() => mockDate);
         await service.updateProjectLastUpdated(mockProject);
-        expect(mockProjectRepo.save).toBeCalledWith({
-            id: 1,
-            name: 'meditation',
-            last_updated: new Date(1466424490000),
-            user: user,
-        });
+        expect(mockProjectRepo.save).toBeCalledWith(mockProject);
         spyOnDate.mockRestore();
     });
 
@@ -177,11 +176,11 @@ describe('ProjectService', () => {
         expect(result).toEqual({
             data: [
                 {
-                    id: 2,
+                    id: 223,
                     name: 'sleep',
                 },
                 {
-                    id: 1,
+                    id: 123,
                     name: 'meditation',
                 },
             ],
@@ -202,6 +201,7 @@ describe('ProjectService', () => {
             id: 1,
             name: 'meditation',
             user: user,
+            project_id: 123,
             last_updated: new Date(1466424490000),
         });
         expect(mockSyncTogglService.run).toBeCalledTimes(1);

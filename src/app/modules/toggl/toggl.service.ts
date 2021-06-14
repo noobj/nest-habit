@@ -49,7 +49,7 @@ export class TogglService {
         let response;
 
         do {
-            response = await togglClient.getDetails(workSpaceId, project.id, {
+            response = await togglClient.getDetails(workSpaceId, project.project_id, {
                 page: page++,
                 userAgent: 'Toggl NestJS Client',
                 since: since,

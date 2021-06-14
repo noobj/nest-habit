@@ -21,7 +21,7 @@ export class ProjectSeeder implements ISeeder {
             throw new ImATeapotException('No User Exist');
         }
 
-        const projects = [{ name: 'meditation', id: 170109732, user: user }];
+        const projects = [{ name: 'meditation', project_id: 170109732, user: user }];
         const result = await this.projectRepository.save(projects);
         console.log(result);
     }

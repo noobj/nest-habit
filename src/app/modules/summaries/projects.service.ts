@@ -85,8 +85,8 @@ export class ProjectService {
 
             // delete the original project
             await this.deleteProjectByUser(user);
-            const project: Project = {
-                id: fetchedProject.id,
+            const project: Partial<Project> = {
+                project_id: fetchedProject.id,
                 name: projectName,
                 user: userWhole,
                 last_updated: new Date(),

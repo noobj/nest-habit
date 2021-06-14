@@ -23,4 +23,7 @@ export class Project {
 
     @Column()
     last_updated: Date;
+
+    @Column()
+    project_id: number;
 }
