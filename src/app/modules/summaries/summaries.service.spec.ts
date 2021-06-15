@@ -20,27 +20,16 @@ describe('SummariesService', () => {
     };
 
     const mockDailySummaryRepo = {
-        createQueryBuilder: jest.fn().mockReturnThis(),
-        insert: jest.fn().mockReturnThis(),
-        values: jest.fn().mockReturnThis(),
-        // Same as mockReturnThis()
-        orUpdate: jest.fn(function () {
-            return this;
-        }),
-        execute: jest.fn(() =>
-            Promise.resolve({
-                raw: {
-                    fieldCount: 0,
-                    affectedRows: 100,
-                    insertId: 0,
-                    serverStatus: 2,
-                    warningCount: 1,
-                    message: '*Records: 100  Duplicates: 100  Warnings: 1',
-                    protocol41: true,
-                    changedRows: 100,
-                },
+        findOne: jest.fn((entry) =>
+            Promise.resolve<DailySummary>({
+                id: entry.where.project,
+                project: entry.where.project,
+                date: entry.where.date,
+                duration: 1500000,
+                user: entry.where.user,
             })
         ),
+        save: jest.fn((entries) => Promise.resolve<DailySummary[]>(entries)),
         find: jest.fn(() =>
             Promise.resolve<Partial<DailySummary>[]>([
                 { id: 9, date: '2021-04-23', duration: 1500000, user: user },
@@ -174,16 +163,15 @@ describe('SummariesService', () => {
             { project: 9, date: '2021-04-23', duration: 1500000, user: user },
         ]);
 
-        expect(result).toEqual({
-            fieldCount: 0,
-            affectedRows: 100,
-            insertId: 0,
-            serverStatus: 2,
-            warningCount: 1,
-            message: '*Records: 100  Duplicates: 100  Warnings: 1',
-            protocol41: true,
-            changedRows: 100,
-        });
+        expect(result).toEqual([
+            {
+                id: 9,
+                project: 9,
+                date: '2021-04-23',
+                duration: 1500000,
+                user: user,
+            },
+        ]);
     });
 
     it('should upsert failed and throw Validation error', async () => {
@@ -196,7 +184,7 @@ describe('SummariesService', () => {
 
     it('should upsert failed and throw out exception', async () => {
         const spyMockDSRepo = jest
-            .spyOn(mockDailySummaryRepo, 'createQueryBuilder')
+            .spyOn(mockDailySummaryRepo, 'findOne')
             .mockImplementation(() => {
                 throw ImATeapotException;
             });

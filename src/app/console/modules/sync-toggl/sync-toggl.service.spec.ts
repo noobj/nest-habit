@@ -37,9 +37,9 @@ describe('SyncTogglService', () => {
 
     const mockSummariesService = {
         upsert: jest.fn(() =>
-            Promise.resolve({
-                affectedRows: 1,
-            })
+            Promise.resolve([
+                { date: '2021-01-10', project: 157099012, duration: 2000, user: user },
+            ])
         ),
     };
 
@@ -93,9 +93,7 @@ describe('SyncTogglService', () => {
     });
 
     it('should run the command', async () => {
-        const spyLog = jest.spyOn(console, 'log').mockImplementation();
         await service.run(['3']);
-        expect(spyLog).toBeCalledWith('User DGAF Updated 1 rows');
         expect(mockSummariesService.upsert).toBeCalledWith([
             { date: '2021-01-10', project: 157099012, duration: 2000, user: user },
             { date: '2021-01-11', project: 157099012, duration: 1000, user: user },

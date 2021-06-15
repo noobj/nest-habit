@@ -55,7 +55,8 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
                 const fetchedData = this.processFetchedData(details, project);
                 const result = await this.summariesService.upsert(fetchedData);
-                this.sendMessageToSocketClients(result);
+
+                if (userName) this.sendMessageToSocketClients(result);
 
                 return await this.projectService.updateProjectLastUpdated(project);
             })
