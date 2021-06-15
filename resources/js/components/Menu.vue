@@ -83,13 +83,21 @@ export default {
   },
   sockets: {
     connect: () => {
-      console.log('socket connected')
+      console.log('socket connected');
     },
     sync: function (data) {
-      alert('Sync Success');
       const result = JSON.parse(data);
       const tmpDate = new Date(result.current_project.last_updated);
       this.lastUpdated = tmpDate.toString().split(/[a-zA-Z]{3}\+/)[0];
+    },
+    notice: (message) => {
+      const child = document.createElement("P");
+      const newRecord = JSON.parse(message);
+      child.innerText = `${newRecord.account} added new entry ${newRecord.duration}`;
+      child.className = 'animate-pulse mr-2 inline-block bg-pink-500 text-white font-bold py-2 px-4 rounded-lg opacity-80'
+      document.querySelector('#newRecord').appendChild(child);
+      setTimeout(function(){ document.querySelector('#newRecord').removeChild(child); }, 5000);
+
     },
     exception: (data) => {
       alert('Sync failed')

@@ -8,11 +8,13 @@ import { ICommand } from 'src/app/console/interfaces/command.interface';
 import { Project } from 'src/app/modules/summaries/entities';
 import { ModuleRef } from '@nestjs/core';
 import { TogglService } from 'src/app/modules/toggl/toggl.service';
+import { SummariesGateway } from 'src/app/modules/summaries/summaries.gateway';
 
 @Injectable()
 export class SyncTogglService implements ICommand, OnModuleInit {
     private readonly logger = new Logger(SyncTogglService.name);
     private projectService: ProjectService;
+    private socketServer: SummariesGateway;
 
     constructor(
         private moduleRef: ModuleRef,
@@ -22,6 +24,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
     onModuleInit() {
         this.projectService = this.moduleRef.get(ProjectService, { strict: false });
+        this.socketServer = this.moduleRef.get(SummariesGateway, { strict: false });
     }
 
     /**
@@ -52,15 +55,29 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
                 const fetchedData = this.processFetchedData(details, project);
                 const result = await this.summariesService.upsert(fetchedData);
-
-                console.log(
-                    `User ${project.user.account} Updated ${result.affectedRows} rows`
-                );
+                this.sendMessageToSocketClients(result);
 
                 return await this.projectService.updateProjectLastUpdated(project);
             })
         ).catch((err) => {
             return Promise.reject(err);
+        });
+    }
+
+    private sendMessageToSocketClients(entries: CreateDailySummaryDto[]) {
+        entries.map((entry) => {
+            if (entry.user) {
+                const { user, duration, ...rest } = entry; // sift out sensetive user info
+                const result = {
+                    ...rest,
+                    duration: this.summariesService.convertRawDurationToFormat(
+                        entry.duration
+                    ),
+                    userId: entry.user.id,
+                    account: entry.user.account,
+                };
+                this.socketServer.server.emit('notice', JSON.stringify(result));
+            }
         });
     }
 

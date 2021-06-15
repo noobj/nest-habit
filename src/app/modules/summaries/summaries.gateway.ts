@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { OnModuleInit, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
     WebSocketGateway,
@@ -10,13 +10,20 @@ import { Server } from 'socket.io';
 import { ProjectService } from './projects.service';
 import { SummariesService } from './summaries.service';
 import { endOfToday, subYears, subDays, format } from 'date-fns';
+import { ModuleRef } from '@nestjs/core';
 
 @WebSocketGateway(3002)
-export class SummariesGateway {
+export class SummariesGateway implements OnModuleInit {
+    private projectService: ProjectService;
+
     constructor(
+        private moduleRef: ModuleRef,
         private summariesService: SummariesService,
-        private projectService: ProjectService
     ) {}
+
+    onModuleInit() {
+        this.projectService = this.moduleRef.get(ProjectService, { strict: false });
+    }
 
     @WebSocketServer()
     server: Server;

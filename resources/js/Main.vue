@@ -1,5 +1,6 @@
 <template>
   <div id="main" class="flex flex-col items-center dark:text-white dark:bg-gray-800">
+    <div id="newRecord"></div>
     <Menu />
     <Dates />
   </div>

@@ -91,7 +91,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
             : durationLevelMap.get(levelIndex);
     }
 
-    private convertRawDurationToFormat(duration: number): string {
+    public convertRawDurationToFormat(duration: number): string {
         const durationInMinute = duration / 1000 / 60;
 
         if (durationInMinute < 1) {
@@ -140,7 +140,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
         return this.convertRawDurationToFormat(sum);
     }
 
-    public async upsert(data: CreateDailySummaryDto[]) {
+    public async upsert(data: CreateDailySummaryDto[]): Promise<CreateDailySummaryDto[]> {
         const classTransformer = new ClassTransformer();
         const entity = classTransformer.plainToClass(CreateDailySummaryDto, data);
         const wrapped = new WrapperCreateDailySummaryDto(entity);
@@ -150,15 +150,24 @@ export class SummariesService implements IBasicService, OnModuleInit {
         }
 
         try {
-            return await this.dailySummaryRepository
-                .createQueryBuilder()
-                .insert()
-                .values(data)
-                .orUpdate({
-                    overwrite: ['duration'],
+            // search for those existing entries and insert their id
+            data = await Promise.all(
+                data.map(async (entry) => {
+                    return this.dailySummaryRepository
+                        .findOne({
+                            where: {
+                                user: entry.user,
+                                date: entry.date,
+                                project: entry.project,
+                            },
+                        })
+                        .then((result) => {
+                            return result ?? entry;
+                        });
                 })
-                .execute()
-                .then((result) => result.raw);
+            );
+
+            return await this.dailySummaryRepository.save(data);
         } catch (e) {
             throw new ImATeapotException(e.sqlMessage);
         }

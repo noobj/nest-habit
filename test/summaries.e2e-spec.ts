@@ -12,12 +12,14 @@ import { SocketIoAdapter } from 'src/common/adapters/socket.io.adapter';
 import * as io from 'socket.io-client';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
+import { DailySummary } from 'src/app/modules/summaries/entities';
 
 describe('SummariesController (e2e)', () => {
     let app: INestApplication;
     let cookies;
     let socketIoServer;
     let redisClient;
+    let summariesReop: Repository<DailySummary>;
 
     beforeAll(async () => {
         const RedisStore = connectRedis(session);
@@ -40,6 +42,7 @@ describe('SummariesController (e2e)', () => {
         await app.init();
 
         const userRepository: Repository<User> = moduleFixture.get('UserRepository');
+        summariesReop = moduleFixture.get('DailySummaryRepository');
         const user = {
             id: 222,
             account: 'jjj',
@@ -90,7 +93,6 @@ describe('SummariesController (e2e)', () => {
             .send(payload)
             .end((err, res) => {
                 expect(res.status).toEqual(201);
-                expect(spyLog).toBeCalledWith('User jjj Updated 3 rows');
                 spyLog.mockRestore();
                 done();
             });
@@ -135,6 +137,7 @@ describe('SummariesController (e2e)', () => {
                 Cookie: cookies,
             },
         };
+        summariesReop.delete(1);
         const socket = io('ws://localhost:3002', opts);
 
         socket.on('connect', () => {
@@ -145,6 +148,17 @@ describe('SummariesController (e2e)', () => {
             expect(data).toBeDefined();
             socket.disconnect();
             done();
+        });
+
+        socket.on('notice', (data) => {
+            expect(JSON.parse(data)).toEqual({
+                date: '2021-06-15',
+                project: 1,
+                id: 6,
+                duration: '3m',
+                userId: 222,
+                account: 'jjj',
+            });
         });
     });
 
