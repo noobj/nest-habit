@@ -11,8 +11,8 @@ import { ProjectService } from './projects.service';
 import { SummariesService } from './summaries.service';
 import { endOfToday, subYears, subDays, format } from 'date-fns';
 import { ModuleRef } from '@nestjs/core';
-import { Observable, from, zip } from 'rxjs';
-import { map, mergeMap, tap, filter } from 'rxjs/operators';
+import { Observable, from, zip, of } from 'rxjs';
+import { map, mergeMap, filter } from 'rxjs/operators';
 
 @WebSocketGateway(3002)
 export class SummariesGateway implements OnModuleInit {
@@ -40,22 +40,27 @@ export class SummariesGateway implements OnModuleInit {
         ).pipe(
             mergeMap(() => {
                 const tmpEnd = endOfToday();
-                const tmpStart = subYears(tmpEnd, 1);
+                const tmpStart = subDays(tmpEnd, 1);
                 const endDate = format(tmpEnd, 'yyyy-MM-dd');
-                const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
+                const startDate = format(subDays(tmpStart, 0), 'yyyy-MM-dd');
                 return this.summariesService.getRawDailySummaries(
                     startDate,
                     endDate,
                     socket.user
                 );
             }),
-            filter((val) => val.length !== 0),
-            mergeMap((rawData) =>
-                zip(
+            mergeMap((rawData) => {
+                return zip(
                     this.summariesService.processTheRawSummaries(rawData),
                     this.projectService.getProjectByUser(socket.user)
                 ).pipe(
                     map(([summaries, currentProject]) => {
+                        if (rawData.length === 0) {
+                            return {
+                                current_project: currentProject,
+                            }
+                        }
+
                         const longestRecord =
                             this.summariesService.getLongestDayRecord(rawData);
                         const totalYear = this.summariesService.getTotalDuration(rawData);
@@ -70,8 +75,8 @@ export class SummariesGateway implements OnModuleInit {
                             total_this_month: totalThisMonth,
                         };
                     })
-                )
-            ),
+                );
+            }),
             map((val) => ({ event: 'sync', data: JSON.stringify(val) }))
         );
 
