@@ -11,6 +11,8 @@ import { ProjectService } from './projects.service';
 import { SummariesService } from './summaries.service';
 import { endOfToday, subYears, subDays, format } from 'date-fns';
 import { ModuleRef } from '@nestjs/core';
+import { Observable, from, zip } from 'rxjs';
+import { map, mergeMap, tap, filter } from 'rxjs/operators';
 
 @WebSocketGateway(3002)
 export class SummariesGateway implements OnModuleInit {
@@ -18,7 +20,7 @@ export class SummariesGateway implements OnModuleInit {
 
     constructor(
         private moduleRef: ModuleRef,
-        private summariesService: SummariesService,
+        private summariesService: SummariesService
     ) {}
 
     onModuleInit() {
@@ -30,43 +32,87 @@ export class SummariesGateway implements OnModuleInit {
 
     @UseGuards(AuthGuard('jwt'))
     @SubscribeMessage('sync')
-    async onEvent(socket, data): Promise<WsResponse<string>> {
-        await this.projectService.setCurrentProject(socket.user, data.projectName);
-        const currentProject = await this.projectService.getProjectByUser(socket.user);
+    // async onEvent(socket, data): Promise<WsResponse<string>> {
+    onEvent(socket, data): Observable<WsResponse<string>> {
+        // Rxjs approach
+        return from(
+            this.projectService.setCurrentProject(socket.user, data.projectName)
+        ).pipe(
+            mergeMap(() => {
+                const tmpEnd = endOfToday();
+                const tmpStart = subYears(tmpEnd, 1);
+                const endDate = format(tmpEnd, 'yyyy-MM-dd');
+                const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
+                return this.summariesService.getRawDailySummaries(
+                    startDate,
+                    endDate,
+                    socket.user
+                );
+            }),
+            filter((val) => val.length !== 0),
+            mergeMap((rawData) =>
+                zip(
+                    this.summariesService.processTheRawSummaries(rawData),
+                    this.projectService.getProjectByUser(socket.user)
+                ).pipe(
+                    map(([summaries, currentProject]) => {
+                        const longestRecord =
+                            this.summariesService.getLongestDayRecord(rawData);
+                        const totalYear = this.summariesService.getTotalDuration(rawData);
+                        const totalThisMonth =
+                            this.summariesService.getTotalThisMonth(rawData);
 
-        const tmpEnd = endOfToday();
-        const tmpStart = subYears(tmpEnd, 1);
-        const endDate = format(tmpEnd, 'yyyy-MM-dd');
-        const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
-        const rawData = await this.summariesService.getRawDailySummaries(
-            startDate,
-            endDate,
-            socket.user
+                        return {
+                            current_project: currentProject,
+                            summaries: summaries,
+                            longest_record: longestRecord,
+                            total_last_year: totalYear,
+                            total_this_month: totalThisMonth,
+                        };
+                    })
+                )
+            ),
+            map((val) => ({ event: 'sync', data: JSON.stringify(val) }))
         );
 
-        if (rawData.length === 0) {
+        /** async/awake approach
+            await this.projectService.setCurrentProject(socket.user, data.projectName);
+            const currentProject = await this.projectService.getProjectByUser(socket.user);
+
+            const tmpEnd = endOfToday();
+            const tmpStart = subYears(tmpEnd, 1);
+            const endDate = format(tmpEnd, 'yyyy-MM-dd');
+            const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
+            const rawData = await this.summariesService.getRawDailySummaries(
+                startDate,
+                endDate,
+                socket.user
+            );
+
+            if (rawData.length === 0) {
+                return {
+                    event: 'sync',
+                    data: JSON.stringify({ current_project: currentProject }),
+                };
+            }
+
+            const summries = await this.summariesService.processTheRawSummaries(rawData);
+            const longestRecord = this.summariesService.getLongestDayRecord(rawData);
+            const totalYear = this.summariesService.getTotalDuration(rawData);
+            const totalThisMonth = this.summariesService.getTotalThisMonth(rawData);
+
+            const result = {
+                summaries: summries,
+                longest_record: longestRecord,
+                total_last_year: totalYear,
+                total_this_month: totalThisMonth,
+                current_project: currentProject,
+            };
+
             return {
                 event: 'sync',
-                data: JSON.stringify({ current_project: currentProject }),
+                data: JSON.stringify(result),
             };
-        }
-
-        const summries = await this.summariesService.processTheRawSummaries(rawData);
-        const longestRecord = this.summariesService.getLongestDayRecord(rawData);
-        const totalYear = this.summariesService.getTotalDuration(rawData);
-        const totalThisMonth = this.summariesService.getTotalThisMonth(rawData);
-
-        const result = {
-            summaries: summries,
-            longest_record: longestRecord,
-            total_last_year: totalYear,
-            total_this_month: totalThisMonth,
-            current_project: currentProject,
-        };
-
-        return {
-            event: 'sync',
-            data: JSON.stringify(result),
-        };
+         **/
     }
 }

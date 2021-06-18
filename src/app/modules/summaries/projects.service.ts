@@ -29,8 +29,7 @@ export class ProjectService {
         return project;
     }
 
-    public async getLeastUpdatedProjects(arg: number | string): Promise<Project[]>;
-    public async getLeastUpdatedProjects(arg: any): Promise<Project[]> {
+    public async getLeastUpdatedProjects(arg: number | string): Promise<Project[]> {
         if (typeof arg == 'number')
             return await this.projectRepository.find({
                 relations: ['user'],
