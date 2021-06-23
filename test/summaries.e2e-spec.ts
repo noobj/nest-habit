@@ -138,7 +138,7 @@ describe('SummariesController (e2e)', () => {
             },
         };
         summariesReop.delete(1);
-        const socket = io('ws://localhost:3002', opts);
+        const socket = io('ws://localhost:3333', opts);
 
         socket.on('connect', () => {
             socket.emit('sync', { projectName: 'meditation' });

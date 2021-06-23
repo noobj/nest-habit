@@ -10,6 +10,8 @@ export class SocketIoAdapter extends IoAdapter {
     createIOServer(port: number, options?: any): any {
         const RedisStore = connectRedis(session);
         this.redisClient = redis.createClient();
+        if (process.env.NODE_ENV === 'test') port = 3333;
+
         this.server = super.createIOServer(port, options);
         this.server.use(
             wrap(
