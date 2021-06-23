@@ -11,6 +11,7 @@ import { ProjectService } from './projects.service';
 import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
 import { ModuleRef } from '@nestjs/core';
+import { convertRawDurationToFormat } from 'src/common/helpers/utils';
 
 /**
  * The return format for frontend use
@@ -62,7 +63,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
         return rawData.map((entry) => {
             const level = this.calLevel(entry.duration);
             const timestamp = moment(entry.date, 'YYYY-MM-DD').valueOf();
-            const duration = this.convertRawDurationToFormat(entry.duration);
+            const duration = convertRawDurationToFormat(entry.duration);
 
             return {
                 date: moment(entry.date).format('MMM DD, YYYY'),
@@ -91,21 +92,6 @@ export class SummariesService implements IBasicService, OnModuleInit {
             : durationLevelMap.get(levelIndex);
     }
 
-    public convertRawDurationToFormat(duration: number): string {
-        const durationInMinute = duration / 1000 / 60;
-
-        if (durationInMinute < 1) {
-            return '1m';
-        }
-
-        const hours = Math.floor(durationInMinute / 60);
-        const minutes = Math.floor(durationInMinute % 60);
-
-        if (hours == 0) return `${minutes}m`;
-
-        return `${hours}h${minutes}m`;
-    }
-
     public getLongestDayRecord(rawData: DailySummary[]): {
         date: string;
         duration: string;
@@ -116,12 +102,12 @@ export class SummariesService implements IBasicService, OnModuleInit {
 
         return {
             date: longestRecord.date,
-            duration: this.convertRawDurationToFormat(longestRecord.duration),
+            duration: convertRawDurationToFormat(longestRecord.duration),
         };
     }
 
     public getTotalDuration(rawData: DailySummary[]): string {
-        return this.convertRawDurationToFormat(
+        return convertRawDurationToFormat(
             rawData.reduce((sum, entry) => {
                 return (sum += entry.duration);
             }, 0)
@@ -137,7 +123,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
             })
             .reduce((sum, entry) => (sum += entry.duration), 0);
 
-        return this.convertRawDurationToFormat(sum);
+        return convertRawDurationToFormat(sum);
     }
 
     public async upsert(data: CreateDailySummaryDto[]): Promise<CreateDailySummaryDto[]> {

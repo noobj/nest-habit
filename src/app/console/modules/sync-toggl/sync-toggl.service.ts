@@ -9,6 +9,7 @@ import { Project } from 'src/app/modules/summaries/entities';
 import { ModuleRef } from '@nestjs/core';
 import { TogglService } from 'src/app/modules/toggl/toggl.service';
 import { SummariesGateway } from 'src/app/modules/summaries/summaries.gateway';
+import { convertRawDurationToFormat } from 'src/common/helpers/utils';
 
 @Injectable()
 export class SyncTogglService implements ICommand, OnModuleInit {
@@ -71,9 +72,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
                 const { user, duration, ...rest } = entry; // sift out sensetive user info
                 const result = {
                     ...rest,
-                    duration: this.summariesService.convertRawDurationToFormat(
-                        entry.duration
-                    ),
+                    duration: convertRawDurationToFormat(entry.duration),
                     userId: entry.user.id,
                     account: entry.user.account,
                 };
