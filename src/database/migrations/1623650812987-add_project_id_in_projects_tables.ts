@@ -8,7 +8,7 @@ export class addProjectIdInProjectsTables1623650812987 implements MigrationInter
         );
         await queryRunner.dropForeignKey('daily_summaries', foreignKey);
         await queryRunner.query(
-            'ALTER TABLE laravel.projects MODIFY COLUMN id int auto_increment NOT NULL'
+            'ALTER TABLE projects MODIFY COLUMN id int auto_increment NOT NULL'
         );
         await queryRunner.createForeignKey(
             'daily_summaries',
@@ -20,7 +20,7 @@ export class addProjectIdInProjectsTables1623650812987 implements MigrationInter
             })
         );
         await queryRunner.query(
-            'ALTER TABLE laravel.projects ADD project_id INTEGER UNSIGNED NOT NULL'
+            'ALTER TABLE projects ADD project_id INTEGER UNSIGNED NOT NULL'
         );
     }
 
@@ -31,7 +31,7 @@ export class addProjectIdInProjectsTables1623650812987 implements MigrationInter
         );
         await queryRunner.dropForeignKey('daily_summaries', foreignKey);
         await queryRunner.query(
-            'ALTER TABLE laravel.projects MODIFY COLUMN id int NOT NULL'
+            'ALTER TABLE projects MODIFY COLUMN id int NOT NULL'
         );
         await queryRunner.createForeignKey(
             'daily_summaries',
@@ -42,6 +42,6 @@ export class addProjectIdInProjectsTables1623650812987 implements MigrationInter
                 onDelete: 'CASCADE',
             })
         );
-        await queryRunner.query('ALTER TABLE laravel.projects DROP COLUMN project_id');
+        await queryRunner.query('ALTER TABLE projects DROP COLUMN project_id');
     }
 }

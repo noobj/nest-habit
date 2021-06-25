@@ -46,3 +46,32 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  migrations-test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      - name: Set up MySQL
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE test_migration;' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+          mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm install
+        run: |
+          npm install
+      - name: build
+        run: |
+          npm run build
+      - name: migrate
+        run: |
+          mv .env.example .env
+          npm run migrate
