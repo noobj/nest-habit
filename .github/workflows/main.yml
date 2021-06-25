@@ -74,4 +74,6 @@ jobs:
       - name: migrate
         run: |
           mv .env.example .env
+          ls dist/database/migrations/
+          cat .env
           npm run migrate
