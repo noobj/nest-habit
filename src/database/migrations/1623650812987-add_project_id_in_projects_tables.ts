@@ -8,7 +8,7 @@ export class addProjectIdInProjectsTables1623650812987 implements MigrationInter
         );
         await queryRunner.dropForeignKey('daily_summaries', foreignKey);
         await queryRunner.query(
-            'ALTER TABLE laravel.projects MODIFY COLUMN id int auto_increment NOT NULL'
+            'ALTER TABLE projects MODIFY COLUMN id int auto_increment NOT NULL'
         );
         await queryRunner.createForeignKey(
             'daily_summaries',
