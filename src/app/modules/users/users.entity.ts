@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { DailySummary } from '../summaries/entities';
 
 //pass the name of table inside @Entity() i.e "users", if you don't pass table name it will create "users_entity" table by default
@@ -21,4 +22,10 @@ export class User {
 
     @OneToMany(() => DailySummary, (summary) => summary.user)
     summaries?: DailySummary[];
+
+    @Column({
+        nullable: true,
+    })
+    @Exclude()
+    refresh_token?: string;
 }

@@ -38,9 +38,19 @@ export class AppController {
     @Post('auth/login')
     async login(@Request() req) {
         const token = await this.authService.login(req.user);
-        req.session.token = token.access_token;
+        req.session.access_token = token.access_token;
+        req.session.refresh_token = token.refresh_token;
+        this.userService.setRefreshToken(token.refresh_token, req.user.id);
 
-        return token;
+        return 'done';
+    }
+
+    @UseGuards(AuthGuard('jwt-refresh'))
+    @Get('refresh')
+    refresh(@Request() req) {
+        req.session.access_token = this.authService.generateAccessToken(req.user);
+
+        return 'done';
     }
 
     @UseGuards(AuthGuard('jwt'))
@@ -86,8 +96,9 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('logout')
-    logout(@Request() req) {
+    async logout(@Request() req) {
         req.session.cookie.expires = Date.now();
         req.session.cookie.maxAge = 0;
+        await this.userService.removeRefreshToken(req.user.id);
     }
 }

@@ -28,7 +28,7 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
     app.use(
         session({
-            store: new RedisStore({ client: redisClient }),
+            store: new RedisStore({ client: redisClient, ttl: 259200 }),
             secret: configService.get('session.secret'),
             resave: false,
             saveUninitialized: false,
