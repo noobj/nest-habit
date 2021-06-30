@@ -54,7 +54,7 @@ export class AuthService {
             { userId },
             {
                 secret: this.configService.get('jwt.refresh_secret'),
-                expiresIn: `${this.configService.get('refresh_expiration_time')}s`,
+                expiresIn: `${this.configService.get('jwt.refresh_expiration_time')}s`,
             }
         );
     }
