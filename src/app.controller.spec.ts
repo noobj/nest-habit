@@ -11,11 +11,13 @@ describe('AppController', () => {
     const mockAuthService = {
         login: jest.fn(() => ({
             access_token: '123',
+            refresh_token: '456',
         })),
     };
 
     const mockUsersService = {
         setToken: jest.fn(() => {}),
+        setRefreshToken: jest.fn(() => {}),
     };
 
     const mockProjectService = {};
@@ -34,7 +36,7 @@ describe('AppController', () => {
                 {
                     provide: TogglService,
                     useValue: mockTogglService,
-                }
+                },
             ],
             controllers: [AppController],
         })
@@ -49,15 +51,19 @@ describe('AppController', () => {
 
     describe('root', () => {
         it('should return access token', async () => {
-            const fakeRequest = {
+            const fakeRequest: any = {
                 session: { token: 1 },
                 user: { name: 'jjj', id: 1 },
             };
             const result = await appController.login(fakeRequest);
 
-            expect(result.access_token).toEqual('123');
-            expect(fakeRequest.session.token).toEqual('123');
+            expect(result).toEqual('done');
+            expect(fakeRequest.session.access_token).toEqual('123');
             expect(mockAuthService.login).toHaveBeenCalledTimes(1);
+            expect(mockUsersService.setRefreshToken).toBeCalledWith(
+                fakeRequest.session.refresh_token,
+                fakeRequest.user.id
+            );
             expect(mockAuthService.login).toHaveBeenCalledWith(fakeRequest.user);
         });
     });

@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from '../modules/users';
@@ -8,6 +9,7 @@ describe('AuthService', () => {
 
     const mockUsersService = {};
     const mockJwtService = {};
+    const mockConfigService = {};
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -20,6 +22,10 @@ describe('AuthService', () => {
                 {
                     provide: JwtService,
                     useValue: mockJwtService,
+                },
+                {
+                    provide: ConfigService,
+                    useValue: mockConfigService,
                 },
             ],
         }).compile();
