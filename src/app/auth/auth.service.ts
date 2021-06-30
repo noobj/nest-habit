@@ -54,9 +54,7 @@ export class AuthService {
             { userId },
             {
                 secret: this.configService.get('jwt.refresh_secret'),
-                expiresIn: `${this.configService.get(
-                    'JWT_REFRESH_TOKEN_EXPIRATION_TIME'
-                )}s`,
+                expiresIn: `${this.configService.get('refresh_expiration_time')}s`,
             }
         );
     }
