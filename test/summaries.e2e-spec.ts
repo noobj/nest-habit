@@ -147,7 +147,6 @@ describe('SummariesController (e2e)', () => {
         socket.on('sync', (data) => {
             expect(data).toBeDefined();
             socket.disconnect();
-            done();
         });
 
         socket.on('notice', (data) => {
@@ -159,6 +158,15 @@ describe('SummariesController (e2e)', () => {
                 userId: 222,
                 account: 'jjj',
             });
+        });
+
+        socket.on('close', () => {
+            console.log('close');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('disconnect');
+            done();
         });
     });
 
@@ -240,7 +248,6 @@ describe('SummariesController (e2e)', () => {
 
     afterAll(async () => {
         await getConnection().synchronize(true); // clean up all data
-        app.close();
         await socketIoServer.close();
         await new Promise<void>((resolve) => {
             redisClient.quit(() => {
@@ -250,5 +257,7 @@ describe('SummariesController (e2e)', () => {
         // redis.quit() creates a thread to close the connection.
         // We wait until all threads have been run once to ensure the connection closes.
         await new Promise<void>((resolve) => setImmediate(resolve));
+
+        app.close();
     });
 });

@@ -11,10 +11,12 @@ import * as session from 'express-session';
 import { join } from 'path';
 import * as fs from 'fs';
 import { staticChecker } from 'src/common/middleware/static-file-checker.middleware';
+import { SocketIoAdapter } from 'src/common/adapters/socket.io.adapter';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
     let cookies;
+    let socketIoServer;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -22,6 +24,7 @@ describe('AppController (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
+        socketIoServer = app.useWebSocketAdapter(new SocketIoAdapter(app));
 
         app.use(staticChecker);
         const configService = app.get(ConfigService);
@@ -56,7 +59,7 @@ describe('AppController (e2e)', () => {
             .send(payload)
             .end(function (err, res) {
                 expect(res.status).toEqual(201);
-                expect(res.body.access_token).toBeDefined();
+                expect(res.text).toEqual('done');
                 // Save the cookie to use it later to retrieve the session
                 cookies = res.headers['set-cookie'].pop().split(';')[0];
                 done();
@@ -133,6 +136,19 @@ describe('AppController (e2e)', () => {
             });
     });
 
+    it('/GET refresh', (done) => {
+        return request(app.getHttpServer())
+            .get('/refresh')
+            .set('Cookie', cookies)
+            .send()
+            .end((err, res) => {
+                expect(res.status).toEqual(200);
+                expect(res.text).toEqual('done');
+
+                done();
+            });
+    });
+
     it('/GET logout', () => {
         return request(app.getHttpServer())
             .get('/logout')
@@ -141,7 +157,15 @@ describe('AppController (e2e)', () => {
             .expect(200);
     });
 
-    it('/GET profile Unauthorized and logout', () => {
+    it('/GET refresh Unauthorized', () => {
+        return request(app.getHttpServer())
+            .get('/refresh')
+            .set('Cookie', cookies)
+            .send()
+            .expect(401);
+    });
+
+    it('/GET profile Unauthorized', () => {
         return request(app.getHttpServer())
             .get('/profile')
             .set('Cookie', cookies)
@@ -151,6 +175,7 @@ describe('AppController (e2e)', () => {
 
     afterAll(async () => {
         await getConnection().synchronize(true); // clean up all data
+        await socketIoServer.close();
         app.close();
     });
 });

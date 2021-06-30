@@ -18,6 +18,8 @@ export default () => ({
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',
         expiration_time: process.env.JWT_EXPIRATION_TIME || 3600,
+        refresh_secret: process.env.JWT_REFRESH_TOKEN_SECRET || 'secret',
+        refresh_expiration_time: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME || 360000,
     },
     session: {
         secret: process.env.SESSION_SECRET || 'secret',

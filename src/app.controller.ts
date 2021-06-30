@@ -8,7 +8,6 @@ import {
     UseInterceptors,
     UseFilters,
     Body,
-    HttpException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Express } from 'express';
