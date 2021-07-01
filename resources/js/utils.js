@@ -48,6 +48,15 @@ const getSummaries = async () => {
     let params = new URLSearchParams();
     params.set('start_date', format(startDate, 'yyyy-MM-dd'));
     params.set('end_date', format(endDate, 'yyyy-MM-dd'));
+    const opts = {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+        },
+    };
+
     return await fetch(`/summaries?${params.toString()}`, {
         method: 'GET',
         credentials: 'include',
@@ -56,16 +65,29 @@ const getSummaries = async () => {
             Accept: 'application/json',
         },
     })
+        .then((res) => checkAuth(res, `/summaries?${params.toString()}`, opts))
         .then(async function (response) {
-            if (response.status == 401) {
-                window.location.href = '/login.html';
-            }
-
             return response.json();
         })
         .then((response) => {
             return Promise.resolve(response.data);
         });
+};
+
+export const checkAuth = async (res = null, url = null, opts = {}) => {
+    if (res != null && res.status != undefined && res.status != 401) return res;
+
+    return await fetch('/refresh', {
+        credentials: 'include',
+    }).then(async (res) => {
+        if (res.status == 200) {
+            if (url != null) return await fetch(url, opts);
+
+            return;
+        }
+
+        window.location.href = '/login.html';
+    });
 };
 
 export { getDates, getSummaries };

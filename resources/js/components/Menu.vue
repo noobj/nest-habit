@@ -69,6 +69,8 @@
 </template>
 
 <script>
+import { checkAuth } from '../utils'
+
 export default {
   name: "Menu",
   props: {},
@@ -99,8 +101,17 @@ export default {
       setTimeout(function(){ document.querySelector('#newRecord').removeChild(child); }, 5000);
 
     },
-    exception: (data) => {
-      alert('Sync failed')
+    exception: async function (data) {
+        if (data.status == 401) {
+            await checkAuth()
+            .then(() => {
+                this.$socket.disconnect();
+                this.$socket.connect();
+                setTimeout(() => {
+                    this.$socket.emit("sync", { projectName: this.currentPrj.name
+                })}, 500);
+            });
+        }
     },
     disconnect: () => {
       console.log('disconnect');
@@ -198,6 +209,7 @@ export default {
   },
   mounted() {
     fetch("/profile")
+      .then((res) => checkAuth(res, '/profile'))
       .then((res) => {
         return res.json();
       })
@@ -209,6 +221,7 @@ export default {
       });
 
     fetch("/projects")
+      .then((res) => checkAuth(res, '/projects'))
       .then((res) => res.json())
       .then((res) => {
         this.projects = res.data.allProjects;

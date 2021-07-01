@@ -1,4 +1,4 @@
-import { OnModuleInit, UseGuards } from '@nestjs/common';
+import { OnModuleInit, UseFilters, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
     WebSocketGateway,
@@ -13,6 +13,7 @@ import { endOfToday, subYears, subDays, format } from 'date-fns';
 import { ModuleRef } from '@nestjs/core';
 import { Observable, from, forkJoin } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
+import { WSExceptionsFilter } from 'src/common/exception-filters/ws-exception.filter';
 
 @WebSocketGateway(3002)
 export class SummariesGateway implements OnModuleInit {
@@ -30,6 +31,7 @@ export class SummariesGateway implements OnModuleInit {
     @WebSocketServer()
     server: Server;
 
+    @UseFilters(new WSExceptionsFilter())
     @UseGuards(AuthGuard('jwt'))
     @SubscribeMessage('sync')
     onEvent(socket, data): Observable<WsResponse<string>> {
