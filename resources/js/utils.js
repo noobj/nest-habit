@@ -57,7 +57,7 @@ const getSummaries = async () => {
         },
     };
 
-    return await fetch(`/summaries?${params.toString()}`, {
+    return await fetchOrRefreshAuth(`/summaries?${params.toString()}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -65,7 +65,6 @@ const getSummaries = async () => {
             Accept: 'application/json',
         },
     })
-        .then((res) => checkAuth(res, `/summaries?${params.toString()}`, opts))
         .then(async function (response) {
             return response.json();
         })
@@ -74,19 +73,19 @@ const getSummaries = async () => {
         });
 };
 
-export const checkAuth = async (res = null, url = null, opts = {}) => {
-    if (res != null && res.status != undefined && res.status != 401) return res;
+export const fetchOrRefreshAuth = async (url, opts = {}) => {
+    return await fetch(url, opts).then(async (res) => {
+        if (res.status != 401) return res;
 
-    return await fetch('/refresh', {
-        credentials: 'include',
-    }).then(async (res) => {
-        if (res.status == 200) {
-            if (url != null) return await fetch(url, opts);
+        return await fetch('/refresh', {
+            credentials: 'include',
+        }).then(async (res) => {
+            if (res.status == 200) {
+                return await fetch(url, opts);
+            }
 
-            return;
-        }
-
-        window.location.href = '/login.html';
+            window.location.href = '/login.html';
+        });
     });
 };
 

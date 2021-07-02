@@ -69,7 +69,7 @@
 </template>
 
 <script>
-import { checkAuth } from '../utils'
+import { fetchOrRefreshAuth } from '../utils'
 
 export default {
   name: "Menu",
@@ -103,7 +103,16 @@ export default {
     },
     exception: async function (data) {
         if (data.status == 401) {
-            await checkAuth()
+            await  fetch('/refresh', {
+                credentials: 'include',
+            })
+            .then(async (res) => {
+                if (res.status == 200) {
+                    return;
+                }
+
+                window.location.href = '/login.html';
+            })
             .then(() => {
                 this.$socket.disconnect();
                 this.$socket.connect();
@@ -124,14 +133,17 @@ export default {
         const apiToken = prompt('Please enter the new token:');
         if (!apiToken) return;
         const check = confirm('This will delete all the existing, Are you sure?')
-        if (check) {
-          fetch('/api_token', {
+        const opts = {
             method: "Post",
             credentials: "include",
             body: new URLSearchParams({
               'api_token': apiToken,
             }),
-          }).then((res) => {
+          };
+        if (check) {
+          fetchOrRefreshAuth('/api_token', opts)
+          .then((res) => checkAuth(res, '/api_token', opts))
+          .then((res) => {
             if (res.status != 201) throw new Error();
 
             alert('token updated');
@@ -142,7 +154,7 @@ export default {
         }
     },
     changeProject(event) {
-      fetch('/project', {
+      fetchOrRefreshAuth('/project', {
         method: "Post",
         credentials: "include",
         body: new URLSearchParams({
@@ -161,7 +173,7 @@ export default {
       this.$socket.emit("sync", { projectName: this.currentPrj.name })
     },
     logout() {
-      fetch('/logout')
+      fetchOrRefreshAuth('logout')
         .then((res) => {
           if (res.status != 200) throw new Error();
 
@@ -182,7 +194,7 @@ export default {
 
       formData.append("file", file);
 
-      fetch(`/upload_avatar`, {
+      fetchOrRefreshAuth(`/upload_avatar`, {
         method: "Post",
         credentials: "same-origin",
         body: formData,
@@ -208,8 +220,7 @@ export default {
     },
   },
   mounted() {
-    fetch("/profile")
-      .then((res) => checkAuth(res, '/profile'))
+    fetchOrRefreshAuth("/profile")
       .then((res) => {
         return res.json();
       })
@@ -220,8 +231,7 @@ export default {
         this.avatarFileName = `${user.id}.jpg`;
       });
 
-    fetch("/projects")
-      .then((res) => checkAuth(res, '/projects'))
+    fetchOrRefreshAuth('/projects')
       .then((res) => res.json())
       .then((res) => {
         this.projects = res.data.allProjects;
