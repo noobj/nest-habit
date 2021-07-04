@@ -15,12 +15,14 @@ import { AuthGuard } from '@nestjs/passport';
 import { IsDateString } from 'class-validator';
 import { forkJoin, from, of } from 'rxjs';
 import { map, mergeMap, tap } from 'rxjs/operators';
+import * as Redis from 'ioredis';
 
 import { IBasicService } from './interfaces/basic.service';
 import { Interfaces } from './constants';
 import { ProjectService } from './projects.service';
 import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception.filter';
 import { DailySummary } from './entities';
+import { RedisService } from 'nestjs-redis';
 
 class DateRange {
     @IsDateString()
@@ -32,11 +34,16 @@ class DateRange {
 
 @Controller()
 export class SummariesController {
+    private redisClient: Redis.Redis;
+
     constructor(
         @Inject(Interfaces.IBasicService)
         private summariesService: IBasicService,
-        private projectService: ProjectService
-    ) {}
+        private projectService: ProjectService,
+        private readonly redisService: RedisService
+    ) {
+        this.redisClient = this.redisService.getClient();
+    }
 
     @UseGuards(AuthGuard('jwt'))
     @Post('project')
@@ -79,6 +86,16 @@ export class SummariesController {
     @UseGuards(AuthGuard('jwt'))
     @Get('summaries')
     async showAll(@Query(new ValidationPipe()) dateRange: DateRange, @Request() req) {
+        const cacheString = `summaries:${req.user.id}`;
+
+        // Fetch from redis first, if null then fetch from db
+        const cacheSummaries = await this.redisClient.get(cacheString);
+        if (cacheSummaries !== null)
+            return {
+                statusCode: HttpStatus.OK,
+                data: JSON.parse(cacheSummaries),
+            };
+
         return from(
             this.summariesService.getRawDailySummaries(
                 dateRange.start_date,
@@ -104,16 +121,27 @@ export class SummariesController {
                         ),
                     }).pipe(
                         map(({ summries, longestRecord, totalYear, totalThisMonth }) => {
-                            const result = {
+                            return {
                                 summaries: summries,
                                 longest_record: longestRecord,
                                 total_last_year: totalYear,
                                 total_this_month: totalThisMonth,
                             };
-
+                        }),
+                        tap((res) =>
+                            from(
+                                this.redisClient.set(
+                                    cacheString,
+                                    JSON.stringify(res),
+                                    'EX',
+                                    3600
+                                )
+                            )
+                        ),
+                        map((res) => {
                             return {
                                 statusCode: HttpStatus.OK,
-                                data: result,
+                                data: res,
                             };
                         })
                     );

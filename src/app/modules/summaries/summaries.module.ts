@@ -10,6 +10,7 @@ import { UsersModule } from '../users';
 import SyncTogglModule from 'src/app/console/modules/sync-toggl/sync-toggl.module';
 import { TogglModule } from '../toggl/toggl.module';
 import { SummariesGateway } from './summaries.gateway';
+import { RedisModule } from 'nestjs-redis';
 
 @Module({
     imports: [
@@ -17,6 +18,10 @@ import { SummariesGateway } from './summaries.gateway';
         UsersModule,
         SyncTogglModule,
         TogglModule,
+        RedisModule.register({
+            host: 'localhost',
+            port: 6379,
+        }),
     ],
     providers: [
         SummariesService,
