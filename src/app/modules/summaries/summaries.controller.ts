@@ -86,7 +86,10 @@ export class SummariesController {
     @UseGuards(AuthGuard('jwt'))
     @Get('summaries')
     async showAll(@Query(new ValidationPipe()) dateRange: DateRange, @Request() req) {
-        const cacheString = `summaries:${req.user.id}`;
+        const cacheId = Buffer.from(
+            req.user.id + dateRange.start_date + dateRange.end_date
+        ).toString('base64');
+        const cacheString = `summaries:${cacheId}`;
 
         // Fetch from redis first, if null then fetch from db
         const cacheSummaries = await this.redisClient.get(cacheString);
