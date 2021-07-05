@@ -11,6 +11,7 @@ import SyncTogglModule from 'src/app/console/modules/sync-toggl/sync-toggl.modul
 import { TogglModule } from '../toggl/toggl.module';
 import { SummariesGateway } from './summaries.gateway';
 import { RedisModule } from 'nestjs-redis';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
     imports: [
@@ -18,9 +19,14 @@ import { RedisModule } from 'nestjs-redis';
         UsersModule,
         SyncTogglModule,
         TogglModule,
-        RedisModule.register({
-            host: 'localhost',
-            port: 6379,
+        RedisModule.forRootAsync({
+            useFactory: async (configService: ConfigService) => ({
+                host: 'localhost',
+                port: 6379,
+                db: configService.get('redis.db'),
+            }),
+            inject: [ConfigService],
+            imports: [ConfigModule],
         }),
     ],
     providers: [

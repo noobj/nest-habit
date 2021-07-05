@@ -15,7 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { IsDateString } from 'class-validator';
 import { forkJoin, from, of } from 'rxjs';
 import { map, mergeMap, tap } from 'rxjs/operators';
-import * as Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 import { IBasicService } from './interfaces/basic.service';
 import { Interfaces } from './constants';
@@ -34,7 +34,7 @@ class DateRange {
 
 @Controller()
 export class SummariesController {
-    private redisClient: Redis.Redis;
+    private redisClient: Redis;
 
     constructor(
         @Inject(Interfaces.IBasicService)

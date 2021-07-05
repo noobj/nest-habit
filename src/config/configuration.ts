@@ -23,4 +23,7 @@ export default () => ({
     toggl: {
         token: process.env.TOGGL_TOKEN || 'null',
     },
+    redis: {
+        db: 0,
+    },
 });

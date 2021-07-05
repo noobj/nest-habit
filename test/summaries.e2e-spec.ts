@@ -3,7 +3,7 @@ import { ImATeapotException, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/test.config';
 import { User } from './../src/app/modules/users/users.entity';
 import { getConnection, Repository } from 'typeorm';
@@ -13,6 +13,7 @@ import * as io from 'socket.io-client';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import { DailySummary } from 'src/app/modules/summaries/entities';
+import { endOfToday, format, subDays, subYears } from 'date-fns';
 
 describe('SummariesController (e2e)', () => {
     let app: INestApplication;
@@ -22,14 +23,15 @@ describe('SummariesController (e2e)', () => {
     let summariesReop: Repository<DailySummary>;
 
     beforeAll(async () => {
-        const RedisStore = connectRedis(session);
-        redisClient = redis.createClient();
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })],
         }).compile();
 
         app = moduleFixture.createNestApplication();
         socketIoServer = app.useWebSocketAdapter(new SocketIoAdapter(app));
+        const configService = app.get(ConfigService);
+        const RedisStore = connectRedis(session);
+        redisClient = redis.createClient({ db: configService.get('redis.db') });
 
         app.use(
             session({
@@ -160,12 +162,42 @@ describe('SummariesController (e2e)', () => {
             });
         });
 
-        socket.on('close', () => {
-            console.log('close');
+        socket.on('disconnect', () => {
+            console.log('disconnect');
+            done();
+        });
+    });
+
+    it('/WS sync cache', (done) => {
+        const opts = {
+            extraHeaders: {
+                Cookie: cookies,
+            },
+        };
+
+        const socket = io('ws://localhost:3333', opts);
+
+        socket.on('connect', () => {
+            socket.emit('sync', { projectName: 'meditation' });
+        });
+
+        socket.on('sync', async (data) => {
+            expect(data).toBeDefined();
+
+            const tmpEnd = endOfToday();
+            const tmpStart = subYears(tmpEnd, 1);
+            const endDate = format(tmpEnd, 'yyyy-MM-dd');
+            const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
+            const cacheId = Buffer.from('222' + startDate + endDate).toString('base64');
+            const cacheString = `summaries:${cacheId}`;
+            redisClient.get(cacheString, (err, result) => {
+                expect(result).toEqual(data);
+            });
+            socket.emit('force_close');
+            socket.disconnect();
         });
 
         socket.on('disconnect', () => {
-            console.log('disconnect');
             done();
         });
     });
@@ -212,6 +244,34 @@ describe('SummariesController (e2e)', () => {
             });
     });
 
+    // Don't need to set the system datetime, since its fetched from cache
+    it('/GET summaries from cache', (done) => {
+        const query = {
+            start_date: '2021-05-22',
+            end_date: '2021-05-26',
+        };
+        return request(app.getHttpServer())
+            .get('/summaries')
+            .set('Cookie', cookies)
+            .query(query)
+            .end((err, res) => {
+                const cacheId = Buffer.from(
+                    '222' + query.start_date + query.end_date
+                ).toString('base64');
+                const cacheString = `summaries:${cacheId}`;
+                redisClient.get(cacheString, (err, result) => {
+                    expect(JSON.parse(result)).toEqual(res.body.data);
+                });
+                expect(res.body.data.longest_record).toEqual({
+                    date: '2021-05-25',
+                    duration: '3h0m',
+                });
+                expect(res.body.data.total_last_year).toEqual('6h0m');
+                expect(res.status).toEqual(200);
+                done();
+            });
+    });
+
     it('/GET summaries wrong format of dates', (done) => {
         const query = {
             start_date: '2021-02',
@@ -247,6 +307,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     afterAll(async () => {
+        await redisClient.flushall();
         await getConnection().synchronize(true); // clean up all data
         await socketIoServer.close();
         await new Promise<void>((resolve) => {

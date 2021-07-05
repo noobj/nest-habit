@@ -59,15 +59,25 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
                 if (userName) this.sendMessageToSocketClients(result);
 
-                return await this.projectService.updateProjectLastUpdated(project);
+                await this.projectService.updateProjectLastUpdated(project);
+
+                return this.calNewRecords(result);
             })
         ).catch((err) => {
             return Promise.reject(err);
         });
     }
 
+    private calNewRecords(entries: any[]): number {
+        return entries.reduce((sum, entry) => {
+            if (entry.user) return sum + 1;
+            return sum;
+        }, 0);
+    }
+
     private sendMessageToSocketClients(entries: CreateDailySummaryDto[]) {
         entries.map((entry) => {
+            // Only new records have user data
             if (entry.user) {
                 const { user, duration, ...rest } = entry; // sift out sensetive user info
                 const result = {

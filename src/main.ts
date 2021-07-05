@@ -10,9 +10,6 @@ import { staticChecker } from './common/middleware/static-file-checker.middlewar
 import { SocketIoAdapter } from './common/adapters/socket.io.adapter';
 
 async function bootstrap() {
-    const RedisStore = connectRedis(session);
-    const redisClient = redis.createClient();
-
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         cors: {
             origin: [
@@ -26,6 +23,9 @@ async function bootstrap() {
     app.useWebSocketAdapter(new SocketIoAdapter(app));
     app.use(staticChecker);
     const configService = app.get(ConfigService);
+
+    const RedisStore = connectRedis(session);
+    const redisClient = redis.createClient({ db: configService.get('redis.db') });
     app.use(
         session({
             store: new RedisStore({ client: redisClient, ttl: 259200 }),
