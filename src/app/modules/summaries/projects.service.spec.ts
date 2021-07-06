@@ -6,6 +6,7 @@ import { ProjectService } from './projects.service';
 import { SyncTogglService } from 'src/app/console/modules/sync-toggl';
 import { ImATeapotException } from '@nestjs/common';
 import { TogglService } from '../toggl/toggl.service';
+import { SummariesService } from './summaries.service';
 
 describe('ProjectService', () => {
     let service: ProjectService;
@@ -75,17 +76,12 @@ describe('ProjectService', () => {
         execute: jest.fn().mockReturnThis(),
     };
 
-    const mockSyncTogglService = {
-        getProjectByUser: jest.fn((name: string) => ({
-            name: name,
-            id: 123,
-        })),
-        getLeastUpdatedProjects: jest.fn(),
-        run: jest.fn(() => [mockProject]),
-    };
-
     const mockUsersService = {
         findOne: jest.fn(() => user),
+    };
+
+    const mockSummariesService = {
+        syncWithThirdParty: jest.fn(() => 2),
     };
 
     beforeEach(async () => {
@@ -97,8 +93,8 @@ describe('ProjectService', () => {
                     useValue: mockProjectRepo,
                 },
                 {
-                    provide: SyncTogglService,
-                    useValue: mockSyncTogglService,
+                    provide: SummariesService,
+                    useValue: mockSummariesService,
                 },
                 {
                     provide: UsersService,
@@ -107,7 +103,7 @@ describe('ProjectService', () => {
                 {
                     provide: TogglService,
                     useValue: mockTogglService,
-                }
+                },
             ],
         }).compile();
 
@@ -138,29 +134,6 @@ describe('ProjectService', () => {
             },
             take: 1,
         });
-    });
-
-    it('should using user for fetching project', async () => {
-        const result = await service.getLeastUpdatedProjects('jjj');
-        expect(result).toEqual([mockProject]);
-        expect(mockUsersService.findOne).toBeCalledWith('jjj');
-
-        expect(mockProjectRepo.findOne).toBeCalledWith(
-            { user: user },
-            { relations: ['user'] }
-        );
-    });
-
-    it('should not be able to find user and throw exception', async () => {
-        const spyOnUserService = jest
-            .spyOn(mockUsersService, 'findOne')
-            .mockImplementation(() => null);
-
-        await expect(async () => {
-            await service.getLeastUpdatedProjects('jjj');
-        }).rejects.toThrow(ImATeapotException);
-
-        spyOnUserService.mockImplementation(() => user);
     });
 
     it('should update last_updated', async () => {
@@ -204,7 +177,7 @@ describe('ProjectService', () => {
             project_id: 123,
             last_updated: new Date(1466424490000),
         });
-        expect(mockSyncTogglService.run).toBeCalledTimes(1);
+        expect(mockSummariesService.syncWithThirdParty).toBeCalledTimes(1);
         spyOnDate.mockRestore();
     });
 });

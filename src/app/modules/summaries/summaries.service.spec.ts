@@ -7,6 +7,7 @@ import { ImATeapotException } from '@nestjs/common';
 import { User } from '../users';
 import { ProjectService } from './projects.service';
 import { ModuleRef } from '@nestjs/core';
+import { TogglService } from '../toggl/toggl.service';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -61,12 +62,30 @@ describe('SummariesService', () => {
             id: 123,
         })),
         getLeastUpdatedProjects: jest.fn(),
+        updateProjectLastUpdated: jest.fn(),
     };
 
     const mockModuleRef = {
         get: jest.fn(() => {
             return mockProjectService;
         }),
+    };
+
+    const mockTogglService = {
+        fetch: () => [
+            {
+                start: '2021-01-10T11:00:51+08:00',
+                dur: 1000,
+            },
+            {
+                start: '2021-01-10T11:00:51+08:00',
+                dur: 1000,
+            },
+            {
+                start: '2021-01-11T11:00:51+08:00',
+                dur: 1000,
+            },
+        ],
     };
 
     beforeEach(async () => {
@@ -84,6 +103,10 @@ describe('SummariesService', () => {
                 {
                     provide: ModuleRef,
                     useValue: mockModuleRef,
+                },
+                {
+                    provide: TogglService,
+                    useValue: mockTogglService,
                 },
             ],
         }).compile();
@@ -194,6 +217,21 @@ describe('SummariesService', () => {
                 { project: 9, date: '2021-04-23', duration: 1500000, user: user },
             ]);
         }).rejects.toThrow(ImATeapotException);
-        spyMockDSRepo.mockReset();
+        spyMockDSRepo.mockImplementation((entry) =>
+            Promise.resolve<DailySummary>({
+                id: entry.where.project,
+                project: entry.where.project,
+                date: entry.where.date,
+                duration: 1500000,
+                user: entry.where.user,
+            })
+        );
     });
+
+    it('should syncWithThirdParty', async () => {
+        const result = await service.syncWithThirdParty(365, user, false);
+
+        expect(result).toEqual(2);
+    });
+
 });

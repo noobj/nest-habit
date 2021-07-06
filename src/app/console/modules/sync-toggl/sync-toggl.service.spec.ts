@@ -18,29 +18,8 @@ describe('SyncTogglService', () => {
         toggl_token: 'DGAF',
     };
 
-    const mockTogglService = {
-        fetch: () => [
-            {
-                start: '2021-01-10T11:00:51+08:00',
-                dur: 1000,
-            },
-            {
-                start: '2021-01-10T11:00:51+08:00',
-                dur: 1000,
-            },
-            {
-                start: '2021-01-11T11:00:51+08:00',
-                dur: 1000,
-            },
-        ],
-    };
-
     const mockSummariesService = {
-        upsert: jest.fn(() =>
-            Promise.resolve([
-                { date: '2021-01-10', project: 157099012, duration: 2000, user: user },
-            ])
-        ),
+        syncWithThirdParty: jest.fn(() => Promise.resolve(3)),
     };
 
     const mockProjectService = {
@@ -54,7 +33,6 @@ describe('SyncTogglService', () => {
                 },
             ])
         ),
-        updateProjectLastUpdated: jest.fn(() => {}),
     };
 
     const mockModuleRef = {
@@ -81,10 +59,6 @@ describe('SyncTogglService', () => {
                     provide: ModuleRef,
                     useValue: mockModuleRef,
                 },
-                {
-                    provide: TogglService,
-                    useValue: mockTogglService,
-                },
             ],
         }).compile();
 
@@ -93,10 +67,7 @@ describe('SyncTogglService', () => {
     });
 
     it('should run the command', async () => {
-        await service.run(['3']);
-        expect(mockSummariesService.upsert).toBeCalledWith([
-            { date: '2021-01-10', project: 157099012, duration: 2000, user: user },
-            { date: '2021-01-11', project: 157099012, duration: 1000, user: user },
-        ]);
+        await service.run(['']);
+        expect(mockSummariesService.syncWithThirdParty).toBeCalledWith(365, user, false);
     });
 });

@@ -6,13 +6,13 @@ import * as moment from 'moment-timezone';
 import { Project } from './entities';
 import { User } from '../users';
 import { UsersService } from '../users';
-import { SyncTogglService } from 'src/app/console/modules/sync-toggl/sync-toggl.service';
 import { TogglService } from '../toggl/toggl.service';
+import { SummariesService } from './summaries.service';
 
 @Injectable()
 export class ProjectService {
     constructor(
-        private syncTogglService: SyncTogglService,
+        private summariesService: SummariesService,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
         private usersService: UsersService,
@@ -29,25 +29,14 @@ export class ProjectService {
         return project;
     }
 
-    public async getLeastUpdatedProjects(arg: number | string): Promise<Project[]> {
-        if (typeof arg == 'number')
-            return await this.projectRepository.find({
-                relations: ['user'],
-                order: {
-                    last_updated: 'DESC',
-                },
-                take: arg,
-            });
-        else if (typeof arg == 'string') {
-            const user = await this.usersService.findOne(arg);
-            if (user == undefined) throw new ImATeapotException('Invalid user');
-            const result = await this.projectRepository.findOne(
-                { user: user },
-                { relations: ['user'] }
-            );
-
-            return [result];
-        }
+    public async getLeastUpdatedProjects(arg: number): Promise<Project[]> {
+        return await this.projectRepository.find({
+            relations: ['user'],
+            order: {
+                last_updated: 'DESC',
+            },
+            take: arg,
+        });
     }
 
     public async updateProjectLastUpdated(project: Project) {
@@ -93,6 +82,6 @@ export class ProjectService {
             await this.projectRepository.save(project);
         }
 
-        return (await this.syncTogglService.run(['365', userWhole.account])).pop();
+        return await this.summariesService.syncWithThirdParty(365, userWhole);
     }
 }

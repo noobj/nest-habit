@@ -2,14 +2,18 @@ import { Injectable, ImATeapotException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
+import * as _ from 'lodash';
 
 import { DailySummary } from './entities';
 import { IBasicService } from './interfaces';
 import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
 import { validate } from 'class-validator';
 import { ProjectService } from './projects.service';
+import { Project } from './entities/project.entity';
 import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
+import { TogglService } from 'src/app/modules/toggl/toggl.service';
+import { SummariesGateway } from 'src/app/modules/summaries/summaries.gateway';
 import { ModuleRef } from '@nestjs/core';
 import { convertRawDurationToFormat } from 'src/common/helpers/utils';
 
@@ -26,15 +30,19 @@ interface IFormatedSummary {
 @Injectable()
 export class SummariesService implements IBasicService, OnModuleInit {
     private projectService: ProjectService;
+    private socketServer: SummariesGateway;
+
     constructor(
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
-        private moduleRef: ModuleRef
+        private moduleRef: ModuleRef,
+        private togglService: TogglService
     ) {
         moment.tz.setDefault('Asia/Taipei');
     }
 
     onModuleInit() {
+        this.socketServer = this.moduleRef.get(SummariesGateway, { strict: false });
         this.projectService = this.moduleRef.get(ProjectService);
     }
 
@@ -155,7 +163,80 @@ export class SummariesService implements IBasicService, OnModuleInit {
 
             return await this.dailySummaryRepository.save(data);
         } catch (e) {
-            throw new ImATeapotException(e.sqlMessage);
+            throw new ImATeapotException(e);
         }
+    }
+
+    /**
+     * Usage - npm run artisan syncToggl 180 user
+     * @param argv[0] optional - how many days prior to today to fetch
+     * @param argv[1] optional - pass the specific user's account for fetching
+     */
+    async syncWithThirdParty(days: number, user: User, emitNotice = true) {
+        const since = moment().subtract(days, 'days').format('YYYY-MM-DD');
+
+        const project = await this.projectService.getProjectByUser(user);
+        project.user = user;
+
+        if (!project) throw new ImATeapotException('No project found');
+
+        try {
+            const details = await this.togglService.fetch(project, since);
+            if (!details.length) throw new ImATeapotException('no data');
+
+            const fetchedData = this.processFetchedData(details, project);
+            const result = await this.upsert(fetchedData);
+
+            await this.projectService.updateProjectLastUpdated(project);
+
+            const affectedRow = this.calNewRecords(result);
+
+            if (emitNotice && affectedRow > 0) this.sendMessageToSocketClients(result);
+
+            return affectedRow;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    private calNewRecords(entries: any[]): number {
+        return entries.reduce((sum, entry) => {
+            if (entry.user) return sum + 1;
+            return sum;
+        }, 0);
+    }
+
+    private sendMessageToSocketClients(entries: CreateDailySummaryDto[]) {
+        entries.map((entry) => {
+            // Only new records have user data
+            if (entry.user) {
+                const { user, duration, ...rest } = entry; // sift out sensetive user info
+                const result = {
+                    ...rest,
+                    duration: convertRawDurationToFormat(entry.duration),
+                    userId: entry.user.id,
+                    account: entry.user.account,
+                };
+                this.socketServer.server.emit('notice', JSON.stringify(result));
+            }
+        });
+    }
+
+    private processFetchedData(
+        details: any[],
+        project: Project
+    ): CreateDailySummaryDto[] {
+        const tmp = _.groupBy(details, (entry) => {
+            return moment(entry.start).format('YYYY-MM-DD');
+        });
+
+        return Object.entries(tmp).map((key) => {
+            return {
+                date: key[0],
+                project: project.id,
+                duration: key[1].reduce((sum, entry) => sum + entry.dur, 0),
+                user: project.user,
+            };
+        });
     }
 }

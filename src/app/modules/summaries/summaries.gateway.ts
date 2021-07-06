@@ -23,10 +23,10 @@ import { WSExceptionsFilter } from 'src/common/exception-filters/ws-exception.fi
 export class SummariesGateway implements OnModuleInit {
     private projectService: ProjectService;
     private redisClient: Redis;
+    private summariesService: SummariesService;
 
     constructor(
         private moduleRef: ModuleRef,
-        private summariesService: SummariesService,
         private readonly redisService: RedisService
     ) {
         this.redisClient = this.redisService.getClient();
@@ -34,6 +34,7 @@ export class SummariesGateway implements OnModuleInit {
 
     onModuleInit() {
         this.projectService = this.moduleRef.get(ProjectService, { strict: false });
+        this.summariesService = this.moduleRef.get(SummariesService, { strict: false });
     }
 
     @WebSocketServer()
