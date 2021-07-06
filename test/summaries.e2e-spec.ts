@@ -191,7 +191,7 @@ describe('SummariesController (e2e)', () => {
             const cacheId = Buffer.from('222' + startDate + endDate).toString('base64');
             const cacheString = `summaries:${cacheId}`;
             redisClient.get(cacheString, (err, result) => {
-                expect(result).toEqual(data);
+                expect(JSON.parse(result).summaries).toEqual(JSON.parse(data).summaries);
             });
             socket.emit('force_close');
             socket.disconnect();
