@@ -13,11 +13,13 @@ export const convertRawDurationToFormat = (duration: number): string => {
     return `${hours}h${minutes}m`;
 };
 
-export const getSummariesCacheString = (
-    userId: any,
+export const getCacheString = (
+    prefix: string,
+    userId: number | string,
     startDate: string,
     endDate: string
 ): string => {
-    const cacheId = Buffer.from(userId + startDate + endDate).toString('base64');
-    return `summaries:${cacheId}`;
+    prefix = prefix.toLowerCase();
+    const cacheId = Buffer.from(startDate + endDate).toString('base64');
+    return `${prefix}:${userId}:${cacheId}`;
 };

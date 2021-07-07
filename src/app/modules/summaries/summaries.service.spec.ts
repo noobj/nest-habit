@@ -8,6 +8,7 @@ import { User } from '../users';
 import { ProjectService } from './projects.service';
 import { ModuleRef } from '@nestjs/core';
 import { TogglService } from '../toggl/toggl.service';
+import { RedisService } from 'nestjs-redis';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -88,6 +89,17 @@ describe('SummariesService', () => {
         ],
     };
 
+    const mockRedisClient = {
+        keys: jest.fn(() => {
+            return ['fake'];
+        }),
+        del: jest.fn(),
+    };
+
+    const mockRedisService = {
+        getClient: jest.fn(() => mockRedisClient),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -108,6 +120,10 @@ describe('SummariesService', () => {
                     provide: TogglService,
                     useValue: mockTogglService,
                 },
+                {
+                    provide: RedisService,
+                    useValue: mockRedisService,
+                }
             ],
         }).compile();
 
@@ -232,6 +248,7 @@ describe('SummariesService', () => {
         const result = await service.syncWithThirdParty(365, user, false);
 
         expect(result).toEqual(2);
+        expect(mockRedisClient.keys).toBeCalledWith(`summaries:${user.id}*`);
+        expect(mockRedisClient.del).toBeCalledWith('fake');
     });
-
 });

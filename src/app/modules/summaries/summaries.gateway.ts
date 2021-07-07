@@ -14,7 +14,7 @@ import { map, mergeMap, tap } from 'rxjs/operators';
 import { RedisService } from 'nestjs-redis';
 import { Redis } from 'ioredis';
 
-import { getSummariesCacheString } from 'src/common/helpers/utils';
+import { getCacheString } from 'src/common/helpers/utils';
 import { ProjectService } from './projects.service';
 import { SummariesService } from './summaries.service';
 import { WSExceptionsFilter } from 'src/common/exception-filters/ws-exception.filter';
@@ -53,7 +53,12 @@ export class SummariesGateway implements OnModuleInit {
         const endDate = format(tmpEnd, 'yyyy-MM-dd');
         const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
 
-        const cacheString = getSummariesCacheString(socket.user.id, startDate, endDate);
+        const cacheString = getCacheString(
+            'Summaries',
+            socket.user.id,
+            startDate,
+            endDate
+        );
         // test if there is any new record
         if (newRecordsNumber == 0) {
             const cacheSummaries = await this.redisClient.get(cacheString);

@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
+import { Redis } from 'ioredis';
 
+import { RedisService } from 'nestjs-redis';
 import { DailySummary } from './entities';
 import { IBasicService } from './interfaces';
 import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
@@ -31,14 +33,17 @@ interface IFormatedSummary {
 export class SummariesService implements IBasicService, OnModuleInit {
     private projectService: ProjectService;
     private socketServer: SummariesGateway;
+    private redisClient: Redis;
 
     constructor(
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
         private moduleRef: ModuleRef,
-        private togglService: TogglService
+        private togglService: TogglService,
+        private readonly redisService: RedisService
     ) {
         moment.tz.setDefault('Asia/Taipei');
+        this.redisClient = this.redisService.getClient();
     }
 
     onModuleInit() {
@@ -167,11 +172,6 @@ export class SummariesService implements IBasicService, OnModuleInit {
         }
     }
 
-    /**
-     * Usage - npm run artisan syncToggl 180 user
-     * @param argv[0] optional - how many days prior to today to fetch
-     * @param argv[1] optional - pass the specific user's account for fetching
-     */
     async syncWithThirdParty(days: number, user: User, emitNotice = true) {
         const since = moment().subtract(days, 'days').format('YYYY-MM-DD');
 
@@ -190,6 +190,12 @@ export class SummariesService implements IBasicService, OnModuleInit {
             await this.projectService.updateProjectLastUpdated(project);
 
             const affectedRow = this.calNewRecords(result);
+
+            // Delete all the summaries cache of the user
+            if (affectedRow > 0) {
+                const keys = await this.redisClient.keys(`summaries:${user.id}*`);
+                for (const key of keys) await this.redisClient.del(key);
+            }
 
             if (emitNotice && affectedRow > 0) this.sendMessageToSocketClients(result);
 

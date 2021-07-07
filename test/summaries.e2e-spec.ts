@@ -14,6 +14,7 @@ import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import { DailySummary } from 'src/app/modules/summaries/entities';
 import { endOfToday, format, subDays, subYears } from 'date-fns';
+import { getCacheString } from 'src/common/helpers/utils';
 
 describe('SummariesController (e2e)', () => {
     let app: INestApplication;
@@ -188,8 +189,8 @@ describe('SummariesController (e2e)', () => {
             const tmpStart = subYears(tmpEnd, 1);
             const endDate = format(tmpEnd, 'yyyy-MM-dd');
             const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
-            const cacheId = Buffer.from('222' + startDate + endDate).toString('base64');
-            const cacheString = `summaries:${cacheId}`;
+            const cacheString = getCacheString('Summaries', 222, startDate, endDate);
+
             redisClient.get(cacheString, (err, result) => {
                 expect(JSON.parse(result).summaries).toEqual(JSON.parse(data).summaries);
             });
@@ -255,13 +256,16 @@ describe('SummariesController (e2e)', () => {
             .set('Cookie', cookies)
             .query(query)
             .end((err, res) => {
-                const cacheId = Buffer.from(
-                    '222' + query.start_date + query.end_date
-                ).toString('base64');
-                const cacheString = `summaries:${cacheId}`;
+                const cacheString = getCacheString(
+                    'Summaries',
+                    222,
+                    query.start_date,
+                    query.end_date
+                );
                 redisClient.get(cacheString, (err, result) => {
                     expect(JSON.parse(result)).toEqual(res.body.data);
                 });
+
                 expect(res.body.data.longest_record).toEqual({
                     date: '2021-05-25',
                     duration: '3h0m',
