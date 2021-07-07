@@ -311,7 +311,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     afterAll(async () => {
-        await redisClient.flushall();
+        await redisClient.flushdb();
         await getConnection().synchronize(true); // clean up all data
         await socketIoServer.close();
         await new Promise<void>((resolve) => {
