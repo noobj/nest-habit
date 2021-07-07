@@ -35,12 +35,19 @@ describe('UsersService', () => {
     });
 
     it('should return user by the given account', async () => {
-        const result = await service.findOne('jjj');
+        const result = await service.findOneByAccount('jjj');
 
         expect(result).toEqual(user);
         expect(mockUsersRepo.findOne).toBeCalledWith({
             where: { account: 'jjj' },
         });
+    });
+
+    it('should return user by the given id', async () => {
+        const result = await service.findOne(1);
+
+        expect(result).toEqual(user);
+        expect(mockUsersRepo.findOne).toBeCalledWith(1);
     });
 
     it('should set the users Toggl token', async () => {

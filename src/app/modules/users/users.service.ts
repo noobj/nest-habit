@@ -12,7 +12,11 @@ export class UsersService {
         private usersRepository: Repository<User>
     ) {}
 
-    async findOne(account: string): Promise<User | undefined> {
+    async findOne(id: number): Promise<User | undefined> {
+        return await this.usersRepository.findOne(id);
+    }
+
+    async findOneByAccount(account: string): Promise<User | undefined> {
         return await this.usersRepository.findOne({
             where: { account: account },
         });

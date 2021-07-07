@@ -182,7 +182,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
 
         try {
             const details = await this.thirdPartyService
-                .serviceFactory('toggl')
+                .serviceFactory(user.third_party_service)
                 .fetch(project, since);
             if (!details.length) throw new ImATeapotException('no data');
 

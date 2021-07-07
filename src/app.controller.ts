@@ -87,10 +87,13 @@ export class AppController {
     @UseGuards(AuthGuard('jwt'))
     @Post('api_token')
     async setToken(@Request() req, @Body('api_token') apiToken) {
-        await this.thirdPartyService.serviceFactory('toggl').checkTokenValid(apiToken);
+        const user = await this.userService.findOne(req.user.id);
+        await this.thirdPartyService
+            .serviceFactory(user.third_party_service)
+            .checkTokenValid(apiToken);
 
-        await this.userService.setToken(req.user.id, apiToken);
-        await this.projectService.deleteProjectByUser(req.user);
+        await this.userService.setToken(user.id, apiToken);
+        await this.projectService.deleteProjectByUser(user);
     }
 
     @UseGuards(AuthGuard('jwt'))

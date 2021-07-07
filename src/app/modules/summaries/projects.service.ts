@@ -45,9 +45,11 @@ export class ProjectService {
     }
 
     public async getAllProjects(user: Partial<User>) {
-        user = await this.usersService.findOne(user.account);
+        user = await this.usersService.findOne(user.id);
 
-        return await this.thirdPartyService.serviceFactory('toggl').getProjects(user);
+        return await this.thirdPartyService
+            .serviceFactory(user.third_party_service)
+            .getProjects(user);
     }
 
     public async deleteProjectByUser(user: Partial<User>) {
@@ -59,7 +61,7 @@ export class ProjectService {
     }
 
     public async setCurrentProject(user: Partial<User>, projectName: string) {
-        const userWhole: User = await this.usersService.findOne(user.account);
+        const userWhole: User = await this.usersService.findOne(user.id);
         const currentProject = await this.getProjectByUser(user);
 
         // if current project equals to passed project, then only sync data
