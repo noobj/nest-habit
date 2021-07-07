@@ -28,4 +28,9 @@ export class User {
     })
     @Exclude()
     refresh_token?: string;
+
+    @Column({
+        nullable: true,
+    })
+    third_party_service?: string;
 }
