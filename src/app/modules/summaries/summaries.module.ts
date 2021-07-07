@@ -7,8 +7,7 @@ import { ProjectService } from './projects.service';
 import { Project, DailySummary } from './entities';
 import { Interfaces } from './constants';
 import { UsersModule } from '../users';
-import SyncTogglModule from 'src/app/console/modules/sync-toggl/sync-toggl.module';
-import { TogglModule } from '../toggl/toggl.module';
+import { ThirdPartyModule } from '../ThirdParty/third-party.module';
 import { SummariesGateway } from './summaries.gateway';
 import { RedisModule } from 'nestjs-redis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -17,8 +16,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     imports: [
         TypeOrmModule.forFeature([DailySummary, Project]),
         UsersModule,
-        SyncTogglModule,
-        TogglModule,
+        ThirdPartyModule,
         RedisModule.forRootAsync({
             useFactory: async (configService: ConfigService) => ({
                 host: 'localhost',

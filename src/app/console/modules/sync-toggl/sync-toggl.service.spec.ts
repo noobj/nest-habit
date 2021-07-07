@@ -6,7 +6,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ProjectService, SummariesService } from 'src/app/modules/summaries';
 import { User } from 'src/app/modules/users';
 import { ModuleRef } from '@nestjs/core';
-import { TogglService } from 'src/app/modules/toggl/toggl.service';
 
 describe('SyncTogglService', () => {
     let service: SyncTogglService;

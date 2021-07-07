@@ -6,7 +6,7 @@ import * as moment from 'moment-timezone';
 import { Project } from './entities';
 import { User } from '../users';
 import { UsersService } from '../users';
-import { TogglService } from '../toggl/toggl.service';
+import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { SummariesService } from './summaries.service';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class ProjectService {
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
         private usersService: UsersService,
-        private togglService: TogglService
+        private thirdPartyService: ThirdPartyService
     ) {
         moment.tz.setDefault('Asia/Taipei');
     }
@@ -47,7 +47,7 @@ export class ProjectService {
     public async getAllProjects(user: Partial<User>) {
         user = await this.usersService.findOne(user.account);
 
-        return await this.togglService.getProjects(user);
+        return await this.thirdPartyService.serviceFactory('toggl').getProjects(user);
     }
 
     public async deleteProjectByUser(user: Partial<User>) {

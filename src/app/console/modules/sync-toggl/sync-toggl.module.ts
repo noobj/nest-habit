@@ -3,10 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 
 import { SyncTogglService } from './sync-toggl.service';
 import { SummariesModule } from 'src/app/modules/summaries';
-import { TogglModule } from 'src/app/modules/toggl/toggl.module';
 
 @Module({
-    imports: [forwardRef(() => SummariesModule), ConfigModule, TogglModule],
+    imports: [forwardRef(() => SummariesModule), ConfigModule],
     providers: [SyncTogglService],
     exports: [SyncTogglService],
 })

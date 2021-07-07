@@ -22,7 +22,7 @@ import { imageFileFilter } from './common/helpers/file-upload.utils';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
 import { UsersService } from 'src/app/modules/users/users.service';
 import { ProjectService } from 'src/app/modules/summaries/projects.service';
-import { TogglService } from './app/modules/toggl/toggl.service';
+import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
 
 @Controller()
 export class AppController {
@@ -30,7 +30,7 @@ export class AppController {
         private authService: AuthService,
         private userService: UsersService,
         private projectService: ProjectService,
-        private togglService: TogglService
+        private thirdPartyService: ThirdPartyService
     ) {}
 
     @UseGuards(AuthGuard('local'))
@@ -87,7 +87,7 @@ export class AppController {
     @UseGuards(AuthGuard('jwt'))
     @Post('api_token')
     async setToken(@Request() req, @Body('api_token') apiToken) {
-        await this.togglService.checkTokenValid(apiToken);
+        await this.thirdPartyService.serviceFactory('toggl').checkTokenValid(apiToken);
 
         await this.userService.setToken(req.user.id, apiToken);
         await this.projectService.deleteProjectByUser(req.user);

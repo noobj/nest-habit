@@ -7,7 +7,7 @@ import { ImATeapotException } from '@nestjs/common';
 import { User } from '../users';
 import { ProjectService } from './projects.service';
 import { ModuleRef } from '@nestjs/core';
-import { TogglService } from '../toggl/toggl.service';
+import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { RedisService } from 'nestjs-redis';
 
 describe('SummariesService', () => {
@@ -72,21 +72,23 @@ describe('SummariesService', () => {
         }),
     };
 
-    const mockTogglService = {
-        fetch: () => [
-            {
-                start: '2021-01-10T11:00:51+08:00',
-                dur: 1000,
-            },
-            {
-                start: '2021-01-10T11:00:51+08:00',
-                dur: 1000,
-            },
-            {
-                start: '2021-01-11T11:00:51+08:00',
-                dur: 1000,
-            },
-        ],
+    const mockThirdPartyService = {
+        serviceFactory: () => ({
+            fetch: () => [
+                {
+                    start: '2021-01-10T11:00:51+08:00',
+                    dur: 1000,
+                },
+                {
+                    start: '2021-01-10T11:00:51+08:00',
+                    dur: 1000,
+                },
+                {
+                    start: '2021-01-11T11:00:51+08:00',
+                    dur: 1000,
+                },
+            ],
+        }),
     };
 
     const mockRedisClient = {
@@ -117,13 +119,13 @@ describe('SummariesService', () => {
                     useValue: mockModuleRef,
                 },
                 {
-                    provide: TogglService,
-                    useValue: mockTogglService,
+                    provide: ThirdPartyService,
+                    useValue: mockThirdPartyService,
                 },
                 {
                     provide: RedisService,
                     useValue: mockRedisService,
-                }
+                },
             ],
         }).compile();
 

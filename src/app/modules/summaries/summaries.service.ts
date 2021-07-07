@@ -14,7 +14,7 @@ import { ProjectService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
-import { TogglService } from 'src/app/modules/toggl/toggl.service';
+import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { SummariesGateway } from 'src/app/modules/summaries/summaries.gateway';
 import { ModuleRef } from '@nestjs/core';
 import { convertRawDurationToFormat } from 'src/common/helpers/utils';
@@ -39,7 +39,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
         private moduleRef: ModuleRef,
-        private togglService: TogglService,
+        private thirdPartyService: ThirdPartyService,
         private readonly redisService: RedisService
     ) {
         moment.tz.setDefault('Asia/Taipei');
@@ -181,7 +181,9 @@ export class SummariesService implements IBasicService, OnModuleInit {
         if (!project) throw new ImATeapotException('No project found');
 
         try {
-            const details = await this.togglService.fetch(project, since);
+            const details = await this.thirdPartyService
+                .serviceFactory('toggl')
+                .fetch(project, since);
             if (!details.length) throw new ImATeapotException('no data');
 
             const fetchedData = this.processFetchedData(details, project);

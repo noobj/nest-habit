@@ -7,13 +7,12 @@ import { join } from 'path';
 
 import { UsersModule } from './app/modules/users/users.module';
 import { SummariesModule, SummariesController } from './app/modules/summaries';
-import { SummariesGateway } from './app/modules/summaries/summaries.gateway';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AuthModule } from './app/auth/auth.module';
 import { AppController } from './app.controller';
 import { CommandsModule } from './app/console/commands.module';
 import configuration from './config/configuration';
-import { TogglModule } from './app/modules/toggl/toggl.module';
+import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
 
 @Module({
     imports: [
@@ -36,7 +35,7 @@ import { TogglModule } from './app/modules/toggl/toggl.module';
                 logging: configService.get<boolean>('database.logging'),
             }),
         }),
-        TogglModule,
+        ThirdPartyModule,
         UsersModule,
         SummariesModule,
         AuthModule,

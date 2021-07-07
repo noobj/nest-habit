@@ -3,9 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Project } from './entities';
 import { User, UsersService } from '../users';
 import { ProjectService } from './projects.service';
-import { SyncTogglService } from 'src/app/console/modules/sync-toggl';
-import { ImATeapotException } from '@nestjs/common';
-import { TogglService } from '../toggl/toggl.service';
+import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { SummariesService } from './summaries.service';
 
 describe('ProjectService', () => {
@@ -19,18 +17,20 @@ describe('ProjectService', () => {
         toggl_token: 'DGAF',
     };
 
-    const mockTogglService = {
-        getProjects: () => ({
-            data: [
-                {
-                    id: 223,
-                    name: 'sleep',
-                },
-                {
-                    id: 123,
-                    name: 'meditation',
-                },
-            ],
+    const mockThirdPartyService = {
+        serviceFactory: () => ({
+            getProjects: () => ({
+                data: [
+                    {
+                        id: 223,
+                        name: 'sleep',
+                    },
+                    {
+                        id: 123,
+                        name: 'meditation',
+                    },
+                ],
+            }),
         }),
     };
 
@@ -101,8 +101,8 @@ describe('ProjectService', () => {
                     useValue: mockUsersService,
                 },
                 {
-                    provide: TogglService,
-                    useValue: mockTogglService,
+                    provide: ThirdPartyService,
+                    useValue: mockThirdPartyService,
                 },
             ],
         }).compile();
