@@ -159,7 +159,6 @@ describe('AppController (e2e)', () => {
             .send()
             .end((err, res) => {
                 expect(res.status).toEqual(200);
-                console.log(res);
                 expect(JSON.parse(res.text)).toEqual(Object.keys(Services));
 
                 done();

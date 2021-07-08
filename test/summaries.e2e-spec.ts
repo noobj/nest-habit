@@ -86,6 +86,20 @@ describe('SummariesController (e2e)', () => {
             });
     });
 
+    it('/POST project empty project', (done) => {
+        const payload = {
+            project_name: 'ffff',
+        };
+        return request(app.getHttpServer())
+            .post('/project')
+            .set('Cookie', cookies)
+            .send(payload)
+            .end((err, res) => {
+                expect(res.status).toEqual(201);
+                done();
+            });
+    });
+
     it('/POST project', (done) => {
         const spyLog = jest.spyOn(console, 'log').mockImplementation();
         const payload = {
@@ -156,7 +170,7 @@ describe('SummariesController (e2e)', () => {
         socket.on('notice', (data) => {
             expect(JSON.parse(data)).toEqual({
                 date: '2021-06-15',
-                project: 1,
+                project: 2,
                 id: 6,
                 duration: '3m',
                 userId: 222,

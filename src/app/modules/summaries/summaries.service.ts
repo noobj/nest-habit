@@ -184,7 +184,12 @@ export class SummariesService implements IBasicService, OnModuleInit {
             const details = await this.thirdPartyService
                 .serviceFactory(user.third_party_service)
                 .fetch(project, since);
-            if (!details.length) throw new ImATeapotException('no data');
+
+            if (!details.length) {
+                const keys = await this.redisClient.keys(`summaries:${user.id}*`);
+                for (const key of keys) await this.redisClient.del(key);
+                return 0;
+            }
 
             const fetchedData = this.processFetchedData(details, project);
             const result = await this.upsert(fetchedData);
