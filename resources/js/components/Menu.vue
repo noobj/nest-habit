@@ -1,5 +1,37 @@
 <template>
   <div class="relative self-end m-4">
+
+    <div class="shadow-md rounded z-10 fixed px-8 pt-6 pb-8 mb-4 w-1/3 bg-gray-800 font-bold" v-if="formToggl">
+       <h1 class="block w-full text-center mb-6 text-xl"> Service Settings </h1>
+       <label class="block text-sm mb-2" for="service">Third Party Service</label>
+       <select
+        class="border rounded bg-gray-800 h-10 pl-5 pr-10 cursor-pointer border-blue-500 font-bold"
+        id="service" ref="service"
+      >
+        <option
+          class="text-gray-600"
+          v-for="service in thirdPartyServices"
+          :key="service"
+        >
+          {{ service }}
+        </option>
+      </select>
+      <br /> <br />
+      <label class="block text-sm mb-2" for="token">Api Token</label>
+      <input type="text" class="bg-gray-800 shadow appearance-none border rounded w-full border-blue-500 py-2 px-3 leading-tight
+       focus:outline-none focus:shadow-outline" ref="token" id="token"/>
+        <br /> <br />
+        <button class="flex-shrink-0 bg-purple-500 hover:bg-purple-700 border-purple-500 hover:border-purple-700 text-sm border-4
+         text-white py-1 px-2 rounded" v-on:click="setApiToken()" type="button">
+            Submit
+        </button>
+
+        <div id="mdiv" class="absolute top-0 right-0 cursor-pointer" v-on:click="formToggl = false">
+            <div class="mdiv">
+                <div class="md"></div>
+            </div>
+        </div>
+    </div>
     <div class="inline-block">
         <img
         class="rounded-full w-6 h-6 cursor-pointer"
@@ -53,9 +85,9 @@
 
       <div
         class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
-        @click="setApiToken()"
+        @click="showServiceSetting()"
       >
-        Set Api Token
+        Service Settings
       </div>
 
       <div
@@ -78,7 +110,10 @@ export default {
     return {
       avatarFileName: "default.jpg",
       toggle: false,
+      formToggl:false,
       projects: [],
+      thirdPartyServices: [],
+      currentService: {name: null},
       currentPrj: {name: null, last_updated: null},
       lastUpdated: null
     };
@@ -98,7 +133,7 @@ export default {
       child.innerText = `${newRecord.account} added new entry ${newRecord.duration}`;
       child.className = 'animate-pulse mr-2 inline-block bg-pink-500 text-white font-bold py-2 px-4 rounded-lg opacity-80'
       document.querySelector('#newRecord').appendChild(child);
-      setTimeout(function(){ document.querySelector('#newRecord').removeChild(child); }, 5000);
+      setTimeout(function(){ document.querySelector('#newRecord').removeChild(child); }, 10000);
 
     },
     exception: async function (data) {
@@ -129,26 +164,42 @@ export default {
   computed: {},
   filters: {},
   methods: {
+    showServiceSetting() {
+        this.formToggl = true;
+        fetchOrRefreshAuth('/services')
+            .then((res) => res.json())
+            .then((res) => {
+                this.thirdPartyServices = res;
+            });
+    },
     setApiToken() {
-        const apiToken = prompt('Please enter the new token:');
+        const service = this.$refs.service.value;
+        const apiToken = this.$refs.token.value;
         if (!apiToken) return;
+
         const check = confirm('This will delete all the existing, Are you sure?')
         const opts = {
             method: "Post",
             credentials: "include",
             body: new URLSearchParams({
               'api_token': apiToken,
+              'service': service
             }),
           };
+
         if (check) {
           fetchOrRefreshAuth('/api_token', opts)
-          .then((res) => checkAuth(res, '/api_token', opts))
           .then((res) => {
-            if (res.status != 201) throw new Error();
+            if (res.status != 201) throw new Error(res.status);
 
             alert('token updated');
             location.reload();
-          }).catch(() => {
+          }).catch((e) => {
+            if (e.message === '403') {
+                alert('invalid token');
+                return;
+            }
+
             alert('token update failed');
           })
         }
@@ -245,3 +296,29 @@ export default {
   },
 };
 </script>
+
+<style>
+#mdiv {
+  width: 25px;
+  height: 25px;
+  background-color: grey;
+  border: 1px solid black;
+}
+
+.mdiv {
+  height: 25px;
+  width: 2px;
+  margin-left: 12px;
+  background-color: black;
+  transform: rotate(45deg);
+  Z-index: 1;
+}
+
+.md {
+  height: 25px;
+  width: 2px;
+  background-color: black;
+  transform: rotate(90deg);
+  Z-index: 2;
+}
+</style>

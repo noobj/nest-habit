@@ -2,23 +2,29 @@ import { Injectable, ImATeapotException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as moment from 'moment-timezone';
+import { Redis } from 'ioredis';
 
 import { Project } from './entities';
 import { User } from '../users';
 import { UsersService } from '../users';
 import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { SummariesService } from './summaries.service';
+import { RedisService } from 'nestjs-redis';
 
 @Injectable()
 export class ProjectService {
+    private redisClient: Redis;
+
     constructor(
         private summariesService: SummariesService,
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
         private usersService: UsersService,
-        private thirdPartyService: ThirdPartyService
+        private thirdPartyService: ThirdPartyService,
+        private redisService: RedisService
     ) {
         moment.tz.setDefault('Asia/Taipei');
+        this.redisClient = this.redisService.getClient();
     }
 
     public async getProjectByUser(user: Partial<User>): Promise<Project> {
@@ -52,11 +58,17 @@ export class ProjectService {
             .getProjects(user);
     }
 
-    public async deleteProjectByUser(user: Partial<User>) {
+    public async deleteProjectByUser(user: Partial<User> | number) {
+        const userId = typeof user === 'number' ? user : user.id;
+
+        // clean cache
+        const keys = await this.redisClient.keys(`summaries:${user}*`);
+        for (const key of keys) await this.redisClient.del(key);
+
         await this.projectRepository
             .createQueryBuilder()
             .delete()
-            .where('user_id = :id', { id: user.id })
+            .where('user_id = :id', { id: userId })
             .execute();
     }
 

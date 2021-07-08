@@ -27,7 +27,7 @@ describe('UsersService', () => {
                 {
                     provide: getRepositoryToken(User),
                     useValue: mockUsersRepo,
-                }
+                },
             ],
         }).compile();
 
@@ -51,8 +51,11 @@ describe('UsersService', () => {
     });
 
     it('should set the users Toggl token', async () => {
-        await service.setToken(user.id, '123456');
+        await service.setToken(user.id, '123456', 'toggl');
 
-        expect(mockUsersRepo.update).toBeCalledWith(user.id, { toggl_token: '123456' });
+        expect(mockUsersRepo.update).toBeCalledWith(user.id, {
+            toggl_token: '123456',
+            third_party_service: 'toggl',
+        });
     });
 });

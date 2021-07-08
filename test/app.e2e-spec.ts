@@ -12,6 +12,7 @@ import { join } from 'path';
 import * as fs from 'fs';
 import { staticChecker } from 'src/common/middleware/static-file-checker.middleware';
 import { SocketIoAdapter } from 'src/common/adapters/socket.io.adapter';
+import Services from 'src/config/third-party-services.map';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
@@ -125,6 +126,7 @@ describe('AppController (e2e)', () => {
     it('/POST api_token', (done) => {
         const payload = {
             api_token: '1cf1a1e2b149f8465373bfcacb7a831e',
+            service: 'toggl',
         };
 
         return request(app.getHttpServer())
@@ -145,6 +147,20 @@ describe('AppController (e2e)', () => {
             .end((err, res) => {
                 expect(res.status).toEqual(200);
                 expect(res.text).toEqual('done');
+
+                done();
+            });
+    });
+
+    it('/GET services', (done) => {
+        return request(app.getHttpServer())
+            .get('/services')
+            .set('Cookie', cookies)
+            .send()
+            .end((err, res) => {
+                expect(res.status).toEqual(200);
+                console.log(res);
+                expect(JSON.parse(res.text)).toEqual(Object.keys(Services));
 
                 done();
             });

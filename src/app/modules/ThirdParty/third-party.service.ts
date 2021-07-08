@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ImATeapotException, Injectable } from '@nestjs/common';
 import { IThirdPartyService } from './third-party.interface';
 import Services from 'src/config/third-party-services.map';
 
@@ -15,7 +15,14 @@ export class ThirdPartyService {
     }
 
     public serviceFactory(serviceName: string): IThirdPartyService {
-        serviceName = serviceName.toLowerCase();
-        return this.services.get(serviceName);
+        serviceName = serviceName?.toLowerCase();
+        const service = this.services.get(serviceName);
+
+        if (!service)
+            throw new ImATeapotException(
+                `Third party service [${serviceName}] not support`
+            );
+
+        return service;
     }
 }

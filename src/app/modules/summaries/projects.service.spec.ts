@@ -5,6 +5,7 @@ import { User, UsersService } from '../users';
 import { ProjectService } from './projects.service';
 import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { SummariesService } from './summaries.service';
+import { RedisService } from 'nestjs-redis';
 
 describe('ProjectService', () => {
     let service: ProjectService;
@@ -84,6 +85,17 @@ describe('ProjectService', () => {
         syncWithThirdParty: jest.fn(() => 2),
     };
 
+    const mockRedisClient = {
+        keys: jest.fn(() => {
+            return ['fake'];
+        }),
+        del: jest.fn(),
+    };
+
+    const mockRedisService = {
+        getClient: jest.fn(() => mockRedisClient),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -103,6 +115,10 @@ describe('ProjectService', () => {
                 {
                     provide: ThirdPartyService,
                     useValue: mockThirdPartyService,
+                },
+                {
+                    provide: RedisService,
+                    useValue: mockRedisService,
                 },
             ],
         }).compile();

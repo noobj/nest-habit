@@ -23,6 +23,7 @@ import { HttpExceptionFilter } from './common/exception-filters/http-exception.f
 import { UsersService } from 'src/app/modules/users/users.service';
 import { ProjectService } from 'src/app/modules/summaries/projects.service';
 import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
+import Services from 'src/config/third-party-services.map';
 
 @Controller()
 export class AppController {
@@ -86,14 +87,22 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('api_token')
-    async setToken(@Request() req, @Body('api_token') apiToken) {
-        const user = await this.userService.findOne(req.user.id);
-        await this.thirdPartyService
-            .serviceFactory(user.third_party_service)
-            .checkTokenValid(apiToken);
+    async setToken(
+        @Request() req,
+        @Body('api_token') apiToken,
+        @Body('service') service
+    ) {
+        const userId = req.user.id;
+        await this.thirdPartyService.serviceFactory(service).checkTokenValid(apiToken);
 
-        await this.userService.setToken(user.id, apiToken);
-        await this.projectService.deleteProjectByUser(user);
+        await this.userService.setToken(userId, apiToken, service);
+        await this.projectService.deleteProjectByUser(userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('services')
+    async getServices() {
+        return Object.keys(Services);
     }
 
     @UseGuards(AuthGuard('jwt'))

@@ -22,9 +22,12 @@ export class UsersService {
         });
     }
 
-    async setToken(id: number, token: string) {
+    async setToken(id: number, token: string, service: string) {
         try {
-            await this.usersRepository.update(id, { toggl_token: token });
+            await this.usersRepository.update(id, {
+                toggl_token: token,
+                third_party_service: service,
+            });
         } catch (err) {
             throw new ImATeapotException(err.code);
         }
