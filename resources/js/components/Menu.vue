@@ -1,7 +1,7 @@
 <template>
   <div class="relative self-end m-4">
 
-    <div class="shadow-md rounded z-10 fixed px-8 pt-6 pb-8 mb-4 w-1/3 bg-gray-800 font-bold" v-if="formToggl">
+    <div class="border shadow-md rounded z-10 fixed px-8 pt-6 pb-8 mb-4 w-1/3 bg-gray-800 font-bold" v-if="formToggl">
        <h1 class="block w-full text-center mb-6 text-xl"> Service Settings </h1>
        <label class="block text-sm mb-2" for="service">Third Party Service</label>
        <select
@@ -71,7 +71,7 @@
       v-if="toggle"
     >
       <div
-        class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
+        class="py-2 border bg-gray-900 px-4 bg-opacity-90 hover:bg-blue-400 text-center whitespace-nowrap font-bold cursor-pointer"
         @click="$refs.file.click()"
       >
         Upload Avatar
@@ -84,14 +84,14 @@
       </div>
 
       <div
-        class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
+        class="py-2 border bg-gray-900 px-4 bg-opacity-90 hover:bg-blue-400 text-center whitespace-nowrap font-bold cursor-pointer"
         @click="showServiceSetting()"
       >
         Service Settings
       </div>
 
       <div
-        class="py-2 px-4 bg-black dark:bg-white bg-opacity-30 hover:bg-opacity-20 text-center whitespace-nowrap font-bold cursor-pointer"
+        class="py-2 border bg-gray-900 px-4 bg-opacity-90 hover:bg-blue-400 text-center whitespace-nowrap font-bold cursor-pointer"
         @click="logout()"
       >
         Logout
