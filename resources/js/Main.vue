@@ -3,10 +3,12 @@
     <div id="newRecord"></div>
     <Menu />
     <Dates />
+    <Search />
   </div>
 </template>
 
 <script>
+import Search from './components/Search'
 import Dates from './components/Dates'
 import Menu from './components/Menu'
 
@@ -14,7 +16,8 @@ export default {
   name: 'Main',
   components: {
     Menu,
-    Dates
+    Dates,
+    Search
   },
   data () {
     return {

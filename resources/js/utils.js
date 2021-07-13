@@ -5,6 +5,7 @@ import {
     subDays,
     isSunday,
     format,
+    parseISO
 } from 'date-fns';
 
 // get start of today
@@ -44,7 +45,17 @@ const getDates = () => {
  * generate dates for render grid
  * @returns {Promise<Summary[]>} dates - dates for render grid
  */
-const getSummaries = async () => {
+const getSummaries = async (argStartDate = null, argEndDate = null) => {
+    // get start of today
+    let endDate = startOfToday();
+    let startDate = subYears(endDate, 1);
+    startDate = subDays(startDate, 7);
+
+    if (argStartDate !== null && argEndDate !== null) {
+        startDate = parseISO(argStartDate);
+        endDate = parseISO(argEndDate);
+    }
+
     let params = new URLSearchParams();
     params.set('start_date', format(startDate, 'yyyy-MM-dd'));
     params.set('end_date', format(endDate, 'yyyy-MM-dd'));

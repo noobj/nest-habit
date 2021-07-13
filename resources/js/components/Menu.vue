@@ -59,7 +59,7 @@
         </option>
       </select>
     </div>
-    <div class="place-content-end cursor-pointer inline-block">
+    <div class="cursor-pointer inline-block">
       <img
         class="rounded-full w-16 h-16"
         v-on:click="toggle = !toggle"
@@ -301,8 +301,7 @@ export default {
 #mdiv {
   width: 25px;
   height: 25px;
-  background-color: grey;
-  border: 1px solid black;
+  background-color: red;
 }
 
 .mdiv {
