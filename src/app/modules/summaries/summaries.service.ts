@@ -64,9 +64,9 @@ export class SummariesService implements IBasicService, OnModuleInit {
                 {
                     date: Between(startDate, endDate),
                     project: projectId,
-                    user: user,
-                },
-            ],
+                    user: user
+                }
+            ]
         });
     }
 
@@ -82,7 +82,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
                 date: moment(entry.date).format('MMM DD, YYYY'),
                 level: level,
                 timestamp: timestamp,
-                duration: duration,
+                duration: duration
             };
         });
     }
@@ -96,7 +96,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
             [2, 3],
             [3, 3],
             [4, 3],
-            [5, 3],
+            [5, 3]
         ]);
 
         const levelIndex = Math.floor(duration / 1000 / 60 / 30);
@@ -115,7 +115,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
 
         return {
             date: longestRecord.date,
-            duration: convertRawDurationToFormat(longestRecord.duration),
+            duration: convertRawDurationToFormat(longestRecord.duration)
         };
     }
 
@@ -157,8 +157,8 @@ export class SummariesService implements IBasicService, OnModuleInit {
                             where: {
                                 user: entry.user,
                                 date: entry.date,
-                                project: entry.project,
-                            },
+                                project: entry.project
+                            }
                         })
                         .then((result) => {
                             return result ?? entry;
@@ -228,7 +228,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
                     ...rest,
                     duration: convertRawDurationToFormat(entry.duration),
                     userId: entry.user.id,
-                    account: entry.user.account,
+                    account: entry.user.account
                 };
                 this.socketServer.server.emit('notice', JSON.stringify(result));
             }
@@ -248,7 +248,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
                 date: key[0],
                 project: project.id,
                 duration: key[1].reduce((sum, entry) => sum + entry.dur, 0),
-                user: project.user,
+                user: project.user
             };
         });
     }

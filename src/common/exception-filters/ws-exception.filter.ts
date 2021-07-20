@@ -8,6 +8,7 @@ export class WSExceptionsFilter extends BaseWsExceptionFilter {
         const status = exception?.status;
         const message = exception?.response?.message;
 
+        console.log(exception);
         client.emit('exception', { status, message });
     }
 }

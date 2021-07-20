@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { BullModule } from '@nestjs/bull';
 
 import { UsersModule } from './app/modules/users/users.module';
 import { SummariesModule, SummariesController } from './app/modules/summaries';
@@ -16,9 +17,15 @@ import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
 
 @Module({
     imports: [
+        BullModule.forRoot({
+            redis: {
+                host: 'localhost',
+                port: 6379
+            }
+        }),
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, 'public'),
-            renderPath: '/',
+            renderPath: '/'
         }),
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
@@ -32,8 +39,8 @@ import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
                 database: configService.get<string>('database.database'),
                 entities: configService.get('database.entities'),
                 synchronize: configService.get<boolean>('database.synchronize'),
-                logging: configService.get<boolean>('database.logging'),
-            }),
+                logging: configService.get<boolean>('database.logging')
+            })
         }),
         ThirdPartyModule,
         UsersModule,
@@ -41,9 +48,9 @@ import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
         AuthModule,
         ConfigModule.forRoot({ load: [configuration] }),
         ScheduleModule.forRoot(),
-        CommandsModule,
+        CommandsModule
     ],
-    controllers: [AppController],
+    controllers: [AppController]
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {

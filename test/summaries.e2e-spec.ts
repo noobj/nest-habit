@@ -179,7 +179,6 @@ describe('SummariesController (e2e)', () => {
         });
 
         socket.on('disconnect', () => {
-            console.log('disconnect');
             done();
         });
     });

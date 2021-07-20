@@ -9,7 +9,7 @@ export class TogglService implements IThirdPartyService {
     public async getProjects(user: Partial<User>) {
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
-            timeout: 5000,
+            timeout: 10000,
             auth: {
                 username: user.toggl_token,
                 password: 'api_token',

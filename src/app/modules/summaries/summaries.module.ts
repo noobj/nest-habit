@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bull';
 
+import { SummaryProcessor } from './summaries.processor';
 import { SummariesService } from './summaries.service';
 import { SummariesController } from './summaries.controller';
 import { ProjectService } from './projects.service';
@@ -14,6 +16,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
     imports: [
+        BullModule.registerQueue({
+            name: 'summary',
+        }),
         TypeOrmModule.forFeature([DailySummary, Project]),
         UsersModule,
         ThirdPartyModule,
@@ -28,6 +33,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         }),
     ],
     providers: [
+        SummaryProcessor,
         SummariesService,
         ProjectService,
         SummariesGateway,

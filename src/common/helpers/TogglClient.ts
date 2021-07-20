@@ -21,6 +21,7 @@ export class TogglClient {
             .get('api/v8/workspaces')
             .then((res) => res.data[0].id)
             .catch((err) => {
+                console.log(err);
                 const message = `fetch from Toggl failed: [${err.request.res.statusCode} ${err.request.res.statusMessage}]`;
 
                 throw new HttpException(message, err.request.res.statusCode);
