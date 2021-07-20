@@ -68,14 +68,7 @@ const getSummaries = async (argStartDate = null, argEndDate = null) => {
         },
     };
 
-    return await fetchOrRefreshAuth(`/summaries?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-        },
-    })
+    return await fetchOrRefreshAuth(`/summaries?${params.toString()}`, opts)
         .then(async function (response) {
             return response.json();
         })
