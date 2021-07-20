@@ -59,6 +59,7 @@ export default {
         height: '200px',
         width: '100%',
         position: 'relative',
+        color: 'white'
       },
       startDate: dayjs().subtract(10, 'day').format('YYYY-MM-DD'),
       checkin: '',
@@ -108,7 +109,7 @@ export default {
           duration = this.convertFormatTimeToMinute(summaries[index].duration);
         }
         result.push({
-          date: dayjs(i).format('MM-DD'),
+          date: dayjs(i).format('MM-DD (ddd)'),
           duration
         })
       }
