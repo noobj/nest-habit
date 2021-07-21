@@ -59,16 +59,19 @@
         </option>
       </select>
     </div>
-    <div class="cursor-pointer inline-block">
+    <div
+      @click="show()"
+      id="avatar"
+      class="cursor-pointer inline-block">
       <img
         class="rounded-full w-16 h-16"
-        v-on:click="toggle = !toggle"
         v-bind:src="'/img/' + avatarFileName"
       />
     </div>
     <div
-      class="absolute right-0 z-10 mt-2 overflow-hidden rounded"
-      v-if="toggle"
+      id="settings"
+      v-click-outside="hide"
+      class="invisible absolute right-0 z-10 mt-2 overflow-hidden rounded"
     >
       <div
         class="py-2 border bg-gray-900 px-4 bg-opacity-90 hover:bg-blue-400 text-center whitespace-nowrap font-bold cursor-pointer"
@@ -101,15 +104,18 @@
 </template>
 
 <script>
-import { fetchOrRefreshAuth } from '../utils'
+import { fetchOrRefreshAuth } from '../utils';
+import ClickOutside from 'vue-click-outside';
 
 export default {
   name: "Menu",
   props: {},
+  directives: {
+    ClickOutside
+  },
   data() {
     return {
       avatarFileName: "default.jpg",
-      toggle: false,
       formToggl:false,
       projects: [],
       thirdPartyServices: [],
@@ -269,8 +275,17 @@ export default {
           alert("upload failed");
         });
     },
+    hide () {
+      document.querySelector('#settings').classList.add('invisible');
+    },
+    show () {
+      document.querySelector('#settings').classList.toggle('invisible');
+    }
   },
   mounted() {
+    // prevent click outside event with popupItem.
+    this.popupItem = document.querySelector('#avatar');
+
     fetchOrRefreshAuth("/profile")
       .then((res) => {
         return res.json();
