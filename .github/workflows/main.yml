@@ -68,6 +68,7 @@ jobs:
       - name: npm install
         run: |
           npm install typeorm
+          npm install @nestjs/bull
       - name: build
         run: |
           npm run build
