@@ -11,7 +11,7 @@ import { Interfaces } from './constants';
 import { UsersModule } from '../users';
 import { ThirdPartyModule } from '../ThirdParty/third-party.module';
 import { SummariesGateway } from './summaries.gateway';
-import { RedisModule } from 'nestjs-redis';
+import { RedisModule } from '../redis/redis.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({

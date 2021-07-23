@@ -1,7 +1,7 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job, Queue } from 'bull';
-import { RedisService } from 'nestjs-redis';
+import { RedisService } from '../redis';
 import { Redis } from 'ioredis';
 import { endOfToday, subYears, subDays, format } from 'date-fns';
 
@@ -27,7 +27,7 @@ export class SummaryProcessor {
     }
 
     @Process('sync')
-    async handleTranscode(job: Job) {
+    async handleSync(job: Job) {
         const { user, socketId, project } = job.data;
         const newRecordsNumber = await this.projectService.setCurrentProject(
             user,

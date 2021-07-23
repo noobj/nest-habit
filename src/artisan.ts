@@ -12,7 +12,7 @@ async function bootstrap() {
 
     const application = await NestFactory.createApplicationContext(
         CommandsModule.register(options),
-        { logger: true }
+        { logger: ['verbose'] }
     );
 
     const commandsService = application.get(CommandsService);

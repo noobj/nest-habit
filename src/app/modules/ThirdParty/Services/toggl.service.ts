@@ -22,7 +22,7 @@ export class TogglService implements IThirdPartyService {
     public async checkTokenValid(token: string) {
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
-            timeout: 5000,
+            timeout: 10000,
             auth: {
                 username: token,
                 password: 'api_token',
@@ -36,7 +36,7 @@ export class TogglService implements IThirdPartyService {
     public async fetch(project: Project, since: string): Promise<any[]> {
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
-            timeout: 5000,
+            timeout: 10000,
             auth: {
                 username: project.user.toggl_token,
                 password: 'api_token',

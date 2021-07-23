@@ -9,7 +9,7 @@ import { User } from '../users';
 import { UsersService } from '../users';
 import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { SummariesService } from './summaries.service';
-import { RedisService } from 'nestjs-redis';
+import { RedisService } from '../redis';
 
 @Injectable()
 export class ProjectService {

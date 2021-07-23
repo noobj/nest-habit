@@ -9,7 +9,7 @@ import { User } from './../src/app/modules/users/users.entity';
 import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { SocketIoAdapter } from 'src/common/adapters/socket.io.adapter';
-import * as io from 'socket.io-client';
+import { io } from 'socket.io-client';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import { DailySummary } from 'src/app/modules/summaries/entities';
@@ -208,7 +208,6 @@ describe('SummariesController (e2e)', () => {
             redisClient.get(cacheString, (err, result) => {
                 expect(JSON.parse(result).summaries).toEqual(JSON.parse(data).summaries);
             });
-            socket.emit('force_close');
             socket.disconnect();
         });
 

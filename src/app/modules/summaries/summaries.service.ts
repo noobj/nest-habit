@@ -5,7 +5,7 @@ import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
 import { Redis } from 'ioredis';
 
-import { RedisService } from 'nestjs-redis';
+import { RedisService } from '../redis';
 import { DailySummary } from './entities';
 import { IBasicService } from './interfaces';
 import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';

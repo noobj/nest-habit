@@ -17,11 +17,16 @@ import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
 
 @Module({
     imports: [
-        BullModule.forRoot({
-            redis: {
-                host: 'localhost',
-                port: 6379
-            }
+        BullModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: async (configService: ConfigService) => ({
+                redis: {
+                    host: 'localhost',
+                    port: 6379,
+                    db: configService.get('redis.db')
+                }
+            })
         }),
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, 'public'),

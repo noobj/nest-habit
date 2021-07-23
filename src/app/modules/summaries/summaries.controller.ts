@@ -22,7 +22,7 @@ import { Interfaces } from './constants';
 import { ProjectService } from './projects.service';
 import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception.filter';
 import { DailySummary } from './entities';
-import { RedisService } from 'nestjs-redis';
+import { RedisService } from '../redis';
 import { getCacheString } from 'src/common/helpers/utils';
 
 class DateRange {
