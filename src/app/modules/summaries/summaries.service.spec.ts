@@ -8,7 +8,7 @@ import { User } from '../users';
 import { ProjectService } from './projects.service';
 import { ModuleRef } from '@nestjs/core';
 import { ThirdPartyService } from '../ThirdParty/third-party.service';
-import { RedisService } from 'nestjs-redis';
+import { RedisService } from 'src/app/modules/redis';
 
 describe('SummariesService', () => {
     let service: SummariesService;
