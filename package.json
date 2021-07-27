@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
     "test:e2e:debug": "node --inspect=0.0.0.0 -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config ./test/jest-e2e.json --runInBand",
-    "test:overall": "jest --config jest-overall.json --runInBand --no-cache",
+    "test:overall": "jest --config jest-overall.json --runInBand --no-cache --forceExit",
     "artisan": "node dist/artisan.js",
     "migrate": "typeorm migration:run",
     "seed": "node dist/artisan.js seed",
