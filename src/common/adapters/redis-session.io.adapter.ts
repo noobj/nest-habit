@@ -12,6 +12,7 @@ export class RedisSessionIoAdapter extends IoAdapter {
     private server;
     private redisClient;
     private configService: ConfigService;
+    private subClient;
 
     constructor(app) {
         super(app);
@@ -42,8 +43,8 @@ export class RedisSessionIoAdapter extends IoAdapter {
         });
 
         const pubClient = this.redisClient;
-        const subClient = pubClient.duplicate();
-        const redisAdapter = createAdapter({ pubClient, subClient });
+        this.subClient = pubClient.duplicate();
+        const redisAdapter = createAdapter({ pubClient, subClient: this.subClient });
 
         this.server.adapter(redisAdapter);
         return this.server;
@@ -52,6 +53,13 @@ export class RedisSessionIoAdapter extends IoAdapter {
     async close() {
         await new Promise<void>((resolve) => {
             this.redisClient.quit(() => {
+                resolve();
+            });
+        });
+        await new Promise<void>((resolve) => setImmediate(resolve));
+
+        await new Promise<void>((resolve) => {
+            this.subClient.quit(() => {
                 resolve();
             });
         });
