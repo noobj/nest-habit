@@ -24,7 +24,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         ThirdPartyModule,
         RedisModule.forRootAsync({
             useFactory: async (configService: ConfigService) => ({
-                host: 'localhost',
+                host: '127.0.0.1',
                 port: 6379,
                 db: configService.get('redis.db'),
             }),

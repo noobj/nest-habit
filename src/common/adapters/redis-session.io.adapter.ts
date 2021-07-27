@@ -3,18 +3,22 @@ import * as session from 'express-session';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import { ConfigService } from '@nestjs/config';
+import { createAdapter } from 'socket.io-redis';
+import { ServerOptions } from 'socket.io';
 
 const wrap = (middleware) => (socket, next) => middleware(socket.request, {}, next);
-export class SocketIoAdapter extends IoAdapter {
+
+export class RedisSessionIoAdapter extends IoAdapter {
     private server;
     private redisClient;
     private configService: ConfigService;
+
     constructor(app) {
         super(app);
         this.configService = app.get(ConfigService);
     }
 
-    createIOServer(port: number, options?: any): any {
+    createIOServer(port: number, options?: ServerOptions): any {
         const RedisStore = connectRedis(session);
         this.redisClient = redis.createClient({ db: this.configService.get('redis.db') });
         if (process.env.NODE_ENV === 'test') port = 3333;
@@ -26,7 +30,7 @@ export class SocketIoAdapter extends IoAdapter {
                     store: new RedisStore({ client: this.redisClient }),
                     secret: 'secret',
                     resave: false,
-                    saveUninitialized: false,
+                    saveUninitialized: false
                 })
             )
         );
@@ -36,6 +40,12 @@ export class SocketIoAdapter extends IoAdapter {
             socket.session = socket?.request?.session;
             next();
         });
+
+        const pubClient = this.redisClient;
+        const subClient = pubClient.duplicate();
+        const redisAdapter = createAdapter({ pubClient, subClient });
+
+        this.server.adapter(redisAdapter);
         return this.server;
     }
 

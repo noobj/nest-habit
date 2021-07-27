@@ -7,7 +7,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { AppModule } from './app.module';
 import { staticChecker } from './common/middleware/static-file-checker.middleware';
-import { SocketIoAdapter } from './common/adapters/socket.io.adapter';
+import { RedisSessionIoAdapter } from './common/adapters/redis-session.io.adapter';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -20,7 +20,7 @@ async function bootstrap() {
             credentials: true,
         },
     });
-    app.useWebSocketAdapter(new SocketIoAdapter(app));
+    app.useWebSocketAdapter(new RedisSessionIoAdapter(app));
     app.use(staticChecker);
     const configService = app.get(ConfigService);
 

@@ -11,7 +11,7 @@ import * as session from 'express-session';
 import { join } from 'path';
 import * as fs from 'fs';
 import { staticChecker } from 'src/common/middleware/static-file-checker.middleware';
-import { SocketIoAdapter } from 'src/common/adapters/socket.io.adapter';
+import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adapter';
 import Services from 'src/config/third-party-services.map';
 
 describe('AppController (e2e)', () => {
@@ -25,7 +25,7 @@ describe('AppController (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
-        socketIoServer = app.useWebSocketAdapter(new SocketIoAdapter(app));
+        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(app));
 
         app.use(staticChecker);
         const configService = app.get(ConfigService);

@@ -8,7 +8,7 @@ import configuration from 'src/config/test.config';
 import { User } from './../src/app/modules/users/users.entity';
 import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
-import { SocketIoAdapter } from 'src/common/adapters/socket.io.adapter';
+import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adapter';
 import { io } from 'socket.io-client';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
@@ -29,7 +29,7 @@ describe('SummariesController (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
-        socketIoServer = app.useWebSocketAdapter(new SocketIoAdapter(app));
+        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(app));
         const configService = app.get(ConfigService);
         const RedisStore = connectRedis(session);
         redisClient = redis.createClient({ db: configService.get('redis.db') });
