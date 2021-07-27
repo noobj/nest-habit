@@ -1,11 +1,12 @@
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { WebSocketGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
 import { WSExceptionsFilter } from 'src/common/exception-filters/ws-exception.filter';
+import { User } from '../users';
 
 @WebSocketGateway(3002, {
     cors: {
@@ -28,7 +29,8 @@ export class SummariesGateway {
     @UseFilters(new WSExceptionsFilter())
     @UseGuards(AuthGuard('jwt'))
     @SubscribeMessage('sync')
-    async onEvent(socket, data): Promise<void> {
+    async onEvent(socket: Socket & { user: Partial<User> }, data): Promise<void> {
+        socket.join(`Room ${socket.user.id}`);
         await this.summaryQueue.add('sync', {
             user: socket.user,
             project: data.projectName,

@@ -48,7 +48,9 @@ export class SummaryProcessor {
                     user,
                     cacheString
                 );
-                this.summariesGateway.server.to(socketId).emit(event.event, event.data);
+                this.summariesGateway.server
+                    .to(`Room ${user.id}`)
+                    .emit(event.event, event.data);
                 return;
             }
         }
