@@ -29,7 +29,8 @@ describe('SummariesController (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
-        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(app));
+        const server = app.getHttpServer();
+        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
         const configService = app.get(ConfigService);
         const RedisStore = connectRedis(session);
         redisClient = redis.createClient({ db: configService.get('redis.db') });

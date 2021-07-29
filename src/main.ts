@@ -20,7 +20,8 @@ async function bootstrap() {
             credentials: true,
         },
     });
-    app.useWebSocketAdapter(new RedisSessionIoAdapter(app, 'main'));
+    const server = app.getHttpServer();
+    app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
     app.use(staticChecker);
     const configService = app.get(ConfigService);
 

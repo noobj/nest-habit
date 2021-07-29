@@ -25,7 +25,8 @@ describe('AppController (e2e)', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
-        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(app));
+        const server = app.getHttpServer();
+        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
 
         app.use(staticChecker);
         const configService = app.get(ConfigService);

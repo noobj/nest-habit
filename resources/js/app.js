@@ -5,7 +5,7 @@ import VSocket from 'vue-socket.io';
 
 Vue.use(
     new VSocket({
-        connection: window.location.hostname + ':3002'
+        connection: window.location.host
     })
 );
 

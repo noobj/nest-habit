@@ -8,18 +8,7 @@ import { Queue } from 'bull';
 import { WSExceptionsFilter } from 'src/common/exception-filters/ws-exception.filter';
 import { User } from '../users';
 
-@WebSocketGateway({
-    cors: {
-        origin: [
-            'http://192.168.56.101:3000',
-            'http://192.168.56.101:3001',
-            'http://localhost:3001',
-            'http://127.0.0.1:3001'
-        ],
-        credentials: true
-    },
-    allowEIO3: true
-})
+@WebSocketGateway()
 export class SummariesGateway {
     constructor(@InjectQueue('summary') private readonly summaryQueue: Queue) {}
 

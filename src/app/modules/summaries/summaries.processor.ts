@@ -28,6 +28,7 @@ export class SummaryProcessor {
 
     @Process('sync')
     async handleSync(job: Job) {
+        console.log('fff');
         const { user, socketId, project } = job.data;
         const newRecordsNumber = await this.projectService.setCurrentProject(
             user,
