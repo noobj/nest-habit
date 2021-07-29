@@ -26,4 +26,8 @@ export default () => ({
     redis: {
         db: 0,
     },
+    socket: {
+        main: 3002,
+        sub: 3003
+    }
 });

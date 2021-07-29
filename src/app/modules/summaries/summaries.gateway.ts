@@ -8,7 +8,7 @@ import { Queue } from 'bull';
 import { WSExceptionsFilter } from 'src/common/exception-filters/ws-exception.filter';
 import { User } from '../users';
 
-@WebSocketGateway(3002, {
+@WebSocketGateway({
     cors: {
         origin: [
             'http://192.168.56.101:3000',

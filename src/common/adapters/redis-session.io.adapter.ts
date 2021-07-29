@@ -13,34 +13,39 @@ export class RedisSessionIoAdapter extends IoAdapter {
     private redisClient;
     private configService: ConfigService;
     private subClient;
+    private mode;
 
-    constructor(app) {
+    constructor(app, mode: string) {
         super(app);
         this.configService = app.get(ConfigService);
+        this.mode = mode;
     }
 
     createIOServer(port: number, options?: ServerOptions): any {
         const RedisStore = connectRedis(session);
         this.redisClient = redis.createClient({ db: this.configService.get('redis.db') });
+        port = this.configService.get(`socket.${this.mode}`);
         if (process.env.NODE_ENV === 'test') port = 3333;
 
         this.server = super.createIOServer(port, options);
-        this.server.use(
-            wrap(
-                session({
-                    store: new RedisStore({ client: this.redisClient }),
-                    secret: 'secret',
-                    resave: false,
-                    saveUninitialized: false
-                })
-            )
-        );
+        if (this.mode == 'main') {
+            this.server.use(
+                wrap(
+                    session({
+                        store: new RedisStore({ client: this.redisClient }),
+                        secret: 'secret',
+                        resave: false,
+                        saveUninitialized: false
+                    })
+                )
+            );
 
-        // extract session from request
-        this.server.use((socket, next) => {
-            socket.session = socket?.request?.session;
-            next();
-        });
+            // extract session from request
+            this.server.use((socket, next) => {
+                socket.session = socket?.request?.session;
+                next();
+            });
+        }
 
         const pubClient = this.redisClient;
         this.subClient = pubClient.duplicate();
