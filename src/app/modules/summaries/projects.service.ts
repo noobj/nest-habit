@@ -1,8 +1,10 @@
 import { Injectable, ImATeapotException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import * as moment from 'moment-timezone';
 import { Redis } from 'ioredis';
+import axios from 'axios';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { Project } from './entities';
 import { User } from '../users';
@@ -29,7 +31,7 @@ export class ProjectService {
 
     public async getProjectByUser(user: Partial<User>): Promise<Project> {
         const project = await this.projectRepository.findOne({
-            where: { user: user },
+            where: { user: user }
         });
 
         return project;
@@ -39,9 +41,9 @@ export class ProjectService {
         return await this.projectRepository.find({
             relations: ['user'],
             order: {
-                last_updated: 'DESC',
+                last_updated: 'DESC'
             },
-            take: arg,
+            take: arg
         });
     }
 
@@ -91,11 +93,85 @@ export class ProjectService {
                 project_id: fetchedProject.id,
                 name: projectName,
                 user: userWhole,
-                last_updated: new Date(),
+                last_updated: new Date()
             };
             await this.projectRepository.save(project);
         }
 
         return await this.summariesService.syncWithThirdParty(365, userWhole);
+    }
+
+    @Cron(CronExpression.EVERY_10_MINUTES)
+    public async updateSubscriber() {
+        const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
+        const client = axios.create({
+            baseURL: 'https://api.telegram.org/' + botApi,
+            timeout: 10000
+        });
+        const updateOffset = await this.redisClient.get('telegram_update_id_offset');
+
+        const params = {
+            offset: updateOffset
+        };
+
+        const updates = await client.get('getUpdates', { params });
+
+        const regex = /\/sub (.*)/i;
+        const messages = updates.data.result
+            .filter((v) => v.message?.text.match(regex))
+            .map((v) => ({
+                load: v.message?.text.match(regex)[1],
+                chatId: v.message.from.id
+            }));
+
+        await Promise.all(
+            messages.map((message) =>
+                this.usersService.setNotifyId(message.load, message.chatId)
+            )
+        );
+
+        if (updates.data.result.length != 0)
+            await this.redisClient.set(
+                'telegram_update_id_offset',
+                updates.data.result.pop().update_id + 1
+            );
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_9PM)
+    public async dailyNotify() {
+        const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
+        const client = axios.create({
+            baseURL: 'https://api.telegram.org/' + botApi,
+            timeout: 10000
+        });
+
+        const users = await this.usersService.find({
+            notify_id: Not(IsNull())
+        });
+
+        await Promise.all(
+            users.map((user) => {
+                const startDate = moment().isoWeekday(1).format('YYYY-MM-DD');
+                const endDate = moment().isoWeekday(7).format('YYYY-MM-DD');
+                return this.summariesService
+                    .getRawDailySummaries(startDate, endDate, user)
+                    .then((rawData) => {
+                        return {
+                            total: this.summariesService.getTotalDuration(rawData),
+                            days: rawData.length
+                        };
+                    })
+                    .then((res) => {
+                        const text = `*🧘 Meditation Progress👃*\nDays: ${res.days}\nTotal: ${res.total}\nStreak: !!!`;
+                        const params = {
+                            chat_id: user.notify_id,
+                            text: text,
+                            parse_mode: 'markdown'
+                        };
+
+                        return client.get('sendMessage', { params });
+                    });
+            })
+        );
     }
 }

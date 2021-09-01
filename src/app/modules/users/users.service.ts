@@ -1,6 +1,6 @@
 import { ImATeapotException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindConditions } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { User } from './users.entity';
@@ -12,13 +12,17 @@ export class UsersService {
         private usersRepository: Repository<User>
     ) {}
 
+    async find(conditions?: FindConditions<User>): Promise<User[]> {
+        return await this.usersRepository.find(conditions);
+    }
+
     async findOne(id: number): Promise<User | undefined> {
         return await this.usersRepository.findOne(id);
     }
 
     async findOneByAccount(account: string): Promise<User | undefined> {
         return await this.usersRepository.findOne({
-            where: { account: account },
+            where: { account: account }
         });
     }
 
@@ -26,7 +30,7 @@ export class UsersService {
         try {
             await this.usersRepository.update(id, {
                 toggl_token: token,
-                third_party_service: service,
+                third_party_service: service
             });
         } catch (err) {
             throw new ImATeapotException(err.code);
@@ -36,13 +40,13 @@ export class UsersService {
     async setRefreshToken(refreshToken: string, userId: number) {
         const currentHashedRefreshToken = await bcrypt.hash(refreshToken, 10);
         await this.usersRepository.update(userId, {
-            refresh_token: currentHashedRefreshToken,
+            refresh_token: currentHashedRefreshToken
         });
     }
 
     async removeRefreshToken(userId: number) {
         return this.usersRepository.update(userId, {
-            refresh_token: null,
+            refresh_token: null
         });
     }
 
@@ -57,5 +61,14 @@ export class UsersService {
         if (isRefreshTokenMatching) {
             return user;
         }
+    }
+
+    async setNotifyId(acc: string, chatId: number) {
+        await this.usersRepository.update(
+            { account: acc },
+            {
+                notify_id: chatId
+            }
+        );
     }
 }

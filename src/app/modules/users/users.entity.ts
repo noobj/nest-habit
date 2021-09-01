@@ -33,4 +33,9 @@ export class User {
         nullable: true,
     })
     third_party_service?: string;
+
+    @Column({
+        nullable: true
+    })
+    notify_id?: number;
 }

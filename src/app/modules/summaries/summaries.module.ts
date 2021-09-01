@@ -13,11 +13,12 @@ import { ThirdPartyModule } from '../ThirdParty/third-party.module';
 import { SummariesGateway } from './summaries.gateway';
 import { RedisModule } from '../redis/redis.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: 'summary',
+            name: 'summary'
         }),
         TypeOrmModule.forFeature([DailySummary, Project]),
         UsersModule,
@@ -29,8 +30,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
                 db: configService.get('redis.db'),
             }),
             inject: [ConfigService],
-            imports: [ConfigModule],
+            imports: [ConfigModule]
         }),
+        ScheduleModule.forRoot()
     ],
     providers: [
         SummaryProcessor,
