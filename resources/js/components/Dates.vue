@@ -16,11 +16,11 @@
         <div class="py-2 text-2xl text-yellow-600 font-bold">{{totalThisMonth}}</div>
       </div>
       <div
-        v-if="longestRecord"
+        v-if="streak"
         class="m-2 border border-gray-200 rounded-lg"
       >
-        <div class="py-2 border-b border-gray-200">The Longest Record</div>
-        <div class="py-2 text-2xl text-yellow-600 font-bold">{{longestRecord}}</div>
+        <div class="py-2 border-b border-gray-200">Streak</div>
+        <div class="py-2 text-2xl text-yellow-600 font-bold">{{streak}}</div>
       </div>
     </div>
     <div class="font-bold" v-if="!summaries">
@@ -55,7 +55,7 @@ export default {
       summaries: [],
       totalLastYear: '',
       totalThisMonth: '',
-      longestRecord: ''
+      streak: ''
     }
   },
   sockets: {
@@ -64,13 +64,13 @@ export default {
         summaries,
         total_last_year,
         total_this_month,
-        longest_record
+        streak
       } = JSON.parse(data) || {};
 
       this.summaries = summaries
       this.totalLastYear = total_last_year
       this.totalThisMonth = total_this_month
-      this.longestRecord = longest_record ? `${longest_record.duration} on ${longest_record.date}` : null;
+      this.streak = streak ? `${streak} Days` : null;
     },
   },
   methods: {
@@ -90,12 +90,12 @@ export default {
       summaries,
       total_last_year,
       total_this_month,
-      longest_record
+      streak
     } = await getSummaries() || {};
     this.summaries = summaries
     this.totalLastYear = total_last_year
     this.totalThisMonth = total_this_month
-    this.longestRecord = longest_record ? `${longest_record.duration} on ${longest_record.date}` : null;
+    this.streak = streak ? `${streak} Days` : null;
   }
 }
 </script>

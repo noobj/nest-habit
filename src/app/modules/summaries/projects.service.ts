@@ -137,7 +137,7 @@ export class ProjectService {
             );
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_9PM)
+    @Cron(CronExpression.EVERY_DAY_AT_10PM)
     public async dailyNotify() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
@@ -155,14 +155,15 @@ export class ProjectService {
                 const endDate = moment().isoWeekday(7).format('YYYY-MM-DD');
                 return this.summariesService
                     .getRawDailySummaries(startDate, endDate, user)
-                    .then((rawData) => {
+                    .then(async (rawData) => {
                         return {
                             total: this.summariesService.getTotalDuration(rawData),
-                            days: rawData.length
+                            days: rawData.length,
+                            streak: await this.summariesService.getCurrentStreak(user)
                         };
                     })
                     .then((res) => {
-                        const text = `*🧘 Meditation Progress👃*\nDays: ${res.days}\nTotal: ${res.total}\nStreak: !!!`;
+                        const text = `*🧘 Meditation Progress👃*\nDays: ${res.days}\nTotal: ${res.total}\nStreak: ${res.streak} days`;
                         const params = {
                             chat_id: user.notify_id,
                             text: text,

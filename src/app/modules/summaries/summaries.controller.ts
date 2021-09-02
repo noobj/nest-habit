@@ -9,7 +9,7 @@ import {
     Request,
     Post,
     Body,
-    UseFilters,
+    UseFilters
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { IsDateString } from 'class-validator';
@@ -62,23 +62,23 @@ export class SummariesController {
             curretProject: this.projectService.getProjectByUser(req.user),
             allProjects: this.projectService.getAllProjects(req.user).then((res) => {
                 return res.data.map((entry) => entry.name);
-            }),
+            })
         }).pipe(
             map(({ curretProject, allProjects }) => {
                 const result =
                     curretProject == undefined
                         ? {
                               allProjects: allProjects,
-                              currentProject: null,
+                              currentProject: null
                           }
                         : {
                               allProjects: allProjects,
-                              currentProject: curretProject,
+                              currentProject: curretProject
                           };
 
                 return {
                     statusCode: HttpStatus.OK,
-                    data: result,
+                    data: result
                 };
             })
         );
@@ -99,7 +99,7 @@ export class SummariesController {
         if (cacheSummaries !== null)
             return {
                 statusCode: HttpStatus.OK,
-                data: JSON.parse(cacheSummaries),
+                data: JSON.parse(cacheSummaries)
             };
 
         return from(
@@ -113,25 +113,23 @@ export class SummariesController {
                 if (rawData.length === 0) {
                     return of({
                         statusCode: HttpStatus.NO_CONTENT,
-                        data: 'No Data',
+                        data: 'No Data'
                     });
                 } else {
                     return forkJoin({
                         summries: this.summariesService.processTheRawSummaries(rawData),
-                        longestRecord: of(
-                            this.summariesService.getLongestDayRecord(rawData)
-                        ),
+                        streak: from(this.summariesService.getCurrentStreak(req.user)),
                         totalYear: of(this.summariesService.getTotalDuration(rawData)),
                         totalThisMonth: of(
                             this.summariesService.getTotalThisMonth(rawData)
-                        ),
+                        )
                     }).pipe(
-                        map(({ summries, longestRecord, totalYear, totalThisMonth }) => {
+                        map(({ summries, streak, totalYear, totalThisMonth }) => {
                             return {
                                 summaries: summries,
-                                longest_record: longestRecord,
+                                streak,
                                 total_last_year: totalYear,
-                                total_this_month: totalThisMonth,
+                                total_this_month: totalThisMonth
                             };
                         }),
                         tap((res) =>
@@ -147,7 +145,7 @@ export class SummariesController {
                         map((res) => {
                             return {
                                 statusCode: HttpStatus.OK,
-                                data: res,
+                                data: res
                             };
                         })
                     );

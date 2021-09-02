@@ -10,4 +10,6 @@ export interface IBasicService {
     getTotalDuration(rawData);
 
     getTotalThisMonth(rawData);
+
+    getCurrentStreak(user: User);
 }

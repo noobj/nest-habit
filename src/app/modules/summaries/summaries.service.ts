@@ -259,4 +259,26 @@ export class SummariesService implements IBasicService, OnModuleInit {
             };
         });
     }
+
+    public async getCurrentStreak(user: User): Promise<number> {
+        let streak = await this.dailySummaryRepository
+            .query(`select if(max(maxcount) < 0, 0, max(maxcount)) streak
+        from (
+        select
+          if(datediff(@prevDate, \`date\`) = 1, @count := @count + 1, @count := -99999) maxcount,
+          @prevDate := \`date\`
+          from daily_summaries as v cross join
+            (select @prevDate := curdate(), @count := 0) t1
+          where user_id = ${user.id}
+          and \`date\` < curdate()
+          order by \`date\` desc
+        ) t1; `);
+
+        const todayDateString = moment().format('YYYY-MM-DD');
+        const today = await this.dailySummaryRepository.find({ date: todayDateString });
+        streak = streak[0].streak;
+        if (today.length) streak++;
+
+        return streak;
+    }
 }
