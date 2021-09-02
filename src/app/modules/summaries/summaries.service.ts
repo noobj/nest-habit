@@ -139,7 +139,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
         return convertRawDurationToFormat(sum);
     }
 
-    public async upsert(data: CreateDailySummaryDto[]): Promise<CreateDailySummaryDto[]> {
+    public async upsert(data: CreateDailySummaryDto[]): Promise<any> {
         const classTransformer = new ClassTransformer();
         const entity = classTransformer.plainToClass(CreateDailySummaryDto, data);
         const wrapped = new WrapperCreateDailySummaryDto(entity);
@@ -149,6 +149,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
         }
 
         try {
+            let affected = 0;
             // search for those existing entries and insert their id
             data = await Promise.all(
                 data.map(async (entry) => {
@@ -161,12 +162,26 @@ export class SummariesService implements IBasicService, OnModuleInit {
                             }
                         })
                         .then((result) => {
-                            return result ?? entry;
+                            if (result) {
+                                if (result.duration != entry.duration) {
+                                    affected++;
+                                    result.duration = entry.duration;
+                                }
+
+                                return result;
+                            } else {
+                                affected++;
+                                return entry;
+                            }
                         });
                 })
             );
 
-            return await this.dailySummaryRepository.save(data);
+            const entries = await this.dailySummaryRepository.save(data);
+            return {
+                affected,
+                entries
+            };
         } catch (e) {
             throw new ImATeapotException(e);
         }
@@ -196,27 +211,19 @@ export class SummariesService implements IBasicService, OnModuleInit {
 
             await this.projectService.updateProjectLastUpdated(project);
 
-            const affectedRow = this.calNewRecords(result);
-
             // Delete all the summaries cache of the user
-            if (affectedRow > 0) {
+            if (result.affected > 0) {
                 const keys = await this.redisClient.keys(`summaries:${user.id}*`);
                 for (const key of keys) await this.redisClient.del(key);
             }
 
-            if (emitNotice && affectedRow > 0) this.sendMessageToSocketClients(result);
+            if (emitNotice && result.affected > 0)
+                this.sendMessageToSocketClients(result.entries);
 
-            return affectedRow;
+            return result.affected;
         } catch (err) {
             throw err;
         }
-    }
-
-    private calNewRecords(entries: any[]): number {
-        return entries.reduce((sum, entry) => {
-            if (entry.user) return sum + 1;
-            return sum;
-        }, 0);
     }
 
     private sendMessageToSocketClients(entries: CreateDailySummaryDto[]) {
