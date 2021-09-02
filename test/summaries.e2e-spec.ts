@@ -175,7 +175,7 @@ describe('SummariesController (e2e)', () => {
                 id: 6,
                 duration: '3m',
                 userId: 222,
-                account: 'jjj',
+                account: 'jjj'
             });
         });
 
@@ -222,7 +222,7 @@ describe('SummariesController (e2e)', () => {
             start_date: '2021-05-22',
             end_date: '2021-05-26',
         };
-        jest.useFakeTimers('modern').setSystemTime(new Date('2021-05-01').getTime());
+        jest.useFakeTimers('modern').setSystemTime(new Date('2021-05-25').getTime());
         return request(app.getHttpServer())
             .get('/summaries')
             .set('Cookie', cookies)
@@ -233,25 +233,22 @@ describe('SummariesController (e2e)', () => {
                         date: 'May 25, 2021',
                         level: 4,
                         timestamp: 1621872000000,
-                        duration: '3h0m',
+                        duration: '3h0m'
                     },
                     {
                         date: 'May 24, 2021',
                         level: 3,
                         timestamp: 1621785600000,
-                        duration: '2h0m',
+                        duration: '2h0m'
                     },
                     {
                         date: 'May 23, 2021',
                         level: 3,
                         timestamp: 1621699200000,
-                        duration: '1h0m',
-                    },
+                        duration: '1h0m'
+                    }
                 ]);
-                expect(res.body.data.longest_record).toEqual({
-                    date: '2021-05-25',
-                    duration: '3h0m',
-                });
+                expect(res.body.data.streak).toEqual(1);
                 expect(res.body.data.total_last_year).toEqual('6h0m');
                 expect(res.status).toEqual(200);
                 jest.useRealTimers();
@@ -263,7 +260,7 @@ describe('SummariesController (e2e)', () => {
     it('/GET summaries from cache', (done) => {
         const query = {
             start_date: '2021-05-22',
-            end_date: '2021-05-26',
+            end_date: '2021-05-26'
         };
         return request(app.getHttpServer())
             .get('/summaries')
@@ -280,10 +277,7 @@ describe('SummariesController (e2e)', () => {
                     expect(JSON.parse(result)).toEqual(res.body.data);
                 });
 
-                expect(res.body.data.longest_record).toEqual({
-                    date: '2021-05-25',
-                    duration: '3h0m',
-                });
+                expect(res.body.data.streak).toEqual(1);
                 expect(res.body.data.total_last_year).toEqual('6h0m');
                 expect(res.status).toEqual(200);
                 done();

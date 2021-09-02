@@ -70,14 +70,14 @@ export class SummaryProcessor {
                 current_project: currentProject
             };
         } else {
-            const longestRecord = this.summariesService.getLongestDayRecord(rawData);
+            const streak = await this.summariesService.getCurrentStreak(user);
             const totalYear = this.summariesService.getTotalDuration(rawData);
             const totalThisMonth = this.summariesService.getTotalThisMonth(rawData);
 
             result = {
                 current_project: currentProject,
                 summaries: summaries,
-                longest_record: longestRecord,
+                streak,
                 total_last_year: totalYear,
                 total_this_month: totalThisMonth
             };
@@ -94,7 +94,7 @@ export class SummaryProcessor {
     ): Promise<WsResponse<string>> {
         let {
             summaries,
-            longest_record,
+            streak,
             total_last_year,
             total_this_month,
             current_project
@@ -106,7 +106,7 @@ export class SummaryProcessor {
             const res = {
                 current_project,
                 summaries: summaries,
-                longest_record,
+                streak,
                 total_last_year,
                 total_this_month
             };
@@ -119,7 +119,7 @@ export class SummaryProcessor {
         const result = {
             current_project,
             summaries: summaries,
-            longest_record,
+            streak,
             total_last_year,
             total_this_month
         };

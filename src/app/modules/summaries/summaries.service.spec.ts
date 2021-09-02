@@ -204,7 +204,7 @@ describe('SummariesService', () => {
             { project: 9, date: '2021-04-23', duration: 1500000, user: user },
         ]);
 
-        expect(result).toEqual([
+        expect(result.entries).toEqual([
             {
                 id: 9,
                 project: 9,
