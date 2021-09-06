@@ -18,7 +18,7 @@ describe('SummariesService', () => {
         account: 'jjj',
         email: 'test',
         password: 'DGAF',
-        toggl_token: 'DGAF',
+        toggl_token: 'DGAF'
     };
 
     const mockDailySummaryRepo = {
@@ -28,7 +28,7 @@ describe('SummariesService', () => {
                 project: entry.where.project,
                 date: entry.where.date,
                 duration: 1500000,
-                user: entry.where.user,
+                user: entry.where.user
             })
         ),
         save: jest.fn((entries) => Promise.resolve<DailySummary[]>(entries)),
@@ -52,24 +52,25 @@ describe('SummariesService', () => {
                 { id: 24, date: '2021-03-16', duration: 2700000, user: user },
                 { id: 25, date: '2021-03-09', duration: 1800000, user: user },
                 { id: 26, date: '2021-03-05', duration: 5400000, user: user },
-                { id: 27, date: '2021-03-01', duration: 2700000, user: user },
+                { id: 27, date: '2021-03-01', duration: 2700000, user: user }
             ])
         ),
+        query: jest.fn(() => Promise.resolve<any>([{ streak: 3 }]))
     };
 
     const mockProjectService = {
         getProjectByUser: jest.fn((name: string) => ({
             name: name,
-            id: 123,
+            id: 123
         })),
         getLeastUpdatedProjects: jest.fn(),
-        updateProjectLastUpdated: jest.fn(),
+        updateProjectLastUpdated: jest.fn()
     };
 
     const mockModuleRef = {
         get: jest.fn(() => {
             return mockProjectService;
-        }),
+        })
     };
 
     const mockThirdPartyService = {
@@ -77,29 +78,29 @@ describe('SummariesService', () => {
             fetch: () => [
                 {
                     start: '2021-01-10T11:00:51+08:00',
-                    dur: 1000,
+                    dur: 1000
                 },
                 {
                     start: '2021-01-10T11:00:51+08:00',
-                    dur: 1000,
+                    dur: 1000
                 },
                 {
                     start: '2021-01-11T11:00:51+08:00',
-                    dur: 1000,
-                },
-            ],
-        }),
+                    dur: 1000
+                }
+            ]
+        })
     };
 
     const mockRedisClient = {
         keys: jest.fn(() => {
             return ['fake'];
         }),
-        del: jest.fn(),
+        del: jest.fn()
     };
 
     const mockRedisService = {
-        getClient: jest.fn(() => mockRedisClient),
+        getClient: jest.fn(() => mockRedisClient)
     };
 
     beforeEach(async () => {
@@ -108,25 +109,25 @@ describe('SummariesService', () => {
                 SummariesService,
                 {
                     provide: getRepositoryToken(DailySummary),
-                    useValue: mockDailySummaryRepo,
+                    useValue: mockDailySummaryRepo
                 },
                 {
                     provide: ProjectService,
-                    useValue: mockProjectService,
+                    useValue: mockProjectService
                 },
                 {
                     provide: ModuleRef,
-                    useValue: mockModuleRef,
+                    useValue: mockModuleRef
                 },
                 {
                     provide: ThirdPartyService,
-                    useValue: mockThirdPartyService,
+                    useValue: mockThirdPartyService
                 },
                 {
                     provide: RedisService,
-                    useValue: mockRedisService,
-                },
-            ],
+                    useValue: mockRedisService
+                }
+            ]
         }).compile();
 
         service = module.get<SummariesService>(SummariesService);
@@ -140,16 +141,16 @@ describe('SummariesService', () => {
             id: 9,
             date: '2021-04-23',
             duration: 1500000,
-            user: user,
+            user: user
         });
         expect(mockDailySummaryRepo.find).toBeCalledWith({
             where: [
                 {
                     date: Between('startDate', 'endDate'),
                     project: 123,
-                    user: user,
-                },
-            ],
+                    user: user
+                }
+            ]
         });
     });
 
@@ -161,13 +162,13 @@ describe('SummariesService', () => {
             date: 'Apr 23, 2021',
             duration: '25m',
             level: 1,
-            timestamp: 1619107200000,
+            timestamp: 1619107200000
         });
         expect(result[1]).toEqual({
             date: 'Apr 21, 2021',
             duration: '3h20m',
             level: 4,
-            timestamp: 1618934400000,
+            timestamp: 1618934400000
         });
     });
 
@@ -177,7 +178,7 @@ describe('SummariesService', () => {
 
         expect(result).toEqual({
             date: '2021-04-02',
-            duration: '4h30m',
+            duration: '4h30m'
         });
     });
 
@@ -201,7 +202,7 @@ describe('SummariesService', () => {
 
     it('should return upsert result', async () => {
         const result = await service.upsert([
-            { project: 9, date: '2021-04-23', duration: 1500000, user: user },
+            { project: 9, date: '2021-04-23', duration: 1500000, user: user }
         ]);
 
         expect(result.entries).toEqual([
@@ -210,15 +211,15 @@ describe('SummariesService', () => {
                 project: 9,
                 date: '2021-04-23',
                 duration: 1500000,
-                user: user,
-            },
+                user: user
+            }
         ]);
     });
 
     it('should upsert failed and throw Validation error', async () => {
         await expect(async () => {
             await service.upsert([
-                { project: 9, date: '123', duration: 1500000, user: user },
+                { project: 9, date: '123', duration: 1500000, user: user }
             ]);
         }).rejects.toThrow(ImATeapotException);
     });
@@ -232,7 +233,7 @@ describe('SummariesService', () => {
 
         await expect(async () => {
             await service.upsert([
-                { project: 9, date: '2021-04-23', duration: 1500000, user: user },
+                { project: 9, date: '2021-04-23', duration: 1500000, user: user }
             ]);
         }).rejects.toThrow(ImATeapotException);
         spyMockDSRepo.mockImplementation((entry) =>
@@ -241,7 +242,7 @@ describe('SummariesService', () => {
                 project: entry.where.project,
                 date: entry.where.date,
                 duration: 1500000,
-                user: entry.where.user,
+                user: entry.where.user
             })
         );
     });
@@ -252,5 +253,10 @@ describe('SummariesService', () => {
         expect(result).toEqual(2);
         expect(mockRedisClient.keys).toBeCalledWith(`summaries:${user.id}*`);
         expect(mockRedisClient.del).toBeCalledWith('fake');
+    });
+
+    it('should calculate the current streak', async () => {
+        const streak = await service.getCurrentStreak(user);
+        expect(streak).toEqual(4);
     });
 });
