@@ -7,6 +7,9 @@ import { SummariesService } from '../summaries';
 import { UsersService } from '../users';
 import axios from 'axios';
 import { IsNull, Not } from 'typeorm';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Injectable()
 export class CronService {
@@ -21,7 +24,7 @@ export class CronService {
         this.redisClient = this.redisService.getClient();
     }
 
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression[process.env.CRON_TG_UPDATE_FREQ])
     public async updateSubscriber() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
@@ -61,7 +64,7 @@ export class CronService {
         }
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_10PM)
+    @Cron(CronExpression[process.env.CRON_NOTIFICATION_TIME])
     public async dailyNotify() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
