@@ -55,7 +55,7 @@ import { CronModule } from './app/modules/cron/cron.module';
         ConfigModule.forRoot({ load: [configuration] }),
         ScheduleModule.forRoot(),
         CommandsModule,
-        CronModule
+        CronModule.register()
     ],
     controllers: [AppController]
 })
