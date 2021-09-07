@@ -14,6 +14,7 @@ import { AppController } from './app.controller';
 import { CommandsModule } from './app/console/commands.module';
 import configuration from './config/configuration';
 import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
+import { CronModule } from './app/modules/cron/cron.module';
 
 @Module({
     imports: [
@@ -53,7 +54,8 @@ import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
         AuthModule,
         ConfigModule.forRoot({ load: [configuration] }),
         ScheduleModule.forRoot(),
-        CommandsModule
+        CommandsModule,
+        CronModule
     ],
     controllers: [AppController]
 })
