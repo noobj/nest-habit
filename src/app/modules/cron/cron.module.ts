@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bull';
 import { DynamicModule, Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SummariesModule } from 'src/app/modules/summaries/summaries.module';
@@ -12,7 +13,14 @@ export class CronModule {
         if (enable) {
             return {
                 module: CronModule,
-                imports: [SummariesModule, UsersModule, ScheduleModule.forRoot()],
+                imports: [
+                    SummariesModule,
+                    UsersModule,
+                    ScheduleModule.forRoot(),
+                    BullModule.registerQueue({
+                        name: 'summary'
+                    })
+                ],
                 providers: [CronService]
             };
         } else {

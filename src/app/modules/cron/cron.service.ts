@@ -8,6 +8,8 @@ import { UsersService } from '../users';
 import axios from 'axios';
 import { IsNull, Not } from 'typeorm';
 import * as dotenv from 'dotenv';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 dotenv.config();
 
@@ -16,6 +18,7 @@ export class CronService {
     private redisClient: Redis;
 
     constructor(
+        @InjectQueue('summary') private readonly summaryQueue: Queue,
         private summariesService: SummariesService,
         private usersService: UsersService,
         private redisService: RedisService
@@ -104,6 +107,20 @@ export class CronService {
                         console.log(err);
                     });
             })
+        );
+    }
+
+    @Cron(CronExpression[process.env.CRON_DAILY_SYNC_TIME])
+    public async dailySync() {
+        const users = await this.usersService.find({ select: ['id'] });
+
+        await Promise.all(
+            users.map((user) =>
+                this.summaryQueue.add('sync', {
+                    user: user,
+                    days: 2
+                })
+            )
         );
     }
 }

@@ -1,6 +1,6 @@
 import { ImATeapotException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindConditions } from 'typeorm';
+import { Repository, FindConditions, FindManyOptions } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { User } from './users.entity';
@@ -12,8 +12,12 @@ export class UsersService {
         private usersRepository: Repository<User>
     ) {}
 
-    async find(conditions?: FindConditions<User>): Promise<User[]> {
-        return await this.usersRepository.find(conditions);
+    async find(conditions?: FindConditions<User>): Promise<User[]>;
+
+    async find(options?: FindManyOptions<User>): Promise<User[]>;
+
+    async find(options?: any): Promise<User[]> {
+        return await this.usersRepository.find(options);
     }
 
     async findOne(id: number): Promise<User | undefined> {

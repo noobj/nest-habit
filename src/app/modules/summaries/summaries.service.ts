@@ -196,20 +196,15 @@ export class SummariesService implements IBasicService, OnModuleInit {
         if (!project) throw new ImATeapotException('No project found');
 
         try {
+            await this.projectService.updateProjectLastUpdated(project);
             const details = await this.thirdPartyService
                 .serviceFactory(user.third_party_service)
                 .fetch(project, since);
 
-            if (!details.length) {
-                const keys = await this.redisClient.keys(`summaries:${user.id}*`);
-                for (const key of keys) await this.redisClient.del(key);
-                return 0;
-            }
+            if (!details.length) return 0;
 
             const fetchedData = this.processFetchedData(details, project);
             const result = await this.upsert(fetchedData);
-
-            await this.projectService.updateProjectLastUpdated(project);
 
             // Delete all the summaries cache of the user
             if (result.affected > 0) {
