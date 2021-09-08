@@ -1,9 +1,11 @@
 import { Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { RedisService } from '../redis';
 import { Redis } from 'ioredis';
 import { endOfToday, subYears, subDays, format } from 'date-fns';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { Inject } from '@nestjs/common';
 
 import { ProjectService } from './projects.service';
 import { SummariesService } from './summaries.service';
@@ -14,7 +16,6 @@ import { User, UsersService } from '../users';
 
 @Processor('summary')
 export class SummaryProcessor {
-    private readonly logger = new Logger(SummaryProcessor.name);
     private redisClient: Redis;
 
     constructor(
@@ -22,7 +23,8 @@ export class SummaryProcessor {
         private readonly summariesService: SummariesService,
         private readonly summariesGateway: SummariesGateway,
         private readonly usersService: UsersService,
-        private readonly redisService: RedisService
+        private readonly redisService: RedisService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
     ) {
         this.redisClient = this.redisService.getClient();
     }
@@ -93,8 +95,10 @@ export class SummaryProcessor {
                 .to(socketId)
                 .emit('sync', JSON.stringify(result));
         } catch (err) {
-            // TODO: log into file
-            console.log(err);
+            this.logger.log({
+                level: 'error',
+                message: `Processor - sync third party failed: [${err}]`
+            });
         }
     }
 

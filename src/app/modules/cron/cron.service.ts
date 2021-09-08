@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, ImATeapotException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as moment from 'moment-timezone';
 import { Redis } from 'ioredis';
@@ -10,6 +10,8 @@ import { IsNull, Not } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 dotenv.config();
 
@@ -21,7 +23,8 @@ export class CronService {
         @InjectQueue('summary') private readonly summaryQueue: Queue,
         private summariesService: SummariesService,
         private usersService: UsersService,
-        private redisService: RedisService
+        private redisService: RedisService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
     ) {
         moment.tz.setDefault('Asia/Taipei');
         this.redisClient = this.redisService.getClient();
@@ -62,8 +65,10 @@ export class CronService {
                     updates.data.result.pop().update_id + 1
                 );
         } catch (e) {
-            //TODO: log exceptions
-            console.log(e);
+            this.logger.log({
+                level: 'error',
+                message: `Update subscriber failed: [${e}]`
+            });
         }
     }
 
@@ -103,8 +108,10 @@ export class CronService {
                         return client.get('sendMessage', { params });
                     })
                     .catch((err) => {
-                        // TODO: log error
-                        console.log(err);
+                        this.logger.log({
+                            level: 'error',
+                            message: `Notify user failed: [${err}]`
+                        });
                     });
             })
         );
@@ -112,15 +119,22 @@ export class CronService {
 
     @Cron(CronExpression[process.env.CRON_DAILY_SYNC_TIME])
     public async dailySync() {
-        const users = await this.usersService.find({ select: ['id'] });
+        try {
+            const users = await this.usersService.find({ select: ['id'] });
 
-        await Promise.all(
-            users.map((user) =>
-                this.summaryQueue.add('sync', {
-                    user: user,
-                    days: 2
-                })
-            )
-        );
+            await Promise.all(
+                users.map((user) =>
+                    this.summaryQueue.add('sync', {
+                        user: user,
+                        days: 2
+                    })
+                )
+            );
+        } catch (err) {
+            this.logger.log({
+                level: 'error',
+                message: `Sync user failed: [${err}]`
+            });
+        }
     }
 }

@@ -5,6 +5,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { BullModule } from '@nestjs/bull';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+import * as moment from 'moment';
 
 import { UsersModule } from './app/modules/users/users.module';
 import { SummariesModule, SummariesController } from './app/modules/summaries';
@@ -55,7 +58,25 @@ import { CronModule } from './app/modules/cron/cron.module';
         ConfigModule.forRoot({ load: [configuration] }),
         ScheduleModule.forRoot(),
         CommandsModule,
-        CronModule.register()
+        CronModule.register(),
+        WinstonModule.forRoot({
+            transports: [
+                new winston.transports.Console({
+                    format: winston.format.combine(
+                        winston.format.timestamp(),
+                        winston.format.ms(),
+                        nestWinstonModuleUtilities.format.nestLike()
+                    )
+                }),
+                new winston.transports.File({
+                    filename: `logs/cron-${moment().format('YYYY-MM-DD')}.log`,
+                    format: winston.format.combine(
+                        winston.format.timestamp(),
+                        winston.format.prettyPrint()
+                    )
+                })
+            ]
+        })
     ],
     controllers: [AppController]
 })

@@ -58,6 +58,7 @@
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
     "mysql": "^2.18.1",
+    "nest-winston": "^1.6.0",
     "passport": "^0.4.1",
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.0",
@@ -74,7 +75,8 @@
     "vue-chartjs": "^3.5.1",
     "vue-click-outside": "^1.1.0",
     "vue-socket.io": "^3.0.10",
-    "vue-tailwind-picker": "^2.0.0"
+    "vue-tailwind-picker": "^2.0.0",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.6.0",
