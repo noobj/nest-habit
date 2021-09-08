@@ -22,7 +22,7 @@ export class SummariesGateway {
         socket.join(`Room ${socket.user.id}`);
         await this.summaryQueue.add('sync', {
             user: socket.user,
-            project: data.projectName,
+            days: 365,
             socketId: socket.id
         });
     }

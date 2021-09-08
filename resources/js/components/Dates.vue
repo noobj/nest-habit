@@ -16,7 +16,6 @@
         <div class="py-2 text-2xl text-yellow-600 font-bold">{{totalThisMonth}}</div>
       </div>
       <div
-        v-if="streak"
         class="m-2 border border-gray-200 rounded-lg"
       >
         <div class="py-2 border-b border-gray-200">Streak</div>
@@ -55,7 +54,7 @@ export default {
       summaries: [],
       totalLastYear: '',
       totalThisMonth: '',
-      streak: ''
+      streak: 0
     }
   },
   sockets: {
@@ -95,7 +94,7 @@ export default {
     this.summaries = summaries
     this.totalLastYear = total_last_year
     this.totalThisMonth = total_this_month
-    this.streak = streak ? `${streak} Days` : null;
+    this.streak = `${streak} Days`;
   }
 }
 </script>

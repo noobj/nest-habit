@@ -1,6 +1,6 @@
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
+import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Job, Queue } from 'bull';
+import { Job } from 'bull';
 import { RedisService } from '../redis';
 import { Redis } from 'ioredis';
 import { endOfToday, subYears, subDays, format } from 'date-fns';
@@ -10,6 +10,7 @@ import { SummariesService } from './summaries.service';
 import { getCacheString } from 'src/common/helpers/utils';
 import { WsResponse } from '@nestjs/websockets/interfaces';
 import { SummariesGateway } from './summaries.gateway';
+import { User, UsersService } from '../users';
 
 @Processor('summary')
 export class SummaryProcessor {
@@ -17,10 +18,10 @@ export class SummaryProcessor {
     private redisClient: Redis;
 
     constructor(
-        @InjectQueue('summary') private readonly summaryQueue: Queue,
         private readonly projectService: ProjectService,
         private readonly summariesService: SummariesService,
         private readonly summariesGateway: SummariesGateway,
+        private readonly usersService: UsersService,
         private readonly redisService: RedisService
     ) {
         this.redisClient = this.redisService.getClient();
@@ -29,62 +30,72 @@ export class SummaryProcessor {
     @Process('sync')
     async handleSync(job: Job) {
         console.log('queue processor handling sync');
-        const { user, socketId, project } = job.data;
-        const newRecordsNumber = await this.projectService.setCurrentProject(
-            user,
-            project
-        );
-        const tmpEnd = endOfToday();
-        const tmpStart = subYears(tmpEnd, 1);
-        const endDate = format(tmpEnd, 'yyyy-MM-dd');
-        const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
+        try {
+            const { user, socketId, days } = job.data;
+            const userWhole: User = await this.usersService.findOne(user.id);
+            const newRecordsNumber = await this.summariesService.syncWithThirdParty(
+                days,
+                userWhole
+            );
+            if (!socketId) return;
 
-        const cacheString = getCacheString('Summaries', user.id, startDate, endDate);
-        // test if there is any new record
-        if (newRecordsNumber == 0) {
-            const cacheSummaries = await this.redisClient.get(cacheString);
-            if (cacheSummaries !== null) {
-                const event = await this.processCacheData(
-                    cacheSummaries,
-                    user,
-                    cacheString
-                );
-                this.summariesGateway.server
-                    .to(`Room ${user.id}`)
-                    .emit(event.event, event.data);
-                return;
+            const tmpEnd = endOfToday();
+            const tmpStart = subYears(tmpEnd, 1);
+            const endDate = format(tmpEnd, 'yyyy-MM-dd');
+            const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
+
+            const cacheString = getCacheString('Summaries', user.id, startDate, endDate);
+            // if there is no new record, using cache
+            if (newRecordsNumber == 0) {
+                const cacheSummaries = await this.redisClient.get(cacheString);
+                if (cacheSummaries !== null) {
+                    const event = await this.processCacheData(
+                        cacheSummaries,
+                        user,
+                        cacheString
+                    );
+                    this.summariesGateway.server
+                        .to(`Room ${user.id}`)
+                        .emit(event.event, event.data);
+                    return;
+                }
             }
+
+            const rawData = await this.summariesService.getRawDailySummaries(
+                startDate,
+                endDate,
+                user
+            );
+            const summaries = await this.summariesService.processTheRawSummaries(rawData);
+            const currentProject = await this.projectService.getProjectByUser(user);
+            let result;
+
+            if (rawData.length === 0) {
+                result = {
+                    current_project: currentProject
+                };
+            } else {
+                const streak = await this.summariesService.getCurrentStreak(user);
+                const totalYear = this.summariesService.getTotalDuration(rawData);
+                const totalThisMonth = this.summariesService.getTotalThisMonth(rawData);
+
+                result = {
+                    current_project: currentProject,
+                    summaries: summaries,
+                    streak,
+                    total_last_year: totalYear,
+                    total_this_month: totalThisMonth
+                };
+            }
+
+            await this.redisClient.set(cacheString, JSON.stringify(result), 'EX', 3600);
+            this.summariesGateway.server
+                .to(socketId)
+                .emit('sync', JSON.stringify(result));
+        } catch (err) {
+            // TODO: log into file
+            console.log(err);
         }
-
-        const rawData = await this.summariesService.getRawDailySummaries(
-            startDate,
-            endDate,
-            user
-        );
-        const summaries = await this.summariesService.processTheRawSummaries(rawData);
-        const currentProject = await this.projectService.getProjectByUser(user);
-        let result;
-
-        if (rawData.length === 0) {
-            result = {
-                current_project: currentProject
-            };
-        } else {
-            const streak = await this.summariesService.getCurrentStreak(user);
-            const totalYear = this.summariesService.getTotalDuration(rawData);
-            const totalThisMonth = this.summariesService.getTotalThisMonth(rawData);
-
-            result = {
-                current_project: currentProject,
-                summaries: summaries,
-                streak,
-                total_last_year: totalYear,
-                total_this_month: totalThisMonth
-            };
-        }
-
-        await this.redisClient.set(cacheString, JSON.stringify(result), 'EX', 3600);
-        this.summariesGateway.server.to(socketId).emit('sync', JSON.stringify(result));
     }
 
     private async processCacheData(
@@ -92,13 +103,8 @@ export class SummaryProcessor {
         user: any,
         cacheString: string
     ): Promise<WsResponse<string>> {
-        let {
-            summaries,
-            streak,
-            total_last_year,
-            total_this_month,
-            current_project
-        } = JSON.parse(cacheSummaries);
+        let { summaries, streak, total_last_year, total_this_month, current_project } =
+            JSON.parse(cacheSummaries);
 
         if (current_project === undefined) {
             current_project = await this.projectService.getProjectByUser(user);
