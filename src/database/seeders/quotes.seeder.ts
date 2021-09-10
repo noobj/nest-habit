@@ -19,8 +19,20 @@ export class QuoteSeeder implements ISeeder {
                 author: 'Eckhart Tolle'
             },
             {
-                text: 'If you stop trying to make yourself more than you are, out of fear that you are less than you are, whoever you really are will be a lot lighter and happier and easier to live with, too',
+                text: 'You can’t stop the waves, but you can learn to surf',
                 author: 'Jon Kabat-Zinn'
+            },
+            {
+                text: "it's not what happens to you but how you react to it that matters",
+                author: 'Epictetus'
+            },
+            {
+                text: "Breathing is central to every aspect of meditation training. It's a wonderful place to focus in training the mind to be calm and concentrated",
+                author: 'Jon Kabat-Zinn'
+            },
+            {
+                text: 'Thought can be so seductive and hypnotic that it absorbs your attention totally, so you become your thoughts',
+                author: 'Eckhart Tolle'
             }
         ];
         const result = await this.repository.save(quotes);
