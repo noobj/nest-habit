@@ -9,6 +9,7 @@ import { ProjectService } from './projects.service';
 import { ModuleRef } from '@nestjs/core';
 import { ThirdPartyService } from '../ThirdParty/third-party.service';
 import { RedisService } from 'src/app/modules/redis';
+import { SocketServerGateway } from 'src/app/modules/socket-server/socket-server.gateway';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -65,6 +66,10 @@ describe('SummariesService', () => {
         })),
         getLeastUpdatedProjects: jest.fn(),
         updateProjectLastUpdated: jest.fn()
+    };
+
+    const mockSocketServerGateway = {
+        server: jest.fn(() => {})
     };
 
     const mockModuleRef = {
@@ -126,6 +131,10 @@ describe('SummariesService', () => {
                 {
                     provide: RedisService,
                     useValue: mockRedisService
+                },
+                {
+                    provide: SocketServerGateway,
+                    useValue: mockSocketServerGateway
                 }
             ]
         }).compile();
