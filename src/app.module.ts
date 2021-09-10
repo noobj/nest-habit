@@ -17,6 +17,7 @@ import { AppController } from './app.controller';
 import { CommandsModule } from './app/console/commands.module';
 import configuration from './config/configuration';
 import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
+import { SocketServerModule } from 'src/app/modules/socket-server/socket-server.module';
 import { CronModule } from './app/modules/cron/cron.module';
 
 @Module({
@@ -76,7 +77,8 @@ import { CronModule } from './app/modules/cron/cron.module';
                     )
                 })
             ]
-        })
+        }),
+        SocketServerModule
     ],
     controllers: [AppController]
 })

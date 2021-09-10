@@ -7,8 +7,7 @@ import {
     SummariesService,
     ProjectService,
     Project,
-    DailySummary,
-    SummariesGateway
+    DailySummary
 } from 'src/app/modules/summaries';
 import { Interfaces } from 'src/app/modules/summaries/constants';
 import { UsersModule } from 'src/app/modules/users';
@@ -38,7 +37,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         SummaryProcessor,
         SummariesService,
         ProjectService,
-        SummariesGateway,
         { provide: Interfaces.IBasicService, useClass: SummariesService }
     ],
     exports: [SummariesService, ProjectService]

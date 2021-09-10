@@ -15,7 +15,7 @@ import { Project } from './entities/project.entity';
 import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
 import { ThirdPartyService } from '../ThirdParty/third-party.service';
-import { SummariesGateway } from 'src/app/modules/summaries/summaries.gateway';
+import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { ModuleRef } from '@nestjs/core';
 import { convertRawDurationToFormat } from 'src/common/helpers/utils';
 
@@ -32,7 +32,6 @@ interface IFormatedSummary {
 @Injectable()
 export class SummariesService implements IBasicService, OnModuleInit {
     private projectService: ProjectService;
-    private socketServer: SummariesGateway;
     private redisClient: Redis;
 
     constructor(
@@ -40,6 +39,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
         private dailySummaryRepository: Repository<DailySummary>,
         private moduleRef: ModuleRef,
         private thirdPartyService: ThirdPartyService,
+        private readonly socketServerGateway: SocketServerGateway,
         private readonly redisService: RedisService
     ) {
         moment.tz.setDefault('Asia/Taipei');
@@ -47,7 +47,6 @@ export class SummariesService implements IBasicService, OnModuleInit {
     }
 
     onModuleInit() {
-        this.socketServer = this.moduleRef.get(SummariesGateway, { strict: false });
         this.projectService = this.moduleRef.get(ProjectService);
     }
 
@@ -232,7 +231,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
                     userId: entry.user.id,
                     account: entry.user.account
                 };
-                this.socketServer.server.emit('notice', JSON.stringify(result));
+                this.socketServerGateway.server.emit('notice', JSON.stringify(result));
             }
         });
     }

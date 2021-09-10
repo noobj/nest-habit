@@ -1,7 +1,7 @@
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { WebSocketGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { WebSocketGateway, SubscribeMessage } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
@@ -11,9 +11,6 @@ import { User } from '../users';
 @WebSocketGateway()
 export class SummariesGateway {
     constructor(@InjectQueue('summary') private readonly summaryQueue: Queue) {}
-
-    @WebSocketServer()
-    server: Server;
 
     @UseFilters(new WSExceptionsFilter())
     @UseGuards(AuthGuard('jwt'))

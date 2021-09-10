@@ -11,8 +11,8 @@ import { ProjectService } from './projects.service';
 import { SummariesService } from './summaries.service';
 import { getCacheString } from 'src/common/helpers/utils';
 import { WsResponse } from '@nestjs/websockets/interfaces';
-import { SummariesGateway } from './summaries.gateway';
 import { User, UsersService } from '../users';
+import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 
 @Processor('summary')
 export class SummaryProcessor {
@@ -21,7 +21,7 @@ export class SummaryProcessor {
     constructor(
         private readonly projectService: ProjectService,
         private readonly summariesService: SummariesService,
-        private readonly summariesGateway: SummariesGateway,
+        private readonly socketServerGateway: SocketServerGateway,
         private readonly usersService: UsersService,
         private readonly redisService: RedisService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
@@ -56,7 +56,7 @@ export class SummaryProcessor {
                         user,
                         cacheString
                     );
-                    this.summariesGateway.server
+                    this.socketServerGateway.server
                         .to(`Room ${user.id}`)
                         .emit(event.event, event.data);
                     return;
@@ -91,7 +91,7 @@ export class SummaryProcessor {
             }
 
             await this.redisClient.set(cacheString, JSON.stringify(result), 'EX', 3600);
-            this.summariesGateway.server
+            this.socketServerGateway.server
                 .to(socketId)
                 .emit('sync', JSON.stringify(result));
         } catch (err) {
