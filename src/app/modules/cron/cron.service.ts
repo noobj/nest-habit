@@ -1,4 +1,4 @@
-import { Injectable, Inject, ImATeapotException } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import * as moment from 'moment-timezone';
 import { Redis } from 'ioredis';
@@ -12,6 +12,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { QuoteService } from '../quote/quote.service';
 
 dotenv.config();
 
@@ -24,7 +25,8 @@ export class CronService {
         private summariesService: SummariesService,
         private usersService: UsersService,
         private redisService: RedisService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private quoteService: QuoteService
     ) {
         moment.tz.setDefault('Asia/Taipei');
         this.redisClient = this.redisService.getClient();
@@ -94,11 +96,16 @@ export class CronService {
                         return {
                             total: this.summariesService.getTotalDuration(rawData),
                             days: rawData.length,
-                            streak: await this.summariesService.getCurrentStreak(user)
+                            streak: 3
                         };
                     })
                     .then((res) => {
-                        const text = `*🧘Weekly Meditation Progress👃*\nDays: ${res.days}\nTotal: ${res.total}\nStreak: ${res.streak} days`;
+                        let streakAlert = '';
+                        if (res.streak > 1)
+                            streakAlert = `❗Keep going bro💪, don't lose your hard-earned ${res.streak} days steak✅\n\n`;
+                        const text =
+                            streakAlert +
+                            `*🧘Weekly Meditation Progress👃*\nDays: ${res.days}\nTotal: ${res.total}\nStreak: ${res.streak} days`;
                         const params = {
                             chat_id: user.notify_id,
                             text: text,
@@ -135,6 +142,15 @@ export class CronService {
                 level: 'error',
                 message: `Sync user failed: [${err}]`
             });
+        }
+    }
+
+    @Cron(CronExpression.EVERY_10_SECONDS)
+    public async quoteCarousel() {
+        try {
+            console.log(await this.quoteService.randomFetchQuote());
+        } catch (err) {
+            throw err;
         }
     }
 }
