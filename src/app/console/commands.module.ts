@@ -1,6 +1,8 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 import { CommandsService } from './commands.service';
 import { SummariesModule } from '../modules/summaries';
@@ -19,7 +21,7 @@ class IntermediateModule {
             return {
                 module: IntermediateModule,
                 imports: [module.default],
-                exports: [module.default],
+                exports: [module.default]
             };
         } catch (err) {
             console.log(`Command [${commandName}] doesn't exist`);
@@ -27,7 +29,7 @@ class IntermediateModule {
         }
     }
 
-    private static convertToFileFormat(name: string): string {
+    public static convertToFileFormat(name: string): string {
         return name
             .split('')
             .map((c) => {
@@ -39,11 +41,20 @@ class IntermediateModule {
 
 @Module({})
 export class CommandsModule {
-    static register(options): DynamicModule {
-        // capitalize the arg
-        const commandName =
-            options.command.charAt(0).toUpperCase() + options.command.slice(1);
-        const serviceName = commandName + 'Service';
+    static async fetchTheService(commandName: string): Promise<any> {
+        commandName = commandName.charAt(0).toLowerCase() + commandName.slice(1);
+        const serviceName =
+            commandName.charAt(0).toUpperCase() + commandName.slice(1) + 'Service';
+        const moduleName = IntermediateModule.convertToFileFormat(commandName);
+        const filePath = `./modules/${moduleName}/${moduleName}.service`;
+        let service = await import(filePath);
+        service = service[serviceName];
+
+        return service;
+    }
+
+    static async register(options): Promise<DynamicModule> {
+        const service = await this.fetchTheService(options.command);
 
         return {
             imports: [
@@ -59,12 +70,23 @@ export class CommandsModule {
                         database: configService.get<string>('database.database'),
                         entities: configService.get('database.entities'),
                         synchronize: configService.get<boolean>('database.synchronize'),
-                        logging: configService.get<boolean>('database.logging'),
-                    }),
+                        logging: configService.get<boolean>('database.logging')
+                    })
                 }),
                 SummariesModule,
                 ConfigModule.forRoot({ load: [configuration] }),
                 IntermediateModule.loadCommandModule(options.command),
+                WinstonModule.forRoot({
+                    transports: [
+                        new winston.transports.Console({
+                            format: winston.format.combine(
+                                winston.format.timestamp(),
+                                winston.format.ms(),
+                                nestWinstonModuleUtilities.format.nestLike()
+                            )
+                        })
+                    ]
+                })
             ],
             module: CommandsModule,
             providers: [
@@ -73,15 +95,15 @@ export class CommandsModule {
                     useFactory: async (service) => {
                         return service;
                     },
-                    inject: [serviceName],
+                    inject: [service]
                 },
                 {
                     provide: 'ARGV',
-                    useValue: options.argv,
+                    useValue: options.argv
                 },
-                CommandsService,
+                CommandsService
             ],
-            exports: [CommandsService],
+            exports: [CommandsService]
         };
     }
 }
