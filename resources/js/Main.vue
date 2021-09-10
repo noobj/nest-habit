@@ -3,6 +3,7 @@
     <div id="newRecord"></div>
     <Menu />
     <Dates />
+    <Quote />
     <Search />
   </div>
 </template>
@@ -11,13 +12,15 @@
 import Search from './components/Search'
 import Dates from './components/Dates'
 import Menu from './components/Menu'
+import Quote from './components/Quote'
 
 export default {
   name: 'Main',
   components: {
     Menu,
     Dates,
-    Search
+    Search,
+    Quote
   },
   data () {
     return {
