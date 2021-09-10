@@ -13,6 +13,7 @@ import { Queue } from 'bull';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { QuoteService } from '../quote/quote.service';
+import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 
 dotenv.config();
 
@@ -26,7 +27,8 @@ export class CronService {
         private usersService: UsersService,
         private redisService: RedisService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-        private quoteService: QuoteService
+        private quoteService: QuoteService,
+        private socketServerGateway: SocketServerGateway
     ) {
         moment.tz.setDefault('Asia/Taipei');
         this.redisClient = this.redisService.getClient();
@@ -145,10 +147,11 @@ export class CronService {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     public async quoteCarousel() {
         try {
-            console.log(await this.quoteService.randomFetchQuote());
+            const quote = await this.quoteService.randomFetchQuote();
+            this.socketServerGateway.server.emit('quote', JSON.stringify(quote[0]));
         } catch (err) {
             throw err;
         }

@@ -1,10 +1,10 @@
 <template>
   <div class="self-end max-w-xl mt-8 mr-12 opacity-25">
     <h2 class="italic text-right leading-normal">
-      Don't take your thoughts too seriously
+      {{ quote }}
     </h2>
     <p class="text-right pt-4 text-grey-darker">
-      - Eckhart Tolle
+      - {{ author }}
     </p>
   </div>
 </template>
@@ -19,10 +19,16 @@ export default {
   name: 'Quote',
   data () {
     return {
-      summaries: []
+      quote: 'Don\'t take your thoughts too seriously',
+      author: 'Eckhart Tolle'
     }
   },
   sockets: {
+      quote: function(data) {
+        const quote = JSON.parse(data);
+        this.quote = quote.text;
+        this.author = quote.author;
+      }
   },
   methods: {
   },

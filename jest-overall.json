@@ -17,6 +17,7 @@
     ".spec.ts$",
     "src/database/",
     "src/artisan.ts",
-    "src/main.ts"
+    "src/main.ts",
+    "logs/"
   ]
 }

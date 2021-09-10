@@ -7,6 +7,7 @@ import * as winston from 'winston';
 import { CommandsService } from './commands.service';
 import { SummariesModule } from '../modules/summaries';
 import configuration from 'src/config/configuration';
+import { SocketServerModule } from 'src/app/modules/socket-server/socket-server.module';
 
 @Module({})
 class IntermediateModule {
@@ -86,7 +87,8 @@ export class CommandsModule {
                             )
                         })
                     ]
-                })
+                }),
+                SocketServerModule
             ],
             module: CommandsModule,
             providers: [
