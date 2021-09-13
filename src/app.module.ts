@@ -27,8 +27,7 @@ import { CronModule } from './app/modules/cron/cron.module';
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => ({
                 redis: {
-                    host: 'localhost',
-                    port: 6379,
+                    host: configService.get('redis.host'),
                     db: configService.get('redis.db')
                 }
             })

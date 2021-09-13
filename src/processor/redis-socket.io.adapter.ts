@@ -16,7 +16,10 @@ export class RedisSocketIoAdapter extends IoAdapter {
     }
 
     createIOServer(port: number, options?: ServerOptions): any {
-        this.redisClient = redis.createClient({ db: this.configService.get('redis.db') });
+        this.redisClient = redis.createClient({
+            host: this.configService.get('redis.host'),
+            db: this.configService.get('redis.db')
+        });
 
         this.server = super.createIOServer(port, options);
 

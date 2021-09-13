@@ -110,7 +110,7 @@ export class CronService {
                     .catch((err) => {
                         this.logger.log({
                             level: 'error',
-                            message: `Notify user failed: [${err}]`
+                            message: `Notify user (${user.id}) failed: [${err}]`
                         });
                     });
             })

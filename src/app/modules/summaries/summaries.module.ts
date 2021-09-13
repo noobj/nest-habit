@@ -25,9 +25,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         ThirdPartyModule,
         RedisModule.forRootAsync({
             useFactory: async (configService: ConfigService) => ({
-                host: '127.0.0.1',
-                port: 6379,
-                db: configService.get('redis.db'),
+                host: configService.get('redis.host'),
+                db: configService.get('redis.db')
             }),
             inject: [ConfigService],
             imports: [ConfigModule]
@@ -39,9 +38,9 @@ import { ScheduleModule } from '@nestjs/schedule';
         SummariesService,
         ProjectService,
         SummariesGateway,
-        { provide: Interfaces.IBasicService, useClass: SummariesService },
+        { provide: Interfaces.IBasicService, useClass: SummariesService }
     ],
     controllers: [SummariesController],
-    exports: [SummariesService, ProjectService],
+    exports: [SummariesService, ProjectService]
 })
 export class SummariesModule {}

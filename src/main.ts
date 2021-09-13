@@ -15,10 +15,10 @@ async function bootstrap() {
             origin: [
                 'http://192.168.56.101:3001',
                 'http://localhost:3001',
-                'http://127.0.0.1:3001',
+                'http://127.0.0.1:3001'
             ],
-            credentials: true,
-        },
+            credentials: true
+        }
     });
     const server = app.getHttpServer();
     app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
@@ -26,13 +26,16 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
 
     const RedisStore = connectRedis(session);
-    const redisClient = redis.createClient({ db: configService.get('redis.db') });
+    const redisClient = redis.createClient({
+        host: configService.get('redis.host'),
+        db: configService.get('redis.db')
+    });
     app.use(
         session({
             store: new RedisStore({ client: redisClient, ttl: 259200 }),
             secret: configService.get('session.secret'),
             resave: false,
-            saveUninitialized: false,
+            saveUninitialized: false
         })
     );
     await app.listen(configService.get('PORT'));

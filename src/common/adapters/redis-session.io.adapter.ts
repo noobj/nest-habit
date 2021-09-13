@@ -21,7 +21,10 @@ export class RedisSessionIoAdapter extends IoAdapter {
 
     createIOServer(port: number, options?: ServerOptions): any {
         const RedisStore = connectRedis(session);
-        this.redisClient = redis.createClient({ db: this.configService.get('redis.db') });
+        this.redisClient = redis.createClient({
+            host: this.configService.get('redis.host'),
+            db: this.configService.get('redis.db')
+        });
         if (process.env.NODE_ENV === 'test') port = 3333;
 
         const option = {

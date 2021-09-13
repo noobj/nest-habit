@@ -13,7 +13,7 @@ export default () => ({
         password: process.env.DB_PASSWORD || '1234', // fetch the main.yml setting for github actions
         entities: [User, DailySummary, Project],
         synchronize: true,
-        logging: false,
+        logging: false
     },
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',
@@ -22,12 +22,13 @@ export default () => ({
         refresh_expiration_time: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME || 360000,
     },
     session: {
-        secret: process.env.SESSION_SECRET || 'secret',
+        secret: process.env.SESSION_SECRET || 'secret'
     },
     toggl: {
-        token: process.env.TOGGL_TOKEN || 'null',
+        token: process.env.TOGGL_TOKEN || 'null'
     },
     redis: {
-        db: 14,
-    },
+        host: '127.0.0.1',
+        db: 14
+    }
 });

@@ -1,0 +1,14 @@
+version: '3'
+services:
+  node:
+    build: .
+    volumes:
+        - ./:/usr/src/app
+        - /usr/src/app/node_modules
+        - "./https:/https"
+    environment:
+        - TZ=Asia/Taipei
+    ports:
+        - "3000:3000"
+  redis:
+    image: redis:6.0-rc-alpine
