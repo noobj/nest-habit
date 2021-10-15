@@ -2,6 +2,8 @@ version: '3'
 services:
   node:
     build: .
+    depends_on:
+        - redis
     volumes:
         - ./:/usr/src/app
         - /usr/src/app/node_modules
@@ -10,5 +12,16 @@ services:
         - TZ=Asia/Taipei
     ports:
         - "3000:3000"
+  processor:
+    build: .
+    depends_on:
+        - redis
+    volumes:
+        - ./:/usr/src/app
+        - /usr/src/app/node_modules
+        - "./https:/https"
+    environment:
+        - TZ=Asia/Taipei
+    command: ["npm", "run", "start:processor"]
   redis:
     image: redis:6.0-rc-alpine

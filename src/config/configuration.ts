@@ -24,7 +24,7 @@ export default () => ({
         token: process.env.TOGGL_TOKEN || 'null',
     },
     redis: {
-        host: process.env.REDIS_HOST || '127.0.0.1',
+        host: process.env.REDIS_HOST || '127.0.1.1',
         db: 0,
     },
     socket: {
