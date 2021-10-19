@@ -9,23 +9,23 @@ export default () => ({
         database: process.env.TYPEORM_DATABASE || 'test',
         entities: [process.env.TYPEORM_ENTITIES] || null,
         synchronize: false,
-        logging: process.env.TYPEORM_LOGGING === 'true' || false,
+        logging: process.env.TYPEORM_LOGGING === 'true' || false
     },
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',
         expiration_time: process.env.JWT_EXPIRATION_TIME || 3600,
         refresh_secret: process.env.JWT_REFRESH_TOKEN_SECRET || 'secret',
-        refresh_expiration_time: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME || 360000,
+        refresh_expiration_time: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME || 360000
     },
     session: {
-        secret: process.env.SESSION_SECRET || 'secret',
+        secret: process.env.SESSION_SECRET || 'secret'
     },
     toggl: {
-        token: process.env.TOGGL_TOKEN || 'null',
+        token: process.env.TOGGL_TOKEN || 'null'
     },
     redis: {
-        host: process.env.REDIS_HOST || '127.0.1.1',
-        db: 0,
+        host: process.env.REDIS_HOST || process.env.REDIS_SERVICE_HOST || '127.0.0.1',
+        db: 0
     },
     socket: {
         main: 3002,

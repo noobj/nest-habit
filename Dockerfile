@@ -8,6 +8,9 @@ RUN apk add git
 # Install dependencies
 RUN git clone https://github.com/noobj/nest-habit.git .
 RUN npm install
+
+RUN npm install vue-loader
+
 # Bundle app source
 RUN npm run build
 RUN npm run vue:build
