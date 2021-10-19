@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nest-habit
+  name: nest-habit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nest-habit
+  template:
+    metadata:
+      labels:
+        app: nest-habit
+    spec:
+      containers:
+      - name: nest-habit
+        envFrom:
+        - configMapRef:
+            name: env
+        image: noobj/nest-habit_node
+        imagePullPolicy: Always
