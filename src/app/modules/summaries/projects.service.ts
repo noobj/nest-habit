@@ -1,4 +1,4 @@
-import { Injectable, ImATeapotException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -83,7 +83,7 @@ export class ProjectService {
                 .filter((project) => project.name == projectName)
                 .pop();
 
-            if (!fetchedProject) throw new ImATeapotException('Project Not Found');
+            if (!fetchedProject) throw new BadRequestException('Project Not Found');
 
             // delete the original project
             await this.deleteProjectByUser(user);

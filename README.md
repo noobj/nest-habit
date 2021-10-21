@@ -40,6 +40,7 @@
 * [NestJS](https://github.com/nestjs/nest)
 * [VueJS 2](https://vuejs.org/)
 * [Tailwind CSS](https://tailwindcss.com/)
+* [Swagger](https://swagger.io/solutions/api-documentation/)
 
 
 <!-- LICENSE -->

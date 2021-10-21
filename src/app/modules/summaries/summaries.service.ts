@@ -1,4 +1,4 @@
-import { Injectable, ImATeapotException, OnModuleInit } from '@nestjs/common';
+import { Injectable, ImATeapotException, OnModuleInit, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -192,7 +192,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
         const project = await this.projectService.getProjectByUser(user);
         project.user = user;
 
-        if (!project) throw new ImATeapotException('No project found');
+        if (!project) throw new BadRequestException('No project found');
 
         try {
             await this.projectService.updateProjectLastUpdated(project);
@@ -216,7 +216,7 @@ export class SummariesService implements IBasicService, OnModuleInit {
 
             return result.affected;
         } catch (err) {
-            throw err;
+            throw new InternalServerErrorException(`Sync error: ${err.message}`);
         }
     }
 

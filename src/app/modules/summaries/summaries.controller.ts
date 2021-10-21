@@ -24,15 +24,34 @@ import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception
 import { DailySummary } from './entities';
 import { RedisService } from '../redis';
 import { getCacheString } from 'src/common/helpers/utils';
+import {
+    ApiBadRequestResponse,
+    ApiBody,
+    ApiInternalServerErrorResponse,
+    ApiNoContentResponse,
+    ApiOperation,
+    ApiProperty,
+    ApiQuery,
+    ApiResponse,
+    ApiTags
+} from '@nestjs/swagger';
 
 class DateRange {
+    @ApiProperty()
     @IsDateString()
     start_date: string;
 
+    @ApiProperty()
     @IsDateString()
     end_date: string;
 }
 
+class ProjectName {
+    @ApiProperty()
+    readonly project_name: string;
+}
+
+@ApiTags('summary')
 @Controller()
 export class SummariesController {
     private redisClient: Redis;
@@ -49,6 +68,14 @@ export class SummariesController {
     @UseGuards(AuthGuard('jwt'))
     @Post('project')
     @UseFilters(new HttpExceptionFilter())
+    @ApiOperation({ summary: 'Change tracking project and sync the data' })
+    @ApiBody({
+        description: 'project name',
+        type: ProjectName
+    })
+    @ApiResponse({ status: 201, description: 'Success' })
+    @ApiBadRequestResponse({ description: 'Wrong project input' })
+    @ApiInternalServerErrorResponse()
     setCurrentProjectByName(@Request() req, @Body('project_name') projectName) {
         return from(this.projectService.setCurrentProject(req.user, projectName)).pipe(
             map(() => 'done')
@@ -57,6 +84,8 @@ export class SummariesController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('projects')
+    @ApiOperation({ summary: 'Get all projects of the user along with current project' })
+    @ApiResponse({ status: 200, description: 'Success' })
     getProjectNameByUser(@Request() req) {
         return forkJoin({
             curretProject: this.projectService.getProjectByUser(req.user),
@@ -86,6 +115,14 @@ export class SummariesController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('summaries')
+    @ApiOperation({
+        summary:
+            'Fetch all the entries within the date range along with some other statistics'
+    })
+    @ApiQuery({ name: 'start_date', type: String })
+    @ApiQuery({ name: 'end_date', type: String })
+    @ApiResponse({ status: 200, description: 'Success' })
+    @ApiNoContentResponse({ description: 'No content' })
     async showAll(@Query(new ValidationPipe()) dateRange: DateRange, @Request() req) {
         const cacheString = getCacheString(
             'summaries',

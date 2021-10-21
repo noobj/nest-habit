@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { staticChecker } from './common/middleware/static-file-checker.middleware';
@@ -38,6 +39,15 @@ async function bootstrap() {
             saveUninitialized: false
         })
     );
+
+    const config = new DocumentBuilder()
+        .setTitle('Nest Habit')
+        .setDescription('The nest-habit API description')
+        .setVersion('1.0')
+        .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+
     await app.listen(configService.get('PORT'));
 }
 bootstrap();

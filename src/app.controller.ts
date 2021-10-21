@@ -8,12 +8,25 @@ import {
     UseInterceptors,
     UseFilters,
     Body,
+    UnsupportedMediaTypeException,
+    BadRequestException
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Express } from 'express';
 import { resolve } from 'path';
 import * as sharp from 'sharp';
 import { unlinkSync } from 'fs';
+import {
+    ApiBadRequestResponse,
+    ApiBody,
+    ApiConsumes,
+    ApiOperation,
+    ApiProperty,
+    ApiResponse,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    ApiUnsupportedMediaTypeResponse
+} from '@nestjs/swagger';
 
 import { AuthService } from './app/auth/auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -25,6 +38,26 @@ import { ProjectService } from 'src/app/modules/summaries/projects.service';
 import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
 import Services from 'src/config/third-party-services.map';
 
+class LoginDTO {
+    @ApiProperty({ required: true })
+    readonly account: string;
+    @ApiProperty({ required: true })
+    readonly password: string;
+}
+
+class TokenAndService {
+    @ApiProperty({ required: true })
+    readonly service: string;
+    @ApiProperty({ required: true })
+    readonly api_token: string;
+}
+
+class FileUploadDto {
+    @ApiProperty({ type: 'string', format: 'binary' })
+    file: any;
+}
+
+@ApiTags('profile')
 @Controller()
 export class AppController {
     constructor(
@@ -36,6 +69,13 @@ export class AppController {
 
     @UseGuards(AuthGuard('local'))
     @Post('auth/login')
+    @ApiOperation({ summary: 'Log in and get the cookies' })
+    @ApiBody({
+        description: 'username and password',
+        type: LoginDTO
+    })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+    @ApiResponse({ status: 201, description: 'Success' })
     async login(@Request() req) {
         const token = await this.authService.login(req.user);
         req.session.access_token = token.access_token;
@@ -64,22 +104,34 @@ export class AppController {
     @UseInterceptors(
         FileInterceptor('file', {
             storage: diskStorage({
-                destination: 'dist/public/img',
+                destination: 'dist/public/img'
             }),
-            fileFilter: imageFileFilter,
+            fileFilter: imageFileFilter
         })
     )
+    @ApiOperation({ summary: 'Upload the avatar' })
+    @ApiConsumes('multipart/form-data')
+    @ApiUnsupportedMediaTypeResponse({ description: 'Wrong file format' })
+    @ApiBody({
+        description: 'Avatar',
+        type: FileUploadDto
+    })
+    @ApiResponse({ status: 201, description: 'Success' })
     @UseFilters(new HttpExceptionFilter())
     async uploadFile(@Request() req, @UploadedFile() file: Express.Multer.File) {
-        await sharp(file.path)
-            .resize(200, 200)
-            .jpeg({ quality: 90 })
-            .toFile(resolve('dist/public/img', `${req.user.id}.jpg`));
-        unlinkSync(file.path);
+        try {
+            await sharp(file?.path)
+                .resize(200, 200)
+                .jpeg({ quality: 90 })
+                .toFile(resolve('dist/public/img', `${req.user.id}.jpg`));
+            unlinkSync(file?.path);
+        } catch (error) {
+            throw new UnsupportedMediaTypeException();
+        }
 
         const response = {
             originalname: file.originalname,
-            filename: `${req.user.id}.jpg`,
+            filename: `${req.user.id}.jpg`
         };
 
         return response;
@@ -87,13 +139,26 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('api_token')
+    @ApiOperation({ summary: 'Set the api token of third party' })
+    @ApiBody({
+        description: 'service type and token',
+        type: TokenAndService
+    })
+    @ApiResponse({ status: 201, description: 'Success' })
+    @ApiBadRequestResponse({ description: 'Third party return error' })
     async setToken(
         @Request() req,
         @Body('api_token') apiToken,
         @Body('service') service
     ) {
         const userId = req.user.id;
-        await this.thirdPartyService.serviceFactory(service).checkTokenValid(apiToken);
+        try {
+            await this.thirdPartyService
+                .serviceFactory(service)
+                .checkTokenValid(apiToken);
+        } catch (error) {
+            throw new BadRequestException('Set Failed');
+        }
 
         await this.userService.setToken(userId, apiToken, service);
         await this.projectService.deleteProjectByUser(userId);
@@ -101,6 +166,8 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('services')
+    @ApiOperation({ summary: 'Get the all available third party service' })
+    @ApiResponse({ status: 200, description: 'Success' })
     async getServices() {
         return Object.keys(Services);
     }
