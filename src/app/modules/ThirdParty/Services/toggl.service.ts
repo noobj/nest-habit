@@ -57,7 +57,8 @@ export class TogglService implements IThirdPartyService {
             });
 
             details = [...details, ...response.data];
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // prevent 429 error
+            await new Promise((resolve) => setTimeout(resolve, 500));
         } while (details.length < response.total_count);
 
         return details;
