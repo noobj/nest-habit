@@ -140,7 +140,7 @@ describe('SummariesController (e2e)', () => {
             .set('Cookie', cookies)
             .send(payload)
             .end((err, res) => {
-                expect(res.status).toEqual(418);
+                expect(res.status).toEqual(400);
                 expect(spyLog).toBeCalledWith(
                     new ImATeapotException('Project Not Found')
                 );

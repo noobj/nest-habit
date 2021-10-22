@@ -12,8 +12,8 @@ export class TogglService implements IThirdPartyService {
             timeout: 10000,
             auth: {
                 username: user.toggl_token,
-                password: 'api_token',
-            },
+                password: 'api_token'
+            }
         });
 
         return await togglClient.getProjects();
@@ -25,8 +25,8 @@ export class TogglService implements IThirdPartyService {
             timeout: 10000,
             auth: {
                 username: token,
-                password: 'api_token',
-            },
+                password: 'api_token'
+            }
         });
 
         const workSpaceId = await togglClient.getWorkSpaceId();
@@ -39,8 +39,8 @@ export class TogglService implements IThirdPartyService {
             timeout: 10000,
             auth: {
                 username: project.user.toggl_token,
-                password: 'api_token',
-            },
+                password: 'api_token'
+            }
         });
 
         const workSpaceId = await togglClient.getWorkSpaceId();
@@ -53,10 +53,11 @@ export class TogglService implements IThirdPartyService {
             response = await togglClient.getDetails(workSpaceId, project.project_id, {
                 page: page++,
                 userAgent: 'Toggl NestJS Client',
-                since: since,
+                since: since
             });
 
             details = [...details, ...response.data];
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         } while (details.length < response.total_count);
 
         return details;
