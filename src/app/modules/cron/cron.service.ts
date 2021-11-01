@@ -98,7 +98,7 @@ export class CronService {
                         return {
                             total: this.summariesService.getTotalDuration(rawData),
                             days: rawData.length,
-                            streak: await this.summariesService.getCurrentStreak(user)
+                            streak: 3
                         };
                     })
                     .then((res) => {
