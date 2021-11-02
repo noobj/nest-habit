@@ -6,7 +6,7 @@ import { RedisService } from '../redis';
 import { SummariesService } from '../summaries';
 import { UsersService } from '../users';
 import axios from 'axios';
-import { IsNull, Not, getCustomRepository, LessThan } from 'typeorm';
+import { getCustomRepository, LessThan } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -37,7 +37,7 @@ export class CronService {
         this.notificationService = getCustomRepository(NotificationService);
     }
 
-    @Cron(CronExpression['EVERY_10_SECONDS'])
+    @Cron(CronExpression[process.env.CRON_TG_UPDATE_FREQ])
     public async updateSubscriber() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
@@ -94,7 +94,7 @@ export class CronService {
         }
     }
 
-    @Cron(CronExpression['EVERY_5_SECONDS'])
+    @Cron(CronExpression[process.env.CRON_NOTIFICATION_TIME])
     public async dailyNotify() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
@@ -110,7 +110,7 @@ export class CronService {
                 }
             },
             where: {
-                last_notify: LessThan('2021-11-01')
+                last_notify: LessThan(moment().format('YYYY-MM-DD'))
             }
         });
 
