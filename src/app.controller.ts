@@ -13,9 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Express } from 'express';
-import { resolve } from 'path';
 import * as sharp from 'sharp';
-import { unlinkSync } from 'fs';
 import {
     ApiBadRequestResponse,
     ApiBody,
@@ -27,16 +25,18 @@ import {
     ApiUnauthorizedResponse,
     ApiUnsupportedMediaTypeResponse
 } from '@nestjs/swagger';
+import * as aws from 'aws-sdk';
 
 import { AuthService } from './app/auth/auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { imageFileFilter } from './common/helpers/file-upload.utils';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
 import { UsersService } from 'src/app/modules/users/users.service';
 import { ProjectService } from 'src/app/modules/summaries/projects.service';
 import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
 import Services from 'src/config/third-party-services.map';
+import { ConfigService } from '@nestjs/config';
 
 class LoginDTO {
     @ApiProperty({ required: true })
@@ -64,7 +64,8 @@ export class AppController {
         private authService: AuthService,
         private userService: UsersService,
         private projectService: ProjectService,
-        private thirdPartyService: ThirdPartyService
+        private thirdPartyService: ThirdPartyService,
+        private configService: ConfigService
     ) {}
 
     @UseGuards(AuthGuard('local'))
@@ -103,9 +104,10 @@ export class AppController {
     @Post('upload_avatar')
     @UseInterceptors(
         FileInterceptor('file', {
-            storage: diskStorage({
-                destination: 'dist/public/img'
-            }),
+            storage: memoryStorage(),
+            limits: {
+                fileSize: 60000
+            },
             fileFilter: imageFileFilter
         })
     )
@@ -120,11 +122,30 @@ export class AppController {
     @UseFilters(new HttpExceptionFilter())
     async uploadFile(@Request() req, @UploadedFile() file: Express.Multer.File) {
         try {
-            await sharp(file?.path)
+            const buffer = await sharp(file.buffer)
                 .resize(200, 200)
-                .jpeg({ quality: 90 })
-                .toFile(resolve('dist/public/img', `${req.user.id}.jpg`));
-            unlinkSync(file?.path);
+                .jpeg({ quality: 90 });
+
+            const bucket =
+                process.env.NODE_ENV !== 'production'
+                    ? 'nest-habit-img-dev'
+                    : 'nest-habit-img-prod';
+
+            const s3 = new aws.S3({
+                accessKeyId: this.configService.get('aws.s3.key_id'),
+                secretAccessKey: this.configService.get('aws.s3.secret')
+            });
+
+            const params = {
+                Bucket: bucket,
+                Key: `${req.user.id}.jpg`,
+                Body: buffer,
+                ACL: 'public-read'
+            };
+
+            s3.upload(params, function (s3Err) {
+                if (s3Err) throw s3Err;
+            });
         } catch (error) {
             throw new UnsupportedMediaTypeException();
         }

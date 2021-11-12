@@ -36,7 +36,7 @@
         <img
         class="rounded-full w-6 h-6 cursor-pointer"
         v-on:click="syncProject()"
-        v-bind:src="'/img/sync.png'"
+        v-bind:src="imgServerUrl + 'sync.png'"
       />
     </div>
     <div class="py-2 px-4 whitespace-nowrap font-bold inline-block mr-48">
@@ -65,7 +65,8 @@
       class="cursor-pointer inline-block">
       <img
         class="rounded-full w-16 h-16"
-        v-bind:src="'/img/' + avatarFileName"
+        ref="avatar"
+        v-bind:src="imgServerUrl + avatarFileName"
       />
     </div>
     <div
@@ -121,7 +122,8 @@ export default {
       thirdPartyServices: [],
       currentService: {name: null},
       currentPrj: {name: null, last_updated: null},
-      lastUpdated: null
+      lastUpdated: null,
+      imgServerUrl: process.env.VUE_APP_IMG_S3_URL
     };
   },
   sockets: {
@@ -256,23 +258,23 @@ export default {
         credentials: "same-origin",
         body: formData,
       })
-        .then((res) => {
-          if (res.status != 201) throw new Error();
+        .then(async (res) => {
+          if (res.status != 201) {
+            res = await res.json();
+            throw new Error(res.message);
+          }
 
           return res.json();
         })
         .then((res) => {
-          this.avatarFileName = "default.jpg";
-          alert("upload success");
-          return res;
-        })
-        .then((res) => {
-          // due to the same filename, the img won't refresh after uploaded,
-          // so we need to set it to default first, and set back to filename
-          this.avatarFileName = res.filename;
+          // Reload the avatar
+          // gotta use arrow function here, since it can get the "this" from parent
+          setTimeout(() => {
+            this.$refs.avatar.src = `${this.$refs.avatar.src}?t=${new Date().getTime()}`;
+          }, 1000);
         })
         .catch((e) => {
-          alert("upload failed");
+          alert(`upload failed: ${e.message}`);
         });
     },
     hide () {

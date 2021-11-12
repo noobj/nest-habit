@@ -30,5 +30,11 @@ export default () => ({
     socket: {
         main: 3002,
         sub: 3003
+    },
+    aws: {
+        s3: {
+            key_id: process.env.AWS_S3_KEY_ID,
+            secret: process.env.AWS_S3_SECRET_KEY
+        }
     }
 });
