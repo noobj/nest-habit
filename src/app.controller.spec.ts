@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AuthService } from './app/auth/auth.service';
 import { ProjectService } from './app/modules/summaries';
@@ -11,18 +12,16 @@ describe('AppController', () => {
     const mockAuthService = {
         login: jest.fn(() => ({
             access_token: '123',
-            refresh_token: '456',
-        })),
+            refresh_token: '456'
+        }))
     };
 
     const mockUsersService = {
         setToken: jest.fn(() => {}),
-        setRefreshToken: jest.fn(() => {}),
+        setRefreshToken: jest.fn(() => {})
     };
 
-    const mockProjectService = {};
-
-    const mockThirdPartyService = {};
+    const mockService = {};
 
     beforeEach(async () => {
         const app: TestingModule = await Test.createTestingModule({
@@ -31,14 +30,18 @@ describe('AppController', () => {
                 UsersService,
                 {
                     provide: ProjectService,
-                    useValue: mockProjectService,
+                    useValue: mockService
                 },
                 {
                     provide: ThirdPartyService,
-                    useValue: mockThirdPartyService,
+                    useValue: mockService
                 },
+                {
+                    provide: ConfigService,
+                    useValue: mockService
+                }
             ],
-            controllers: [AppController],
+            controllers: [AppController]
         })
             .overrideProvider(AuthService)
             .useValue(mockAuthService)
@@ -53,7 +56,7 @@ describe('AppController', () => {
         it('should return access token', async () => {
             const fakeRequest: any = {
                 session: { token: 1 },
-                user: { name: 'jjj', id: 1 },
+                user: { name: 'jjj', id: 1 }
             };
             const result = await appController.login(fakeRequest);
 
