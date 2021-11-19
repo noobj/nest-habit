@@ -5,6 +5,7 @@ import { AuthService } from './app/auth/auth.service';
 import { ProjectService } from './app/modules/summaries';
 import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
 import { UsersService } from './app/modules/users/users.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 describe('AppController', () => {
     let appController: AppController;
@@ -21,7 +22,9 @@ describe('AppController', () => {
         setRefreshToken: jest.fn(() => {})
     };
 
-    const mockService = {};
+    const mockService = {
+        add: jest.fn(() => {})
+    };
 
     beforeEach(async () => {
         const app: TestingModule = await Test.createTestingModule({
@@ -38,6 +41,10 @@ describe('AppController', () => {
                 },
                 {
                     provide: ConfigService,
+                    useValue: mockService
+                },
+                {
+                    provide: WINSTON_MODULE_PROVIDER,
                     useValue: mockService
                 }
             ],
