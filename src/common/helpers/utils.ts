@@ -23,3 +23,14 @@ export const getCacheString = (
     const cacheId = Buffer.from(startDate + endDate).toString('base64');
     return `${prefix}:${userId}:${cacheId}`;
 };
+
+/**
+ * For formatting the winston timestamp
+ * @returns function
+ */
+export const timezoned = () => {
+    const tz = process.env.TZ ?? 'Asia/Kyoto';
+    return new Date().toLocaleString('en-US', {
+        timeZone: tz
+    });
+};

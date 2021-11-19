@@ -15,6 +15,8 @@ import { Logger } from 'winston';
 import { QuoteService } from '../quote/quote.service';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { NotificationService } from '../notification/notification.service';
+import * as winston from 'winston';
+import { timezoned } from 'src/common/helpers/utils';
 
 dotenv.config();
 
@@ -32,6 +34,15 @@ export class CronService {
         private socketServerGateway: SocketServerGateway,
         private notificationService: NotificationService
     ) {
+        logger.add(
+            new winston.transports.File({
+                filename: `logs/cron-${moment().format('YYYY-MM-DD')}.log`,
+                format: winston.format.combine(
+                    winston.format.timestamp({ format: timezoned }),
+                    winston.format.prettyPrint()
+                )
+            })
+        );
         moment.tz.setDefault('Asia/Taipei');
         this.redisClient = this.redisService.getClient();
         this.notificationService = getCustomRepository(NotificationService);

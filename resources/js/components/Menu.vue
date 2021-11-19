@@ -261,7 +261,8 @@ export default {
         .then(async (res) => {
           if (res.status != 201) {
             res = await res.json();
-            throw new Error(res.message);
+            alert(`Upload failed`);
+            return;
           }
 
           return res.json();
@@ -274,7 +275,7 @@ export default {
           }, 1000);
         })
         .catch((e) => {
-          alert(`upload failed: ${e.message}`);
+          alert(`Upload failed: ${e.message}`);
         });
     },
     hide () {
@@ -293,8 +294,8 @@ export default {
         return res.json();
       })
       .then(async (user) => {
-        const fetchAvatar = await fetch(`/img/${user.id}.jpg`);
-        if (fetchAvatar.status == 404) return;
+        const fetchAvatar = await fetch(`${this.imgServerUrl}${user.id}.jpg`);
+        if (fetchAvatar.status == 403) return;
 
         this.avatarFileName = `${user.id}.jpg`;
       });

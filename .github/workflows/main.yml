@@ -10,6 +10,8 @@ env:
   DB_DATABASE: test
   DB_USER: root
   DB_PASSWORD: root
+  AWS_S3_KEY_ID: ${{ secrets.AWS_S3_KEY_ID }}
+  AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

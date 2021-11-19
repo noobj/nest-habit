@@ -16,16 +16,17 @@ import Services from 'src/config/third-party-services.map';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
+    let server;
     let cookies;
     let socketIoServer;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })],
+            imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })]
         }).compile();
 
         app = moduleFixture.createNestApplication();
-        const server = app.getHttpServer();
+        server = app.getHttpServer();
         socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
 
         app.use(staticChecker);
@@ -34,7 +35,7 @@ describe('AppController (e2e)', () => {
             session({
                 secret: configService.get('session.secret'),
                 resave: false,
-                saveUninitialized: false,
+                saveUninitialized: false
             })
         );
         await app.init();
@@ -46,7 +47,7 @@ describe('AppController (e2e)', () => {
             email: 'marley.lemke@example.org',
             password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
-            third_party_service: 'toggl',
+            third_party_service: 'toggl'
         };
         await userRepository.save(user);
     });
@@ -54,10 +55,10 @@ describe('AppController (e2e)', () => {
     it('/POST auth/login', (done) => {
         const payload = {
             account: 'jjj',
-            password: 'password',
+            password: 'password'
         };
 
-        return request(app.getHttpServer())
+        return request(server)
             .post('/auth/login')
             .send(payload)
             .end(function (err, res) {
@@ -72,7 +73,7 @@ describe('AppController (e2e)', () => {
     it('/POST upload_avatar', async (done) => {
         const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
 
-        return request(app.getHttpServer())
+        return request(server)
             .post('/upload_avatar')
             .set('Cookie', cookies)
             .attach('file', buffer, { filename: 'display.png' })
@@ -87,7 +88,7 @@ describe('AppController (e2e)', () => {
     it('/POST upload_avatar unsupported file extension', async (done) => {
         const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
         const spyLog = jest.spyOn(console, 'log').mockImplementation();
-        return request(app.getHttpServer())
+        return request(server)
             .post('/upload_avatar')
             .set('Cookie', cookies)
             .attach('file', buffer, { filename: 'display.pig' })
@@ -103,7 +104,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/GET profile', (done) => {
-        return request(app.getHttpServer())
+        return request(server)
             .get('/profile')
             .set('Cookie', cookies)
             .send()
@@ -117,7 +118,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/GET static nonexist img', () => {
-        return request(app.getHttpServer())
+        return request(server)
             .get('/img/abc.jpg')
             .set('Cookie', cookies)
             .send()
@@ -127,10 +128,10 @@ describe('AppController (e2e)', () => {
     it('/POST api_token', (done) => {
         const payload = {
             api_token: '1cf1a1e2b149f8465373bfcacb7a831e',
-            service: 'toggl',
+            service: 'toggl'
         };
 
-        return request(app.getHttpServer())
+        return request(server)
             .post('/api_token')
             .send(payload)
             .set('Cookie', cookies)
@@ -141,7 +142,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/GET refresh', (done) => {
-        return request(app.getHttpServer())
+        return request(server)
             .get('/refresh')
             .set('Cookie', cookies)
             .send()
@@ -154,7 +155,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/GET services', (done) => {
-        return request(app.getHttpServer())
+        return request(server)
             .get('/services')
             .set('Cookie', cookies)
             .send()
@@ -167,27 +168,15 @@ describe('AppController (e2e)', () => {
     });
 
     it('/GET logout', () => {
-        return request(app.getHttpServer())
-            .get('/logout')
-            .set('Cookie', cookies)
-            .send()
-            .expect(200);
+        return request(server).get('/logout').set('Cookie', cookies).send().expect(200);
     });
 
     it('/GET refresh Unauthorized', () => {
-        return request(app.getHttpServer())
-            .get('/refresh')
-            .set('Cookie', cookies)
-            .send()
-            .expect(401);
+        return request(server).get('/refresh').set('Cookie', cookies).send().expect(401);
     });
 
     it('/GET profile Unauthorized', () => {
-        return request(app.getHttpServer())
-            .get('/profile')
-            .set('Cookie', cookies)
-            .send()
-            .expect(401);
+        return request(server).get('/profile').set('Cookie', cookies).send().expect(401);
     });
 
     afterAll(async () => {

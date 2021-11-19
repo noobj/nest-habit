@@ -19,6 +19,7 @@ import configuration from './config/configuration';
 import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
 import { SocketServerModule } from 'src/app/modules/socket-server/socket-server.module';
 import { CronModule } from './app/modules/cron/cron.module';
+import { timezoned } from './common/helpers/utils';
 
 @Module({
     imports: [
@@ -66,13 +67,6 @@ import { CronModule } from './app/modules/cron/cron.module';
                         winston.format.timestamp(),
                         winston.format.ms(),
                         nestWinstonModuleUtilities.format.nestLike()
-                    )
-                }),
-                new winston.transports.File({
-                    filename: `logs/cron-${moment().format('YYYY-MM-DD')}.log`,
-                    format: winston.format.combine(
-                        winston.format.timestamp(),
-                        winston.format.prettyPrint()
                     )
                 })
             ]

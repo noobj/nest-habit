@@ -8,8 +8,8 @@ import {
     UseInterceptors,
     UseFilters,
     Body,
-    UnsupportedMediaTypeException,
-    BadRequestException
+    BadRequestException,
+    Inject
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Express } from 'express';
@@ -37,6 +37,10 @@ import { ProjectService } from 'src/app/modules/summaries/projects.service';
 import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
 import Services from 'src/config/third-party-services.map';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import * as winston from 'winston';
+import * as moment from 'moment';
+import { timezoned } from 'src/common/helpers/utils';
 
 class LoginDTO {
     @ApiProperty({ required: true })
@@ -65,8 +69,19 @@ export class AppController {
         private userService: UsersService,
         private projectService: ProjectService,
         private thirdPartyService: ThirdPartyService,
-        private configService: ConfigService
-    ) {}
+        private configService: ConfigService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: winston.Logger
+    ) {
+        logger.add(
+            new winston.transports.File({
+                filename: `logs/app-${moment().format('YYYY-MM-DD')}.log`,
+                format: winston.format.combine(
+                    winston.format.timestamp({ format: timezoned }),
+                    winston.format.prettyPrint()
+                )
+            })
+        );
+    }
 
     @UseGuards(AuthGuard('local'))
     @Post('auth/login')
@@ -143,11 +158,13 @@ export class AppController {
                 ACL: 'public-read'
             };
 
-            s3.upload(params, function (s3Err) {
-                if (s3Err) throw s3Err;
-            });
+            await s3.upload(params).promise();
         } catch (error) {
-            throw new UnsupportedMediaTypeException();
+            this.logger.log({
+                level: 'error',
+                message: `Upload img failed: [${error}]`
+            });
+            throw error;
         }
 
         const response = {
