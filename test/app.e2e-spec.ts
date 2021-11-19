@@ -13,6 +13,8 @@ import * as fs from 'fs';
 import { staticChecker } from 'src/common/middleware/static-file-checker.middleware';
 import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adapter';
 import Services from 'src/config/third-party-services.map';
+import * as winston from 'winston';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
@@ -22,7 +24,21 @@ describe('AppController (e2e)', () => {
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })]
+            imports: [
+                AppModule,
+                ConfigModule.forRoot({ load: [configuration] }),
+                WinstonModule.forRoot({
+                    transports: [
+                        new winston.transports.Console({
+                            format: winston.format.combine(
+                                winston.format.timestamp(),
+                                winston.format.ms(),
+                                nestWinstonModuleUtilities.format.nestLike()
+                            )
+                        })
+                    ]
+                })
+            ]
         }).compile();
 
         app = moduleFixture.createNestApplication();

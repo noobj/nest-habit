@@ -7,7 +7,6 @@ import { join } from 'path';
 import { BullModule } from '@nestjs/bull';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
-import * as moment from 'moment';
 
 import { UsersModule } from './app/modules/users/users.module';
 import { SummariesModule, SummariesController } from './app/modules/summaries';
@@ -19,7 +18,6 @@ import configuration from './config/configuration';
 import { ThirdPartyModule } from './app/modules/ThirdParty/third-party.module';
 import { SocketServerModule } from 'src/app/modules/socket-server/socket-server.module';
 import { CronModule } from './app/modules/cron/cron.module';
-import { timezoned } from './common/helpers/utils';
 
 @Module({
     imports: [
