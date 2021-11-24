@@ -1,5 +1,6 @@
 FROM node:14-alpine
 
+ENV VUE_APP_IMG_S3_URL=https://nest-habit-img-dev.s3.ap-southeast-1.amazonaws.com/
 # Create app directory
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
