@@ -154,8 +154,7 @@ export class AppController {
             const params = {
                 Bucket: bucket,
                 Key: `${req.user.id}.jpg`,
-                Body: buffer,
-                ACL: 'public-read'
+                Body: buffer
             };
 
             await s3.upload(params).promise();

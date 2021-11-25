@@ -10,7 +10,6 @@ env:
   DB_DATABASE: test
   DB_USER: root
   DB_PASSWORD: root
-  VUE_APP_IMG_S3_URL: https://nest-habit-img-dev.s3.ap-southeast-1.amazonaws.com/
   AWS_S3_KEY_ID: ${{ secrets.AWS_S3_KEY_ID }}
   AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
 

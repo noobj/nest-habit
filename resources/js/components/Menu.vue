@@ -123,7 +123,8 @@ export default {
       currentService: {name: null},
       currentPrj: {name: null, last_updated: null},
       lastUpdated: null,
-      imgServerUrl: process.env.VUE_APP_IMG_S3_URL
+      imgServerUrl: process.env.VUE_APP_IMG_S3_URL,
+      userId: null
     };
   },
   sockets: {
@@ -271,7 +272,7 @@ export default {
           // Reload the avatar
           // gotta use arrow function here, since it can get the "this" from parent
           setTimeout(() => {
-            this.$refs.avatar.src = `${this.$refs.avatar.src}?t=${new Date().getTime()}`;
+            this.$refs.avatar.src = `${this.imgServerUrl}${this.userId}.jpg?t=${new Date().getTime()}`;
           }, 1000);
         })
         .catch((e) => {
@@ -294,8 +295,10 @@ export default {
         return res.json();
       })
       .then(async (user) => {
-        const fetchAvatar = await fetch(`${this.imgServerUrl}${user.id}.jpg`);
-        if (fetchAvatar.status == 403) return;
+        this.userId = user.id;
+        const fetchAvatar = await fetch(`${this.imgServerUrl}${user.id}.jpg`, {mode: 'cors'}));
+
+        if (fetchAvatar.status === 403) return;
 
         this.avatarFileName = `${user.id}.jpg`;
       });
