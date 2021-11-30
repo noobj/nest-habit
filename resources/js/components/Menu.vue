@@ -296,7 +296,7 @@ export default {
       })
       .then(async (user) => {
         this.userId = user.id;
-        const fetchAvatar = await fetch(`${this.imgServerUrl}${user.id}.jpg`, {mode: 'cors'}));
+        const fetchAvatar = await fetch(`${this.imgServerUrl}${user.id}.jpg`, {mode: 'cors'});
 
         if (fetchAvatar.status === 403) return;
 

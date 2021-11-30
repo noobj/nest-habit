@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: minimal-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.org/websocket-services: "nest-habit"
 spec:
   rules:
   - host: nest-habit.io
