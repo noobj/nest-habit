@@ -24,18 +24,13 @@ export class User {
     summaries?: DailySummary[];
 
     @Column({
-        nullable: true,
+        nullable: true
     })
     @Exclude()
     refresh_token?: string;
 
     @Column({
-        nullable: true,
-    })
-    third_party_service?: string;
-
-    @Column({
         nullable: true
     })
-    notify_id?: number;
+    third_party_service?: string;
 }

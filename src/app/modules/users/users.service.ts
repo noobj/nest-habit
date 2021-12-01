@@ -66,13 +66,4 @@ export class UsersService {
             return user;
         }
     }
-
-    async setNotifyId(acc: string, chatId: number) {
-        await this.usersRepository.update(
-            { account: acc },
-            {
-                notify_id: chatId
-            }
-        );
-    }
 }
