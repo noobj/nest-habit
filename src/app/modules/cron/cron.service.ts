@@ -6,7 +6,14 @@ import { RedisService } from '../redis';
 import { SummariesService } from '../summaries';
 import { UsersService } from '../users';
 import axios from 'axios';
-import { getCustomRepository, LessThan } from 'typeorm';
+import {
+    getCustomRepository,
+    LessThan,
+    IsNull,
+    Transaction,
+    TransactionRepository,
+    Repository
+} from 'typeorm';
 import * as dotenv from 'dotenv';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -15,6 +22,7 @@ import { Logger } from 'winston';
 import { QuoteService } from '../quote/quote.service';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { NotificationService } from '../notification/notification.service';
+import { Notification } from '../notification/notification.entity';
 import * as winston from 'winston';
 import { timezoned } from 'src/common/helpers/utils';
 
@@ -76,12 +84,35 @@ export class CronService {
                     this.usersService
                         .findOneByAccount(message.load)
                         .then(async (user) => {
+                            if (!user) {
+                                const params = {
+                                    chat_id: message.chatId,
+                                    text: `User ${message.load} not found`,
+                                    parse_mode: 'markdown'
+                                };
+                                await client.get('sendMessage', { params });
+
+                                return;
+                            }
+
+                            const notifyEntryId = await this.notificationService.findOne({
+                                where: {
+                                    user: user
+                                }
+                            });
                             const newEntry = {
+                                id: notifyEntryId.id,
                                 user: user,
                                 notify_id: message.chatId
                             };
 
                             await this.notificationService.save(newEntry);
+                            const params = {
+                                chat_id: message.chatId,
+                                text: `You have subscribed, will send notification at 10 pm.`,
+                                parse_mode: 'markdown'
+                            };
+                            await client.get('sendMessage', { params });
                         })
                         .catch((err) => {
                             this.logger.log({
@@ -106,22 +137,32 @@ export class CronService {
     }
 
     @Cron(CronExpression[process.env.CRON_NOTIFICATION_TIME])
-    public async dailyNotify() {
+    @Transaction()
+    public async dailyNotify(
+        @TransactionRepository(Notification)
+        notificationRepository: Repository<Notification>
+    ) {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
             baseURL: 'https://api.telegram.org/' + botApi,
             timeout: 10000
         });
 
-        const notificationWithUsers = await this.notificationService.find({
+        const notificationWithUsers = await notificationRepository.find({
             join: {
                 alias: 'notify',
                 leftJoinAndSelect: {
                     user: 'notify.user'
                 }
             },
-            where: {
-                last_notify: LessThan(moment().format('YYYY-MM-DD'))
+            where: [
+                {
+                    last_notify: LessThan(moment().format('YYYY-MM-DD'))
+                },
+                { last_notify: IsNull() }
+            ],
+            lock: {
+                mode: 'pessimistic_write'
             }
         });
 
@@ -148,11 +189,11 @@ export class CronService {
                             streakAlert +
                             `*🧘Weekly Meditation Progress👃*\nDays: ${res.days}\nTotal: ${res.total}\nStreak: ${res.streak} days`;
                         const params = {
-                            chat_id: entry.user.notify_id,
+                            chat_id: entry.notify_id,
                             text: text,
                             parse_mode: 'markdown'
                         };
-                        await this.notificationService.update(entry.id, {
+                        await notificationRepository.update(entry.id, {
                             last_notify: moment().format('YYYY-MM-DD')
                         });
 
