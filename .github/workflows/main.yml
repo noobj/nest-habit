@@ -39,7 +39,7 @@ jobs:
           redis-version: 5
       - name: npm install
         run: |
-          npm install
+          npm ci
       - name: testing
         run: |
           npm run test:overall --if-present
