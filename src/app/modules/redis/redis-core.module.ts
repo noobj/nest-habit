@@ -6,6 +6,7 @@ import {
     createClient,
     RedisClient
 } from './redis-client.provider';
+import * as Redis from 'ioredis';
 
 import { REDIS_MODULE_OPTIONS, REDIS_CLIENT } from './redis.constants';
 import { RedisService } from './redis.service';
@@ -44,8 +45,14 @@ export class RedisCoreModule implements OnModuleDestroy {
 
     onModuleDestroy() {
         const closeConnection =
-            ({ clients, defaultKey }) =>
-            (options) => {
+            ({
+                clients,
+                defaultKey
+            }: {
+                clients: Map<string, Redis.Redis>;
+                defaultKey: string;
+            }) =>
+            (options: RedisModuleOptions) => {
                 const name = options.name || defaultKey;
                 const client = clients.get(name);
 

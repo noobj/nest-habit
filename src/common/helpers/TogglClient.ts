@@ -5,14 +5,18 @@ import { HttpException } from '@nestjs/common';
 export class TogglClient {
     public client;
 
-    constructor({ baseURL, timeout, auth, ...rest }) {
+    constructor(obj: {
+        baseURL: string;
+        timeout: number;
+        auth: { username: string; password: string };
+    }) {
         this.client = axios.create({
-            baseURL: baseURL,
-            timeout: timeout,
+            baseURL: obj.baseURL,
+            timeout: obj.timeout,
             auth: {
-                username: auth.username,
-                password: auth.password,
-            },
+                username: obj.auth.username,
+                password: obj.auth.password
+            }
         });
     }
 

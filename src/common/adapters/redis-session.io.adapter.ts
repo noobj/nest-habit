@@ -4,17 +4,20 @@ import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import { ConfigService } from '@nestjs/config';
 import { createAdapter } from 'socket.io-redis';
-import { ServerOptions } from 'socket.io';
+import { ServerOptions, Socket } from 'socket.io';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { NextFunction } from 'express';
 
-const wrap = (middleware) => (socket, next) => middleware(socket.request, {}, next);
+const wrap = (middleware: any) => (socket: Socket, next: NextFunction) =>
+    middleware(socket.request, {}, next);
 
 export class RedisSessionIoAdapter extends IoAdapter {
-    private server;
-    private redisClient;
+    private server: any;
+    private redisClient: redis.RedisClient;
     private configService: ConfigService;
-    private subClient;
+    private subClient: redis.RedisClient;
 
-    constructor(server, app) {
+    constructor(server: any, app: NestExpressApplication) {
         super(server);
         this.configService = app.get(ConfigService);
     }
@@ -28,6 +31,7 @@ export class RedisSessionIoAdapter extends IoAdapter {
         if (process.env.NODE_ENV === 'test') port = 3333;
 
         const option = {
+            ...options,
             cors: {
                 origin: [
                     'http://192.168.56.101:3000',
@@ -54,10 +58,18 @@ export class RedisSessionIoAdapter extends IoAdapter {
         );
 
         // extract session from request
-        this.server.use((socket, next) => {
-            socket.session = socket?.request?.session;
-            next();
-        });
+        this.server.use(
+            (
+                socket: Socket & {
+                    session: session.Session;
+                    request: { session: session.Session };
+                },
+                next: NextFunction
+            ) => {
+                socket.session = socket?.request?.session;
+                next();
+            }
+        );
 
         const pubClient = this.redisClient;
         this.subClient = pubClient.duplicate();

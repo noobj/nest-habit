@@ -54,7 +54,7 @@ export class UsersService {
         });
     }
 
-    async attempRefreshToken(refreshToken: string, userId: number) {
+    async attempRefreshToken(refreshToken: string, userId: number): Promise<void | User> {
         const user = await this.usersRepository.findOne(userId);
 
         const isRefreshTokenMatching = await bcrypt.compare(

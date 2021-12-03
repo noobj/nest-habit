@@ -29,7 +29,9 @@ export class SeedService implements ICommand {
             className = 'Default';
         }
 
-        const seeder: ISeeder = new Seeder[`${className}Seeder`](this.connection);
+        const seeder: ISeeder = new Seeder[`${className}Seeder` as keyof typeof Seeder](
+            this.connection
+        );
         await seeder.run();
     }
 }

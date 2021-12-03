@@ -1,4 +1,10 @@
-import { Injectable, ImATeapotException, OnModuleInit, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+    Injectable,
+    ImATeapotException,
+    OnModuleInit,
+    BadRequestException,
+    InternalServerErrorException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import * as moment from 'moment-timezone';
@@ -22,7 +28,7 @@ import { convertRawDurationToFormat } from 'src/common/helpers/utils';
 /**
  * The return format for frontend use
  */
-interface IFormatedSummary {
+export interface IFormatedSummary {
     level: number;
     date: string;
     timestamp: number;
@@ -30,7 +36,9 @@ interface IFormatedSummary {
 }
 
 @Injectable()
-export class SummariesService implements IBasicService, OnModuleInit {
+export class SummariesService
+    implements IBasicService<DailySummary, IFormatedSummary>, OnModuleInit
+{
     private projectService: ProjectService;
     private redisClient: Redis;
 

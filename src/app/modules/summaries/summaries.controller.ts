@@ -16,6 +16,7 @@ import { IsDateString } from 'class-validator';
 import { forkJoin, from, of } from 'rxjs';
 import { map, mergeMap, tap } from 'rxjs/operators';
 import { Redis } from 'ioredis';
+import { Express } from 'express';
 
 import { IBasicService } from './interfaces/basic.service';
 import { Interfaces } from './constants';
@@ -35,6 +36,7 @@ import {
     ApiResponse,
     ApiTags
 } from '@nestjs/swagger';
+import { IFormatedSummary } from './summaries.service';
 
 class DateRange {
     @ApiProperty()
@@ -58,7 +60,7 @@ export class SummariesController {
 
     constructor(
         @Inject(Interfaces.IBasicService)
-        private summariesService: IBasicService,
+        private summariesService: IBasicService<DailySummary, IFormatedSummary>,
         private projectService: ProjectService,
         private readonly redisService: RedisService
     ) {
@@ -76,7 +78,10 @@ export class SummariesController {
     @ApiResponse({ status: 201, description: 'Success' })
     @ApiBadRequestResponse({ description: 'Wrong project input' })
     @ApiInternalServerErrorResponse()
-    setCurrentProjectByName(@Request() req, @Body('project_name') projectName) {
+    setCurrentProjectByName(
+        @Request() req: Express.Request,
+        @Body('project_name') projectName: string
+    ) {
         return from(this.projectService.setCurrentProject(req.user, projectName)).pipe(
             map(() => 'done')
         );
@@ -86,11 +91,11 @@ export class SummariesController {
     @Get('projects')
     @ApiOperation({ summary: 'Get all projects of the user along with current project' })
     @ApiResponse({ status: 200, description: 'Success' })
-    getProjectNameByUser(@Request() req) {
+    getProjectNameByUser(@Request() req: Express.Request) {
         return forkJoin({
             curretProject: this.projectService.getProjectByUser(req.user),
             allProjects: this.projectService.getAllProjects(req.user).then((res) => {
-                return res.data.map((entry) => entry.name);
+                return res.data.map((entry: { name: string }) => entry.name);
             })
         }).pipe(
             map(({ curretProject, allProjects }) => {
@@ -123,7 +128,10 @@ export class SummariesController {
     @ApiQuery({ name: 'end_date', type: String })
     @ApiResponse({ status: 200, description: 'Success' })
     @ApiNoContentResponse({ description: 'No content' })
-    async showAll(@Query(new ValidationPipe()) dateRange: DateRange, @Request() req) {
+    async showAll(
+        @Query(new ValidationPipe()) dateRange: DateRange,
+        @Request() req: Express.Request & { user: { id: number; account: string } }
+    ) {
         const cacheString = getCacheString(
             'summaries',
             req.user.id,

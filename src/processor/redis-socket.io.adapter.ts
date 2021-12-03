@@ -3,14 +3,15 @@ import * as redis from 'redis';
 import { ConfigService } from '@nestjs/config';
 import { createAdapter } from 'socket.io-redis';
 import { ServerOptions } from 'socket.io';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 export class RedisSocketIoAdapter extends IoAdapter {
-    private server;
-    private redisClient;
+    private server: any;
+    private redisClient: redis.RedisClient;
     private configService: ConfigService;
-    private subClient;
+    private subClient: redis.RedisClient;
 
-    constructor(server, app) {
+    constructor(server: any, app: NestExpressApplication) {
         super(server);
         this.configService = app.get(ConfigService);
     }

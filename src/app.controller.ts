@@ -41,6 +41,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import * as winston from 'winston';
 import * as moment from 'moment';
 import { timezoned } from 'src/common/helpers/utils';
+import { User } from './app/modules/users/users.entity';
 
 class LoginDTO {
     @ApiProperty({ required: true })
@@ -92,7 +93,7 @@ export class AppController {
     })
     @ApiUnauthorizedResponse({ description: 'Unauthorized' })
     @ApiResponse({ status: 201, description: 'Success' })
-    async login(@Request() req) {
+    async login(@Request() req: Express.Request & { session: any; user: User }) {
         const token = await this.authService.login(req.user);
         req.session.access_token = token.access_token;
         req.session.refresh_token = token.refresh_token;
@@ -103,7 +104,7 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt-refresh'))
     @Get('refresh')
-    refresh(@Request() req) {
+    refresh(@Request() req: Express.Request & { session: { access_token: string } }) {
         req.session.access_token = this.authService.generateAccessToken(req.user);
 
         return 'done';
@@ -111,7 +112,7 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('profile')
-    getProfile(@Request() req) {
+    getProfile(@Request() req: Express.Request) {
         return req.user;
     }
 
@@ -135,7 +136,10 @@ export class AppController {
     })
     @ApiResponse({ status: 201, description: 'Success' })
     @UseFilters(new HttpExceptionFilter())
-    async uploadFile(@Request() req, @UploadedFile() file: Express.Multer.File) {
+    async uploadFile(
+        @Request() req: Express.Request & { user: User },
+        @UploadedFile() file: Express.Multer.File
+    ) {
         try {
             const buffer = await sharp(file.buffer)
                 .resize(200, 200)
@@ -184,9 +188,9 @@ export class AppController {
     @ApiResponse({ status: 201, description: 'Success' })
     @ApiBadRequestResponse({ description: 'Third party return error' })
     async setToken(
-        @Request() req,
-        @Body('api_token') apiToken,
-        @Body('service') service
+        @Request() req: Express.Request & { user: { id: number } },
+        @Body('api_token') apiToken: string,
+        @Body('service') service: string
     ) {
         const userId = req.user.id;
         try {
@@ -211,7 +215,9 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('logout')
-    async logout(@Request() req) {
+    async logout(
+        @Request() req: Express.Request & { session: any; user: { id: number } }
+    ) {
         req.session.cookie.expires = Date.now();
         req.session.cookie.maxAge = 0;
         await this.userService.removeRefreshToken(req.user.id);
