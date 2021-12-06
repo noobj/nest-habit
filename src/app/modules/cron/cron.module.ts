@@ -10,7 +10,8 @@ import { CronService } from './cron.service';
 @Module({})
 export class CronModule {
     static register(): DynamicModule {
-        const enable = process.env.CRON_ENABLE === 'true';
+        const enable =
+            process.env.NODE_ENV != 'test' && process.env.CRON_ENABLE === 'true';
 
         if (enable) {
             return {
