@@ -17,7 +17,7 @@ export class Project {
     @OneToOne(() => User)
     @JoinColumn({
         name: 'user_id',
-        referencedColumnName: 'id',
+        referencedColumnName: 'id'
     })
     user: User;
 

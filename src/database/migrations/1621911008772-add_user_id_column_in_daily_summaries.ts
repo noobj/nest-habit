@@ -12,7 +12,7 @@ export class addUserIdColumnInDailySummaries1621911008772 implements MigrationIn
                 columnNames: ['user_id'],
                 referencedColumnNames: ['id'],
                 referencedTableName: 'users',
-                onDelete: 'CASCADE',
+                onDelete: 'CASCADE'
             })
         );
     }

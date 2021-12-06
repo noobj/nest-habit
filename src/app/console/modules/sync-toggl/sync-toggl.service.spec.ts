@@ -14,11 +14,11 @@ describe('SyncTogglService', () => {
         account: 'DGAF',
         email: 'marley.lemke@example.org',
         password: 'DGAF',
-        toggl_token: 'DGAF',
+        toggl_token: 'DGAF'
     };
 
     const mockSummariesService = {
-        syncWithThirdParty: jest.fn(() => Promise.resolve(3)),
+        syncWithThirdParty: jest.fn(() => Promise.resolve(3))
     };
 
     const mockProjectService = {
@@ -28,16 +28,16 @@ describe('SyncTogglService', () => {
                     id: 157099012,
                     name: 'Meditation',
                     last_updated: '2021-05-25T14:01:48.000Z',
-                    user: user,
-                },
+                    user: user
+                }
             ])
-        ),
+        )
     };
 
     const mockModuleRef = {
         get: jest.fn(() => {
             return mockProjectService;
-        }),
+        })
     };
 
     beforeEach(async () => {
@@ -48,17 +48,17 @@ describe('SyncTogglService', () => {
                 ConfigModule,
                 {
                     provide: SummariesService,
-                    useValue: mockSummariesService,
+                    useValue: mockSummariesService
                 },
                 {
                     provide: ProjectService,
-                    useValue: mockProjectService,
+                    useValue: mockProjectService
                 },
                 {
                     provide: ModuleRef,
-                    useValue: mockModuleRef,
-                },
-            ],
+                    useValue: mockModuleRef
+                }
+            ]
         }).compile();
 
         service = module.get<SyncTogglService>(SyncTogglService);

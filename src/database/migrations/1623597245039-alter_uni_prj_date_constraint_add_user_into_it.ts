@@ -16,7 +16,7 @@ export class alterUniPrjDateConstraintAddUserIntoIt1623597245039
                 columnNames: ['project_id'],
                 referencedColumnNames: ['id'],
                 referencedTableName: 'projects',
-                onDelete: 'CASCADE',
+                onDelete: 'CASCADE'
             })
         );
         await queryRunner.createIndex(
@@ -24,7 +24,7 @@ export class alterUniPrjDateConstraintAddUserIntoIt1623597245039
             new TableIndex({
                 name: 'uni_prj_date_user',
                 columnNames: ['project_id', 'date', 'user_id'],
-                isUnique: true,
+                isUnique: true
             })
         );
     }
@@ -36,7 +36,7 @@ export class alterUniPrjDateConstraintAddUserIntoIt1623597245039
             new TableIndex({
                 name: 'uni_prj_date',
                 columnNames: ['project_id', 'date'],
-                isUnique: true,
+                isUnique: true
             })
         );
     }

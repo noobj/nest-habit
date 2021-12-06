@@ -20,12 +20,12 @@ import { JwtRefreshStrategy } from './jwt_refresh.strategy';
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get('jwt.secret'),
                 signOptions: {
-                    expiresIn: `${configService.get('jwt.expiration_time')}s`,
-                },
-            }),
-        }),
+                    expiresIn: `${configService.get('jwt.expiration_time')}s`
+                }
+            })
+        })
     ],
     providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
-    exports: [AuthService, JwtModule],
+    exports: [AuthService, JwtModule]
 })
 export class AuthModule {}

@@ -10,7 +10,7 @@ export class addUserIdColumnInProjects1621914428704 implements MigrationInterfac
                 columnNames: ['user_id'],
                 referencedColumnNames: ['id'],
                 referencedTableName: 'users',
-                onDelete: 'CASCADE',
+                onDelete: 'CASCADE'
             })
         );
 
@@ -21,7 +21,7 @@ export class addUserIdColumnInProjects1621914428704 implements MigrationInterfac
             new TableIndex({
                 name: 'uni_name_user',
                 columnNames: ['name', 'user_id'],
-                isUnique: true,
+                isUnique: true
             })
         );
     }
@@ -34,7 +34,7 @@ export class addUserIdColumnInProjects1621914428704 implements MigrationInterfac
             new TableIndex({
                 name: 'uni_name',
                 columnNames: ['name'],
-                isUnique: true,
+                isUnique: true
             })
         );
 

@@ -1,3 +1,3 @@
 export enum Interfaces {
-    IBasicService = 'IBasicService',
+    IBasicService = 'IBasicService'
 }

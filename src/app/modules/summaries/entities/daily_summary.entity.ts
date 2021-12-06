@@ -15,7 +15,7 @@ export class DailySummary {
     @ManyToOne(() => Project, (project) => project.summaries, { onDelete: 'CASCADE' })
     @JoinColumn({
         name: 'project_id',
-        referencedColumnName: 'id',
+        referencedColumnName: 'id'
     })
     project: number;
 
@@ -25,7 +25,7 @@ export class DailySummary {
     @ManyToOne(() => User, (user) => user.summaries, { onDelete: 'CASCADE' })
     @JoinColumn({
         name: 'user_id',
-        referencedColumnName: 'id',
+        referencedColumnName: 'id'
     })
     user: User;
 }

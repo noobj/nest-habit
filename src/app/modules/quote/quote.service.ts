@@ -10,7 +10,7 @@ export class QuoteService {
         private quoteRepository: Repository<Quote>
     ) {}
 
-    public randomFetchQuote(): Promise<Quote> {
+    public randomFetchQuote(): Promise<Quote[]> {
         return this.quoteRepository.query(
             'Select text, author FROM quotes ORDER BY RAND() LIMIT 1'
         );

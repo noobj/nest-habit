@@ -15,11 +15,11 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
                 (req: any) => {
                     return req?.session?.refresh_token;
                 },
-                ExtractJwt.fromAuthHeaderAsBearerToken(),
+                ExtractJwt.fromAuthHeaderAsBearerToken()
             ]),
             ignoreExpiration: false,
             secretOrKey: configService.get('jwt.refresh_secret'),
-            passReqToCallback: true,
+            passReqToCallback: true
         });
     }
 

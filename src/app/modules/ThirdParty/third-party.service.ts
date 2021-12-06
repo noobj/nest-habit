@@ -10,7 +10,7 @@ export class ThirdPartyService {
         // load the avaliable services
         this.services = new Map([]);
         for (const service in Services) {
-            this.services.set(service, new Services[service]());
+            this.services.set(service, new Services[service as keyof typeof Services]());
         }
     }
 

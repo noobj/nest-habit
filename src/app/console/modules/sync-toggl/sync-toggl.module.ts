@@ -7,6 +7,6 @@ import { SummariesModule } from 'src/app/modules/summaries';
 @Module({
     imports: [forwardRef(() => SummariesModule), ConfigModule],
     providers: [SyncTogglService],
-    exports: [SyncTogglService],
+    exports: [SyncTogglService]
 })
 export default class SyncTogglModule {}

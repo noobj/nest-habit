@@ -17,17 +17,17 @@ describe('AuthService', () => {
                 AuthService,
                 {
                     provide: UsersService,
-                    useValue: mockUsersService,
+                    useValue: mockUsersService
                 },
                 {
                     provide: JwtService,
-                    useValue: mockJwtService,
+                    useValue: mockJwtService
                 },
                 {
                     provide: ConfigService,
-                    useValue: mockConfigService,
-                },
-            ],
+                    useValue: mockConfigService
+                }
+            ]
         }).compile();
 
         service = module.get<AuthService>(AuthService);

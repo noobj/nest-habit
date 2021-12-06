@@ -46,7 +46,7 @@ export class TogglService implements IThirdPartyService {
         const workSpaceId = await togglClient.getWorkSpaceId();
 
         let page = 1;
-        let details = [];
+        let details: any[] = [];
         let response;
 
         do {

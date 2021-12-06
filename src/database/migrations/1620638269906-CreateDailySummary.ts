@@ -3,7 +3,7 @@ import {
     QueryRunner,
     Table,
     TableForeignKey,
-    TableIndex,
+    TableIndex
 } from 'typeorm';
 
 export class CreateDailySummary1620638269906 implements MigrationInterface {
@@ -19,22 +19,22 @@ export class CreateDailySummary1620638269906 implements MigrationInterface {
                         type: 'int',
                         isPrimary: true,
                         isGenerated: true,
-                        generationStrategy: 'increment',
+                        generationStrategy: 'increment'
                     },
                     {
                         name: 'date',
                         type: 'char',
-                        length: '10',
+                        length: '10'
                     },
                     {
                         name: 'project_id',
-                        type: 'int',
+                        type: 'int'
                     },
                     {
                         name: 'duration',
-                        type: 'int',
-                    },
-                ],
+                        type: 'int'
+                    }
+                ]
             }),
             true
         );
@@ -45,7 +45,7 @@ export class CreateDailySummary1620638269906 implements MigrationInterface {
                 columnNames: ['project_id'],
                 referencedColumnNames: ['id'],
                 referencedTableName: 'projects',
-                onDelete: 'CASCADE',
+                onDelete: 'CASCADE'
             })
         );
 
@@ -54,7 +54,7 @@ export class CreateDailySummary1620638269906 implements MigrationInterface {
             new TableIndex({
                 name: 'uni_prj_date',
                 columnNames: ['project_id', 'date'],
-                isUnique: true,
+                isUnique: true
             })
         );
     }

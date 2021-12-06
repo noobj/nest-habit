@@ -11,10 +11,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 (req: any) => {
                     return req?.session?.access_token;
                 },
-                ExtractJwt.fromAuthHeaderAsBearerToken(),
+                ExtractJwt.fromAuthHeaderAsBearerToken()
             ]),
             ignoreExpiration: false,
-            secretOrKey: configService.get('jwt.secret'),
+            secretOrKey: configService.get('jwt.secret')
         });
     }
 

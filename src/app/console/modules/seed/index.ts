@@ -2,4 +2,3 @@
 export * from './seed.module';
 export * from './seed.service';
 // end:ng42.barrel
-

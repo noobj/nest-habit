@@ -80,7 +80,7 @@ export class ProjectService {
         if (!currentProject || currentProject.name !== projectName) {
             const { data: projects } = await this.getAllProjects(user);
             const fetchedProject = projects
-                .filter((project) => project.name == projectName)
+                .filter((project: { name: string }) => project.name == projectName)
                 .pop();
 
             if (!fetchedProject) throw new BadRequestException('Project Not Found');

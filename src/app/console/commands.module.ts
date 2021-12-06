@@ -11,7 +11,7 @@ import { SocketServerModule } from 'src/app/modules/socket-server/socket-server.
 
 @Module({})
 class IntermediateModule {
-    public static async loadCommandModule(commandName): Promise<DynamicModule> {
+    public static async loadCommandModule(commandName: string): Promise<DynamicModule> {
         commandName = commandName.charAt(0).toLowerCase() + commandName.slice(1);
 
         const moduleName = this.convertToFileFormat(commandName);
@@ -54,7 +54,10 @@ export class CommandsModule {
         return service;
     }
 
-    static async register(options): Promise<DynamicModule> {
+    static async register(options: {
+        command: string;
+        argv: string[];
+    }): Promise<DynamicModule> {
         const service = await this.fetchTheService(options.command);
 
         return {

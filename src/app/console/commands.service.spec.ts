@@ -5,7 +5,7 @@ describe('CommandsService', () => {
     let service: CommandsService;
 
     const mockCommand = {
-        run: jest.fn((argv) => Promise.resolve(argv)),
+        run: jest.fn((argv) => Promise.resolve(argv))
     };
 
     const mockArgv = ['test', '123'];
@@ -16,13 +16,13 @@ describe('CommandsService', () => {
                 CommandsService,
                 {
                     provide: 'COMMAND',
-                    useValue: mockCommand,
+                    useValue: mockCommand
                 },
                 {
                     provide: 'ARGV',
-                    useValue: mockArgv,
-                },
-            ],
+                    useValue: mockArgv
+                }
+            ]
         }).compile();
 
         service = module.get<CommandsService>(CommandsService);

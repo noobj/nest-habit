@@ -7,7 +7,7 @@ async function bootstrap() {
 
     const options = {
         command: command,
-        argv: process.argv.slice(3),
+        argv: process.argv.slice(3)
     };
 
     const application = await NestFactory.createApplicationContext(

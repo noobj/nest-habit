@@ -6,7 +6,7 @@ name: CI
 on: push
 
 env:
-  NODE_VERSION: '14.x'
+  NODE_VERSION: "14.x"
   DB_DATABASE: test
   DB_USER: root
   DB_PASSWORD: root
@@ -15,10 +15,19 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install eslint package
+        run: npm install eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser
+      - name: eslint
+        run: npm run lint
+
   test:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
+    needs: lint
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -54,8 +63,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
       - name: Login to DockerHub
         uses: docker/login-action@v1

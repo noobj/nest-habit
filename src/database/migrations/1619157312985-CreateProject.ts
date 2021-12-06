@@ -9,14 +9,14 @@ export class CreateProject1619157312985 implements MigrationInterface {
                     {
                         name: 'id',
                         type: 'int',
-                        isPrimary: true,
+                        isPrimary: true
                     },
                     {
                         name: 'name',
                         type: 'varchar',
-                        length: '50',
-                    },
-                ],
+                        length: '50'
+                    }
+                ]
             }),
             true
         );
@@ -26,7 +26,7 @@ export class CreateProject1619157312985 implements MigrationInterface {
             new TableIndex({
                 name: 'uni_name',
                 columnNames: ['name'],
-                isUnique: true,
+                isUnique: true
             })
         );
     }

@@ -31,7 +31,7 @@ export class AuthService {
     public login(user: any) {
         const payload = {
             account: user.account,
-            sub: user.id,
+            sub: user.id
         };
 
         const access_token = this.jwtService.sign(payload);
@@ -43,7 +43,7 @@ export class AuthService {
     public generateAccessToken(user: any): string {
         const payload = {
             account: user.account,
-            sub: user.id,
+            sub: user.id
         };
 
         return this.jwtService.sign(payload);
@@ -54,7 +54,7 @@ export class AuthService {
             { userId },
             {
                 secret: this.configService.get('jwt.refresh_secret'),
-                expiresIn: `${this.configService.get('jwt.refresh_expiration_time')}s`,
+                expiresIn: `${this.configService.get('jwt.refresh_expiration_time')}s`
             }
         );
     }

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ImATeapotException, INestApplication } from '@nestjs/common';
+import { ImATeapotException, INestApplicationContext } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 
@@ -15,21 +15,23 @@ import * as connectRedis from 'connect-redis';
 import { DailySummary } from 'src/app/modules/summaries/entities';
 import { endOfToday, format, subDays, subYears } from 'date-fns';
 import { getCacheString } from 'src/common/helpers/utils';
+import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 
 describe('SummariesController (e2e)', () => {
-    let app: INestApplication;
-    let cookies;
-    let socketIoServer;
-    let redisClient;
+    let app: NestExpressApplication;
+    let cookies: string;
+    let server: INestApplicationContext | any;
+    let socketIoServer: NestExpressApplication;
+    let redisClient: redis.RedisClient;
     let summariesReop: Repository<DailySummary>;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })],
+            imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })]
         }).compile();
 
         app = moduleFixture.createNestApplication();
-        const server = app.getHttpServer();
+        server = app.getHttpServer();
         socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
         const configService = app.get(ConfigService);
         const RedisStore = connectRedis(session);
@@ -40,7 +42,7 @@ describe('SummariesController (e2e)', () => {
                 store: new RedisStore({ client: redisClient }),
                 secret: 'secret',
                 resave: false,
-                saveUninitialized: false,
+                saveUninitialized: false
             })
         );
         await app.init();
@@ -53,7 +55,7 @@ describe('SummariesController (e2e)', () => {
             email: 'marley.lemke@example.org',
             password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
-            third_party_service: 'toggl',
+            third_party_service: 'toggl'
         };
         await userRepository.save(user);
     });
@@ -61,10 +63,10 @@ describe('SummariesController (e2e)', () => {
     it('/POST auth/login', (done) => {
         const payload = {
             account: 'jjj',
-            password: 'password',
+            password: 'password'
         };
 
-        return request(app.getHttpServer())
+        return request(server)
             .post('/auth/login')
             .send(payload)
             .end(function (err, res) {
@@ -75,7 +77,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     it('/GET projects no current project', (done) => {
-        return request(app.getHttpServer())
+        return request(server)
             .get('/projects')
             .set('Cookie', cookies)
             .send()
@@ -89,9 +91,9 @@ describe('SummariesController (e2e)', () => {
 
     it('/POST project empty project', (done) => {
         const payload = {
-            project_name: 'ffff',
+            project_name: 'ffff'
         };
-        return request(app.getHttpServer())
+        return request(server)
             .post('/project')
             .set('Cookie', cookies)
             .send(payload)
@@ -104,9 +106,9 @@ describe('SummariesController (e2e)', () => {
     it('/POST project', (done) => {
         const spyLog = jest.spyOn(console, 'log').mockImplementation();
         const payload = {
-            project_name: 'meditation',
+            project_name: 'meditation'
         };
-        return request(app.getHttpServer())
+        return request(server)
             .post('/project')
             .set('Cookie', cookies)
             .send(payload)
@@ -118,7 +120,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     it('/GET projects', (done) => {
-        return request(app.getHttpServer())
+        return request(server)
             .get('/projects')
             .set('Cookie', cookies)
             .send()
@@ -132,10 +134,10 @@ describe('SummariesController (e2e)', () => {
 
     it('/POST project with nonexist project', (done) => {
         const payload = {
-            project_name: 'jjj',
+            project_name: 'jjj'
         };
         const spyLog = jest.spyOn(console, 'log').mockImplementation();
-        return request(app.getHttpServer())
+        return request(server)
             .post('/project')
             .set('Cookie', cookies)
             .send(payload)
@@ -153,8 +155,8 @@ describe('SummariesController (e2e)', () => {
     it('/WS sync', (done) => {
         const opts = {
             extraHeaders: {
-                Cookie: cookies,
-            },
+                Cookie: cookies
+            }
         };
         summariesReop.delete(1);
         const socket = io('ws://localhost:3333', opts);
@@ -163,12 +165,12 @@ describe('SummariesController (e2e)', () => {
             socket.emit('sync', { projectName: 'meditation' });
         });
 
-        socket.on('sync', (data) => {
+        socket.on('sync', (data: any) => {
             expect(data).toBeDefined();
             socket.disconnect();
         });
 
-        socket.on('notice', (data) => {
+        socket.on('notice', (data: any) => {
             expect(JSON.parse(data)).toEqual({
                 date: '2021-06-15',
                 project: 2,
@@ -187,8 +189,8 @@ describe('SummariesController (e2e)', () => {
     it('/WS sync cache', (done) => {
         const opts = {
             extraHeaders: {
-                Cookie: cookies,
-            },
+                Cookie: cookies
+            }
         };
 
         const socket = io('ws://localhost:3333', opts);
@@ -197,7 +199,7 @@ describe('SummariesController (e2e)', () => {
             socket.emit('sync', { projectName: 'meditation' });
         });
 
-        socket.on('sync', async (data) => {
+        socket.on('sync', async (data: any) => {
             expect(data).toBeDefined();
 
             const tmpEnd = endOfToday();
@@ -220,10 +222,10 @@ describe('SummariesController (e2e)', () => {
     it('/GET summaries', (done) => {
         const query = {
             start_date: '2021-05-22',
-            end_date: '2021-05-26',
+            end_date: '2021-05-26'
         };
         jest.useFakeTimers('modern').setSystemTime(new Date('2021-05-25').getTime());
-        return request(app.getHttpServer())
+        return request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)
@@ -262,7 +264,7 @@ describe('SummariesController (e2e)', () => {
             start_date: '2021-05-22',
             end_date: '2021-05-26'
         };
-        return request(app.getHttpServer())
+        return request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)
@@ -287,16 +289,16 @@ describe('SummariesController (e2e)', () => {
     it('/GET summaries wrong format of dates', (done) => {
         const query = {
             start_date: '2021-02',
-            end_date: '2021-26',
+            end_date: '2021-26'
         };
-        return request(app.getHttpServer())
+        return request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)
             .end((err, res) => {
                 expect(res.status).toEqual(400);
                 expect(res.body.message).toEqual([
-                    'end_date must be a valid ISO 8601 date string',
+                    'end_date must be a valid ISO 8601 date string'
                 ]);
                 done();
             });
@@ -305,9 +307,9 @@ describe('SummariesController (e2e)', () => {
     it('/GET summaries no data in given date range', (done) => {
         const query = {
             start_date: '2012-05-22',
-            end_date: '2012-05-26',
+            end_date: '2012-05-26'
         };
-        return request(app.getHttpServer())
+        return request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)

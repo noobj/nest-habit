@@ -1,15 +1,22 @@
 import { User } from '../../users';
 
-export interface IBasicService {
-    getRawDailySummaries(startDate: string, endDate: string, user: User);
+export interface IBasicService<T, R> {
+    getRawDailySummaries(
+        startDate: string,
+        endDate: string,
+        user: Partial<User>
+    ): Promise<T[]>;
 
-    processTheRawSummaries(rawData);
+    processTheRawSummaries(rawData: T[]): Promise<R[]>;
 
-    getLongestDayRecord(rawData);
+    getLongestDayRecord(rawData: T[]): {
+        date: string;
+        duration: string;
+    };
 
-    getTotalDuration(rawData);
+    getTotalDuration(rawData: T[]): string;
 
-    getTotalThisMonth(rawData);
+    getTotalThisMonth(rawData: T[]): string;
 
-    getCurrentStreak(user: User);
+    getCurrentStreak(user: Partial<User>): Promise<number>;
 }

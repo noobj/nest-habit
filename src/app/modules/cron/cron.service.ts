@@ -56,7 +56,7 @@ export class CronService {
         this.notificationService = getCustomRepository(NotificationService);
     }
 
-    @Cron(CronExpression[process.env.CRON_TG_UPDATE_FREQ])
+    @Cron(CronExpression[process.env.CRON_TG_UPDATE_FREQ as keyof typeof CronExpression])
     public async updateSubscriber() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
@@ -73,14 +73,16 @@ export class CronService {
             const updates = await client.get('getUpdates', { params });
             const regex = /\/sub (.*)/i;
             const messages = updates.data.result
-                .filter((v) => v.message?.text.match(regex))
-                .map((v) => ({
+                .filter((v: { message: { text: string } }) =>
+                    v.message?.text.match(regex)
+                )
+                .map((v: { message: { text: string; from: { id: number } } }) => ({
                     load: v.message?.text.match(regex)[1],
                     chatId: v.message.from.id
                 }));
 
             await Promise.all(
-                messages.map((message) => {
+                messages.map((message: { load: string; chatId: string }) => {
                     this.usersService
                         .findOneByAccount(message.load)
                         .then(async (user) => {
@@ -136,7 +138,9 @@ export class CronService {
         }
     }
 
-    @Cron(CronExpression[process.env.CRON_NOTIFICATION_TIME])
+    @Cron(
+        CronExpression[process.env.CRON_NOTIFICATION_TIME as keyof typeof CronExpression]
+    )
     @Transaction()
     public async dailyNotify(
         @TransactionRepository(Notification)
@@ -209,7 +213,7 @@ export class CronService {
         );
     }
 
-    @Cron(CronExpression[process.env.CRON_DAILY_SYNC_TIME])
+    @Cron(CronExpression[process.env.CRON_DAILY_SYNC_TIME as keyof typeof CronExpression])
     public async dailySync() {
         try {
             const users = await this.usersService.find({ select: ['id'] });

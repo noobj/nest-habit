@@ -15,7 +15,7 @@ describe('ProjectService', () => {
         account: 'jjj',
         email: 'test',
         password: 'DGAF',
-        toggl_token: 'DGAF',
+        toggl_token: 'DGAF'
     };
 
     const mockThirdPartyService = {
@@ -24,15 +24,15 @@ describe('ProjectService', () => {
                 data: [
                     {
                         id: 223,
-                        name: 'sleep',
+                        name: 'sleep'
                     },
                     {
                         id: 123,
-                        name: 'meditation',
-                    },
-                ],
-            }),
-        }),
+                        name: 'meditation'
+                    }
+                ]
+            })
+        })
     };
 
     const mockProject = {
@@ -40,7 +40,7 @@ describe('ProjectService', () => {
         name: 'meditation',
         last_updated: new Date('2021-05-30 02:49:54'),
         user: user,
-        project_id: 123,
+        project_id: 123
     };
 
     const mockProjects = [
@@ -49,22 +49,22 @@ describe('ProjectService', () => {
             name: 'meditation',
             last_updated: new Date('2021-05-30 02:49:54'),
             user: user,
-            project_id: 123,
+            project_id: 123
         },
         {
             id: 2,
             name: 'sleep',
             last_updated: new Date('2021-05-30 02:49:54'),
             user: user,
-            project_id: 223,
+            project_id: 223
         },
         {
             id: 3,
             name: 'eat',
             last_updated: new Date('2021-05-30 02:49:54'),
             user: user,
-            project_id: 323,
-        },
+            project_id: 323
+        }
     ];
 
     const mockProjectRepo = {
@@ -74,26 +74,26 @@ describe('ProjectService', () => {
         createQueryBuilder: jest.fn().mockReturnThis(),
         delete: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
-        execute: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockReturnThis()
     };
 
     const mockUsersService = {
-        findOne: jest.fn(() => user),
+        findOne: jest.fn(() => user)
     };
 
     const mockSummariesService = {
-        syncWithThirdParty: jest.fn(() => 2),
+        syncWithThirdParty: jest.fn(() => 2)
     };
 
     const mockRedisClient = {
         keys: jest.fn(() => {
             return ['fake'];
         }),
-        del: jest.fn(),
+        del: jest.fn()
     };
 
     const mockRedisService = {
-        getClient: jest.fn(() => mockRedisClient),
+        getClient: jest.fn(() => mockRedisClient)
     };
 
     beforeEach(async () => {
@@ -102,25 +102,25 @@ describe('ProjectService', () => {
                 ProjectService,
                 {
                     provide: getRepositoryToken(Project),
-                    useValue: mockProjectRepo,
+                    useValue: mockProjectRepo
                 },
                 {
                     provide: SummariesService,
-                    useValue: mockSummariesService,
+                    useValue: mockSummariesService
                 },
                 {
                     provide: UsersService,
-                    useValue: mockUsersService,
+                    useValue: mockUsersService
                 },
                 {
                     provide: ThirdPartyService,
-                    useValue: mockThirdPartyService,
+                    useValue: mockThirdPartyService
                 },
                 {
                     provide: RedisService,
-                    useValue: mockRedisService,
-                },
-            ],
+                    useValue: mockRedisService
+                }
+            ]
         }).compile();
 
         service = module.get<ProjectService>(ProjectService);
@@ -133,8 +133,8 @@ describe('ProjectService', () => {
 
         expect(mockProjectRepo.findOne).toBeCalledWith({
             where: {
-                user: user,
-            },
+                user: user
+            }
         });
     });
 
@@ -146,9 +146,9 @@ describe('ProjectService', () => {
         expect(mockProjectRepo.find).toBeCalledWith({
             relations: ['user'],
             order: {
-                last_updated: 'DESC',
+                last_updated: 'DESC'
             },
-            take: 1,
+            take: 1
         });
     });
 
@@ -166,13 +166,13 @@ describe('ProjectService', () => {
             data: [
                 {
                     id: 223,
-                    name: 'sleep',
+                    name: 'sleep'
                 },
                 {
                     id: 123,
-                    name: 'meditation',
-                },
-            ],
+                    name: 'meditation'
+                }
+            ]
         });
     });
 
@@ -191,7 +191,7 @@ describe('ProjectService', () => {
             name: 'meditation',
             user: user,
             project_id: 123,
-            last_updated: new Date(1466424490000),
+            last_updated: new Date(1466424490000)
         });
         expect(mockSummariesService.syncWithThirdParty).toBeCalledTimes(1);
         spyOnDate.mockRestore();
