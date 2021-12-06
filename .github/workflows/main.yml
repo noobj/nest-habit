@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Install eslint package
+        run: npm install eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser
       - name: eslint
         run: npm run lint
 
