@@ -7,7 +7,7 @@ export class addUniNameConstraintInUserTable1621921048626 implements MigrationIn
             new TableIndex({
                 name: 'uni_name',
                 columnNames: ['account'],
-                isUnique: true,
+                isUnique: true
             })
         );
     }

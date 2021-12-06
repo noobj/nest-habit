@@ -69,7 +69,7 @@ describe('SummariesService', () => {
     };
 
     const mockSocketServerGateway = {
-        server: jest.fn(() => {})
+        server: jest.fn()
     };
 
     const mockModuleRef = {

@@ -13,7 +13,7 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
     constructor(
         private moduleRef: ModuleRef,
-        private summariesService: SummariesService,
+        private summariesService: SummariesService
     ) {}
 
     onModuleInit() {

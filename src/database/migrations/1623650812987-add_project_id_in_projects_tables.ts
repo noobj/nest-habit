@@ -16,7 +16,7 @@ export class addProjectIdInProjectsTables1623650812987 implements MigrationInter
                 columnNames: ['project_id'],
                 referencedColumnNames: ['id'],
                 referencedTableName: 'projects',
-                onDelete: 'CASCADE',
+                onDelete: 'CASCADE'
             })
         );
         await queryRunner.query(
@@ -30,16 +30,14 @@ export class addProjectIdInProjectsTables1623650812987 implements MigrationInter
             (fk) => fk.columnNames.indexOf('project_id') !== -1
         );
         await queryRunner.dropForeignKey('daily_summaries', foreignKey);
-        await queryRunner.query(
-            'ALTER TABLE projects MODIFY COLUMN id int NOT NULL'
-        );
+        await queryRunner.query('ALTER TABLE projects MODIFY COLUMN id int NOT NULL');
         await queryRunner.createForeignKey(
             'daily_summaries',
             new TableForeignKey({
                 columnNames: ['project_id'],
                 referencedColumnNames: ['id'],
                 referencedTableName: 'projects',
-                onDelete: 'CASCADE',
+                onDelete: 'CASCADE'
             })
         );
         await queryRunner.query('ALTER TABLE projects DROP COLUMN project_id');

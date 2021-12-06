@@ -9,6 +9,6 @@ export class DefaultSeeder implements ISeeder {
     async run() {
         return new UserSeeder(this.connection).run().then(() => {
             return new ProjectSeeder(this.connection).run();
-        })
+        });
     }
 }

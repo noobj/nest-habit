@@ -18,12 +18,12 @@ describe('AppController', () => {
     };
 
     const mockUsersService = {
-        setToken: jest.fn(() => {}),
-        setRefreshToken: jest.fn(() => {})
+        setToken: jest.fn(),
+        setRefreshToken: jest.fn()
     };
 
     const mockService = {
-        add: jest.fn(() => {})
+        add: jest.fn()
     };
 
     beforeEach(async () => {

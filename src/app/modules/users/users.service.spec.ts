@@ -12,12 +12,12 @@ describe('UsersService', () => {
         account: 'jjj',
         email: 'test',
         password: 'DGAF',
-        toggl_token: 'DGAF',
+        toggl_token: 'DGAF'
     };
 
     const mockUsersRepo = {
         findOne: jest.fn(() => Promise.resolve<Partial<User>>(user)),
-        update: jest.fn(() => {}),
+        update: jest.fn()
     };
 
     beforeEach(async () => {
@@ -26,9 +26,9 @@ describe('UsersService', () => {
                 UsersService,
                 {
                     provide: getRepositoryToken(User),
-                    useValue: mockUsersRepo,
-                },
-            ],
+                    useValue: mockUsersRepo
+                }
+            ]
         }).compile();
 
         service = module.get<UsersService>(UsersService);
@@ -39,7 +39,7 @@ describe('UsersService', () => {
 
         expect(result).toEqual(user);
         expect(mockUsersRepo.findOne).toBeCalledWith({
-            where: { account: 'jjj' },
+            where: { account: 'jjj' }
         });
     });
 
@@ -55,7 +55,7 @@ describe('UsersService', () => {
 
         expect(mockUsersRepo.update).toBeCalledWith(user.id, {
             toggl_token: '123456',
-            third_party_service: 'toggl',
+            third_party_service: 'toggl'
         });
     });
 });
