@@ -51,7 +51,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   publish_docker_images:
-    needs: test
+    needs: lintAndtest
     runs-on: ubuntu-20.04
     if: github.ref == 'refs/heads/main'
 
