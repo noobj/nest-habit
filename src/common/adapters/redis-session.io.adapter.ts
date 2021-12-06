@@ -7,17 +7,18 @@ import { createAdapter } from 'socket.io-redis';
 import { ServerOptions, Socket } from 'socket.io';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { NextFunction } from 'express';
+import { INestApplicationContext } from '@nestjs/common/interfaces/nest-application-context.interface';
 
 const wrap = (middleware: any) => (socket: Socket, next: NextFunction) =>
     middleware(socket.request, {}, next);
 
 export class RedisSessionIoAdapter extends IoAdapter {
-    private server: any;
+    private server: INestApplicationContext | any;
     private redisClient: redis.RedisClient;
     private configService: ConfigService;
     private subClient: redis.RedisClient;
 
-    constructor(server: any, app: NestExpressApplication) {
+    constructor(server: INestApplicationContext | any, app: NestExpressApplication) {
         super(server);
         this.configService = app.get(ConfigService);
     }

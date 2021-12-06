@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ImATeapotException, INestApplication } from '@nestjs/common';
+import { ImATeapotException, INestApplicationContext } from '@nestjs/common';
 import * as request from 'supertest';
 
 import { AppModule } from 'src/app.module';
@@ -13,12 +13,13 @@ import * as fs from 'fs';
 import { staticChecker } from 'src/common/middleware/static-file-checker.middleware';
 import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adapter';
 import Services from 'src/config/third-party-services.map';
+import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 
 describe('AppController (e2e)', () => {
-    let app: INestApplication;
-    let server;
-    let cookies;
-    let socketIoServer;
+    let app: NestExpressApplication;
+    let server: INestApplicationContext | any;
+    let cookies: string;
+    let socketIoServer: NestExpressApplication;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
