@@ -19,7 +19,6 @@ describe('AppController (e2e)', () => {
     let app: NestExpressApplication;
     let server: INestApplicationContext | any;
     let cookies: string;
-    let socketIoServer: NestExpressApplication;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -28,7 +27,7 @@ describe('AppController (e2e)', () => {
 
         app = moduleFixture.createNestApplication();
         server = app.getHttpServer();
-        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
+        app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
 
         app.use(staticChecker);
         const configService = app.get(ConfigService);
@@ -182,7 +181,6 @@ describe('AppController (e2e)', () => {
 
     afterAll(async () => {
         await getConnection().synchronize(true); // clean up all data
-        await socketIoServer.close();
         app.close();
     });
 });

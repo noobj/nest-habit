@@ -21,7 +21,6 @@ describe('SummariesController (e2e)', () => {
     let app: NestExpressApplication;
     let cookies: string;
     let server: INestApplicationContext | any;
-    let socketIoServer: NestExpressApplication;
     let redisClient: redis.RedisClient;
     let summariesReop: Repository<DailySummary>;
 
@@ -32,7 +31,7 @@ describe('SummariesController (e2e)', () => {
 
         app = moduleFixture.createNestApplication();
         server = app.getHttpServer();
-        socketIoServer = app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
+        app.useWebSocketAdapter(new RedisSessionIoAdapter(server, app));
         const configService = app.get(ConfigService);
         const RedisStore = connectRedis(session);
         redisClient = redis.createClient({ db: configService.get('redis.db') });
@@ -323,7 +322,6 @@ describe('SummariesController (e2e)', () => {
     afterAll(async () => {
         await redisClient.flushdb();
         await getConnection().synchronize(true); // clean up all data
-        await socketIoServer.close();
         await new Promise<void>((resolve) => {
             redisClient.quit(() => {
                 resolve();
