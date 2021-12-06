@@ -15,19 +15,10 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  lint:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install eslint package
-        run: npm install eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser
-      - name: eslint
-        run: npm run lint
 
-  test:
+  lintAndtest:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
-    needs: lint
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -49,6 +40,8 @@ jobs:
       - name: npm install
         run: |
           npm ci
+      - name: eslint
+        run: npm run lint
       - name: testing
         run: |
           npm run test:overall --if-present
