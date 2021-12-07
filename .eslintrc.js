@@ -4,10 +4,11 @@ module.exports = {
     project: 'tsconfig.json',
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['@typescript-eslint/eslint-plugin', 'prettier'],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
+    'prettier'
   ],
   root: true,
   env: {
@@ -22,6 +23,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     'prefer-const': ['error', {
         'destructuring': 'all',
-    }]
+    }],
+    'prettier/prettier': 2
   },
 };

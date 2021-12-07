@@ -15,7 +15,6 @@ lerna-debug.log*
 # OS
 .DS_Store
 ormconfig.json
-.prettierrc
 
 # Tests
 /coverage
