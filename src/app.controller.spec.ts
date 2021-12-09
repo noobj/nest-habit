@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AuthService } from './app/auth/auth.service';
 import { ProjectService } from './app/modules/summaries';
-import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
+import { ThirdPartyFactory } from './app/modules/ThirdParty/third-party.factory';
 import { UsersService } from './app/modules/users/users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
@@ -36,7 +36,7 @@ describe('AppController', () => {
                     useValue: mockService
                 },
                 {
-                    provide: ThirdPartyService,
+                    provide: ThirdPartyFactory,
                     useValue: mockService
                 },
                 {

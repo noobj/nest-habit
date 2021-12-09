@@ -16,6 +16,7 @@ import { DailySummary } from 'src/app/modules/summaries/entities';
 import { endOfToday, format, subDays, subYears } from 'date-fns';
 import { getCacheString } from 'src/common/helpers/utils';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
+import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
 
 describe('SummariesController (e2e)', () => {
     let app: NestExpressApplication;
@@ -54,7 +55,7 @@ describe('SummariesController (e2e)', () => {
             email: 'marley.lemke@example.org',
             password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
-            third_party_service: 'toggl'
+            third_party_service: 'toggl' as ThirdPartyServiceKeys
         };
         await userRepository.save(user);
     });

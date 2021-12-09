@@ -20,7 +20,7 @@ import { ProjectService } from './projects.service';
 import { Project } from './entities/project.entity';
 import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
-import { ThirdPartyService } from '../ThirdParty/third-party.service';
+import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { ModuleRef } from '@nestjs/core';
 import { convertRawDurationToFormat } from 'src/common/helpers/utils';
@@ -46,7 +46,6 @@ export class SummariesService
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
         private moduleRef: ModuleRef,
-        private thirdPartyService: ThirdPartyService,
         private readonly socketServerGateway: SocketServerGateway,
         private readonly redisService: RedisService
     ) {
@@ -204,9 +203,9 @@ export class SummariesService
 
         try {
             await this.projectService.updateProjectLastUpdated(project);
-            const details = await this.thirdPartyService
-                .serviceFactory(user.third_party_service)
-                .fetch(project, since);
+            const details = await ThirdPartyFactory.getService(
+                user.third_party_service
+            ).fetch(project, since);
 
             if (!details.length) return 0;
 

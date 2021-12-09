@@ -7,7 +7,7 @@ import { ImATeapotException } from '@nestjs/common';
 import { User } from '../users';
 import { ProjectService } from './projects.service';
 import { ModuleRef } from '@nestjs/core';
-import { ThirdPartyService } from '../ThirdParty/third-party.service';
+import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { RedisService } from 'src/app/modules/redis';
 import { SocketServerGateway } from 'src/app/modules/socket-server/socket-server.gateway';
 
@@ -78,24 +78,24 @@ describe('SummariesService', () => {
         })
     };
 
-    const mockThirdPartyService = {
-        serviceFactory: () => ({
-            fetch: () => [
-                {
-                    start: '2021-01-10T11:00:51+08:00',
-                    dur: 1000
-                },
-                {
-                    start: '2021-01-10T11:00:51+08:00',
-                    dur: 1000
-                },
-                {
-                    start: '2021-01-11T11:00:51+08:00',
-                    dur: 1000
-                }
-            ]
-        })
-    };
+    const mockThirdPartyService = jest.fn().mockImplementation(() => ({
+        fetch: () => [
+            {
+                start: '2021-01-10T11:00:51+08:00',
+                dur: 1000
+            },
+            {
+                start: '2021-01-10T11:00:51+08:00',
+                dur: 1000
+            },
+            {
+                start: '2021-01-11T11:00:51+08:00',
+                dur: 1000
+            }
+        ]
+    }));
+
+    ThirdPartyFactory.getService = mockThirdPartyService;
 
     const mockRedisClient = {
         keys: jest.fn(() => {
@@ -125,7 +125,7 @@ describe('SummariesService', () => {
                     useValue: mockModuleRef
                 },
                 {
-                    provide: ThirdPartyService,
+                    provide: ThirdPartyFactory,
                     useValue: mockThirdPartyService
                 },
                 {

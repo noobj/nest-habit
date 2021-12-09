@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { ThirdPartyService } from './third-party.service';
+import { ThirdPartyFactory } from './third-party.factory';
 
 @Module({
-    providers: [ThirdPartyService],
-    exports: [ThirdPartyService]
+    providers: [ThirdPartyFactory],
+    exports: [ThirdPartyFactory]
 })
 export class ThirdPartyModule {}

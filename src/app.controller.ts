@@ -34,7 +34,10 @@ import { imageFileFilter } from './common/helpers/file-upload.utils';
 import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
 import { UsersService } from 'src/app/modules/users/users.service';
 import { ProjectService } from 'src/app/modules/summaries/projects.service';
-import { ThirdPartyService } from './app/modules/ThirdParty/third-party.service';
+import {
+    ThirdPartyFactory,
+    ThirdPartyServiceKeys
+} from './app/modules/ThirdParty/third-party.factory';
 import Services from 'src/config/third-party-services.map';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -69,7 +72,6 @@ export class AppController {
         private authService: AuthService,
         private userService: UsersService,
         private projectService: ProjectService,
-        private thirdPartyService: ThirdPartyService,
         private configService: ConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: winston.Logger
     ) {
@@ -190,13 +192,11 @@ export class AppController {
     async setToken(
         @Request() req: Express.Request & { user: { id: number } },
         @Body('api_token') apiToken: string,
-        @Body('service') service: string
+        @Body('service') service: ThirdPartyServiceKeys
     ) {
         const userId = req.user.id;
         try {
-            await this.thirdPartyService
-                .serviceFactory(service)
-                .checkTokenValid(apiToken);
+            await ThirdPartyFactory.getService(service).checkTokenValid(apiToken);
         } catch (error) {
             throw new BadRequestException('Set Failed');
         }

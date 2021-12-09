@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Project } from './entities';
 import { User, UsersService } from '../users';
 import { ProjectService } from './projects.service';
-import { ThirdPartyService } from '../ThirdParty/third-party.service';
+import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SummariesService } from './summaries.service';
 import { RedisService } from 'src/app/modules/redis';
 
@@ -18,22 +18,22 @@ describe('ProjectService', () => {
         toggl_token: 'DGAF'
     };
 
-    const mockThirdPartyService = {
-        serviceFactory: () => ({
-            getProjects: () => ({
-                data: [
-                    {
-                        id: 223,
-                        name: 'sleep'
-                    },
-                    {
-                        id: 123,
-                        name: 'meditation'
-                    }
-                ]
-            })
+    const mockThirdPartyService = jest.fn().mockImplementation(() => ({
+        getProjects: () => ({
+            data: [
+                {
+                    id: 223,
+                    name: 'sleep'
+                },
+                {
+                    id: 123,
+                    name: 'meditation'
+                }
+            ]
         })
-    };
+    }));
+
+    ThirdPartyFactory.getService = mockThirdPartyService;
 
     const mockProject = {
         id: 1,
@@ -111,10 +111,6 @@ describe('ProjectService', () => {
                 {
                     provide: UsersService,
                     useValue: mockUsersService
-                },
-                {
-                    provide: ThirdPartyService,
-                    useValue: mockThirdPartyService
                 },
                 {
                     provide: RedisService,

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindConditions, FindManyOptions } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
+import { ThirdPartyServiceKeys } from '../ThirdParty/third-party.factory';
 import { User } from './users.entity';
 
 @Injectable()
@@ -30,7 +31,7 @@ export class UsersService {
         });
     }
 
-    async setToken(id: number, token: string, service: string) {
+    async setToken(id: number, token: string, service: ThirdPartyServiceKeys) {
         try {
             await this.usersRepository.update(id, {
                 toggl_token: token,

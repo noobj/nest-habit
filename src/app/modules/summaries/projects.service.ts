@@ -7,7 +7,7 @@ import { Redis } from 'ioredis';
 import { Project } from './entities';
 import { User } from '../users';
 import { UsersService } from '../users';
-import { ThirdPartyService } from '../ThirdParty/third-party.service';
+import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SummariesService } from './summaries.service';
 import { RedisService } from '../redis';
 
@@ -20,7 +20,6 @@ export class ProjectService {
         @InjectRepository(Project)
         private projectRepository: Repository<Project>,
         private usersService: UsersService,
-        private thirdPartyService: ThirdPartyService,
         private redisService: RedisService
     ) {
         moment.tz.setDefault('Asia/Taipei');
@@ -53,9 +52,9 @@ export class ProjectService {
     public async getAllProjects(user: Partial<User>) {
         user = await this.usersService.findOne(user.id);
 
-        return await this.thirdPartyService
-            .serviceFactory(user.third_party_service)
-            .getProjects(user);
+        return await ThirdPartyFactory.getService(user.third_party_service).getProjects(
+            user
+        );
     }
 
     public async deleteProjectByUser(user: Partial<User> | number) {
