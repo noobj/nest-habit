@@ -167,6 +167,7 @@ describe('SummariesController (e2e)', () => {
         socket.on('sync', (data: any) => {
             expect(data).toBeDefined();
             socket.disconnect();
+            done();
         });
 
         socket.on('notice', (data: any) => {
@@ -178,10 +179,6 @@ describe('SummariesController (e2e)', () => {
                 userId: 222,
                 account: 'jjj'
             });
-        });
-
-        socket.on('disconnect', () => {
-            done();
         });
     });
 
@@ -211,9 +208,6 @@ describe('SummariesController (e2e)', () => {
                 expect(JSON.parse(result).summaries).toEqual(JSON.parse(data).summaries);
             });
             socket.disconnect();
-        });
-
-        socket.on('disconnect', () => {
             done();
         });
     });
@@ -322,15 +316,8 @@ describe('SummariesController (e2e)', () => {
     afterAll(async () => {
         await redisClient.flushdb();
         await getConnection().synchronize(true); // clean up all data
-        await new Promise<void>((resolve) => {
-            redisClient.quit(() => {
-                resolve();
-            });
-        });
-        // redis.quit() creates a thread to close the connection.
-        // We wait until all threads have been run once to ensure the connection closes.
-        await new Promise<void>((resolve) => setImmediate(resolve));
+        await redisClient.quit();
 
-        app.close();
+        await app.close();
     });
 });

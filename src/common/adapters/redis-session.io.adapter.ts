@@ -80,22 +80,10 @@ export class RedisSessionIoAdapter extends IoAdapter {
         return this.server;
     }
 
-    async close() {
-        await new Promise<void>((resolve) => {
-            this.redisClient.quit(() => {
-                resolve();
-            });
-        });
-        await new Promise<void>((resolve) => setImmediate(resolve));
+    async close(server: any) {
+        await this.subClient.quit();
+        await this.redisClient.quit();
 
-        await new Promise<void>((resolve) => {
-            this.subClient.quit(() => {
-                resolve();
-            });
-        });
-        // redis.quit() creates a thread to close the connection.
-        // We wait until all threads have been run once to ensure the connection closes.
-        await new Promise<void>((resolve) => setImmediate(resolve));
-        this.server.close();
+        await server.close();
     }
 }
