@@ -14,6 +14,7 @@ import { staticChecker } from 'src/common/middleware/static-file-checker.middlew
 import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adapter';
 import Services from 'src/config/third-party-services.map';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
+import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
 
 describe('AppController (e2e)', () => {
     let app: NestExpressApplication;
@@ -47,7 +48,7 @@ describe('AppController (e2e)', () => {
             email: 'marley.lemke@example.org',
             password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
-            third_party_service: 'toggl'
+            third_party_service: 'toggl' as ThirdPartyServiceKeys
         };
         await userRepository.save(user);
     });
