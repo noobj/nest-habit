@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as moment from 'moment';
-import { HttpException } from '@nestjs/common';
 
 export class TogglClient {
     public client;
@@ -28,7 +27,7 @@ export class TogglClient {
                 console.log(err);
                 const message = `fetch from Toggl failed: [${err?.request?.res?.statusCode} ${err?.request?.res?.statusMessage}]`;
 
-                throw new HttpException(message, err?.request?.res?.statusCode);
+                throw new Error(message);
             });
     }
 

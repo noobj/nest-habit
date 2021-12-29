@@ -34,7 +34,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         ScheduleModule.forRoot()
     ],
     providers: [
-        SummaryProcessor,
+        // SummaryProcessor,
         SummariesService,
         ProjectService,
         SummariesGateway,
