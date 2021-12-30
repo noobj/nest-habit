@@ -19,5 +19,5 @@ spec:
         envFrom:
         - configMapRef:
             name: env
-        image: noobj/nest-habit-processor
+        image: noobj/nest-habit_processor
         imagePullPolicy: Always
