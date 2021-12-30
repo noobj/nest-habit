@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 
-import { SummaryProcessor } from './summaries.processor';
 import { SummariesService } from './summaries.service';
 import { SummariesController } from './summaries.controller';
 import { ProjectService } from './projects.service';
@@ -34,7 +33,6 @@ import { ScheduleModule } from '@nestjs/schedule';
         ScheduleModule.forRoot()
     ],
     providers: [
-        SummaryProcessor,
         SummariesService,
         ProjectService,
         SummariesGateway,

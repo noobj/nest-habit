@@ -17,6 +17,7 @@ import { endOfToday, format, subDays, subYears } from 'date-fns';
 import { getCacheString } from 'src/common/helpers/utils';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
+import { Processor } from '../processor/processor';
 
 describe('SummariesController (e2e)', () => {
     let app: NestExpressApplication;
@@ -24,8 +25,11 @@ describe('SummariesController (e2e)', () => {
     let server: INestApplicationContext | any;
     let redisClient: redis.RedisClient;
     let summariesReop: Repository<DailySummary>;
+    let processor: any;
 
     beforeAll(async () => {
+        processor = await Processor.CreateAsync();
+        await processor.listen();
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })]
         }).compile();
@@ -66,7 +70,7 @@ describe('SummariesController (e2e)', () => {
             password: 'password'
         };
 
-        return request(server)
+        request(server)
             .post('/auth/login')
             .send(payload)
             .end(function (err, res) {
@@ -77,7 +81,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     it('/GET projects no current project', (done) => {
-        return request(server)
+        request(server)
             .get('/projects')
             .set('Cookie', cookies)
             .send()
@@ -93,7 +97,7 @@ describe('SummariesController (e2e)', () => {
         const payload = {
             project_name: 'ffff'
         };
-        return request(server)
+        request(server)
             .post('/project')
             .set('Cookie', cookies)
             .send(payload)
@@ -108,7 +112,7 @@ describe('SummariesController (e2e)', () => {
         const payload = {
             project_name: 'meditation'
         };
-        return request(server)
+        request(server)
             .post('/project')
             .set('Cookie', cookies)
             .send(payload)
@@ -120,7 +124,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     it('/GET projects', (done) => {
-        return request(server)
+        request(server)
             .get('/projects')
             .set('Cookie', cookies)
             .send()
@@ -137,7 +141,7 @@ describe('SummariesController (e2e)', () => {
             project_name: 'jjj'
         };
         const spyLog = jest.spyOn(console, 'log').mockImplementation();
-        return request(server)
+        request(server)
             .post('/project')
             .set('Cookie', cookies)
             .send(payload)
@@ -219,7 +223,7 @@ describe('SummariesController (e2e)', () => {
             end_date: '2021-05-26'
         };
         jest.useFakeTimers('modern').setSystemTime(new Date('2021-05-25').getTime());
-        return request(server)
+        request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)
@@ -258,7 +262,7 @@ describe('SummariesController (e2e)', () => {
             start_date: '2021-05-22',
             end_date: '2021-05-26'
         };
-        return request(server)
+        request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)
@@ -285,7 +289,7 @@ describe('SummariesController (e2e)', () => {
             start_date: '2021-02',
             end_date: '2021-26'
         };
-        return request(server)
+        request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)
@@ -303,7 +307,7 @@ describe('SummariesController (e2e)', () => {
             start_date: '2012-05-22',
             end_date: '2012-05-26'
         };
-        return request(server)
+        request(server)
             .get('/summaries')
             .set('Cookie', cookies)
             .query(query)
@@ -320,5 +324,7 @@ describe('SummariesController (e2e)', () => {
         await redisClient.quit();
 
         await app.close();
+
+        await processor.close();
     });
 });

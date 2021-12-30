@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nest-habit-processor
+  name: nest-habit-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nest-habit-processor
+  template:
+    metadata:
+      labels:
+        app: nest-habit-processor
+    spec:
+      containers:
+      - name: nest-habit-processor
+        envFrom:
+        - configMapRef:
+            name: env
+        image: noobj/nest-habit_processor
+        imagePullPolicy: Always

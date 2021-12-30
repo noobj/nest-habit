@@ -59,7 +59,7 @@ describe('AppController (e2e)', () => {
             password: 'password'
         };
 
-        return request(server)
+        request(server)
             .post('/auth/login')
             .send(payload)
             .end(function (err, res) {
@@ -71,7 +71,7 @@ describe('AppController (e2e)', () => {
             });
     });
 
-    it('/POST upload_avatar', async (done) => {
+    it('/POST upload_avatar', async () => {
         const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
 
         return request(server)
@@ -81,12 +81,10 @@ describe('AppController (e2e)', () => {
             .then((res) => {
                 expect(res.body.filename).toEqual('222.jpg');
                 expect(res.body.originalname).toEqual('display.png');
-
-                done();
             });
     });
 
-    it('/POST upload_avatar unsupported file extension', async (done) => {
+    it('/POST upload_avatar unsupported file extension', async () => {
         const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
         const spyLog = jest.spyOn(console, 'log').mockImplementation();
         return request(server)
@@ -100,12 +98,11 @@ describe('AppController (e2e)', () => {
                 expect(res.status).toEqual(418);
                 expect(res.body.message).toEqual('Only image files are allowed!');
                 spyLog.mockRestore();
-                done();
             });
     });
 
     it('/GET profile', (done) => {
-        return request(server)
+        request(server)
             .get('/profile')
             .set('Cookie', cookies)
             .send()
@@ -118,12 +115,13 @@ describe('AppController (e2e)', () => {
             });
     });
 
-    it('/GET static nonexist img', () => {
-        return request(server)
+    it('/GET static nonexist img', (done) => {
+        request(server)
             .get('/img/abc.jpg')
             .set('Cookie', cookies)
             .send()
-            .expect(404);
+            .expect(404)
+            .end(() => done());
     });
 
     it('/POST api_token', (done) => {
@@ -132,7 +130,7 @@ describe('AppController (e2e)', () => {
             service: 'toggl'
         };
 
-        return request(server)
+        request(server)
             .post('/api_token')
             .send(payload)
             .set('Cookie', cookies)
@@ -143,7 +141,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/GET refresh', (done) => {
-        return request(server)
+        request(server)
             .get('/refresh')
             .set('Cookie', cookies)
             .send()
@@ -156,7 +154,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/GET services', (done) => {
-        return request(server)
+        request(server)
             .get('/services')
             .set('Cookie', cookies)
             .send()
@@ -168,16 +166,31 @@ describe('AppController (e2e)', () => {
             });
     });
 
-    it('/GET logout', () => {
-        return request(server).get('/logout').set('Cookie', cookies).send().expect(200);
+    it('/GET logout', (done) => {
+        request(server)
+            .get('/logout')
+            .set('Cookie', cookies)
+            .send()
+            .expect(200)
+            .end(() => done());
     });
 
-    it('/GET refresh Unauthorized', () => {
-        return request(server).get('/refresh').set('Cookie', cookies).send().expect(401);
+    it('/GET refresh Unauthorized', (done) => {
+        request(server)
+            .get('/refresh')
+            .set('Cookie', cookies)
+            .send()
+            .expect(401)
+            .end(() => done());
     });
 
-    it('/GET profile Unauthorized', () => {
-        return request(server).get('/profile').set('Cookie', cookies).send().expect(401);
+    it('/GET profile Unauthorized', (done) => {
+        request(server)
+            .get('/profile')
+            .set('Cookie', cookies)
+            .send()
+            .expect(401)
+            .end(() => done());
     });
 
     afterAll(async () => {
