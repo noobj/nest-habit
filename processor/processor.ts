@@ -1,16 +1,14 @@
 import * as Queue from 'bull';
 import { createConnection, Connection } from 'typeorm';
-import * as dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import { createAdapter } from 'socket.io-redis';
 import * as Redis from 'ioredis';
 import { endOfToday, format, subDays, subYears } from 'date-fns';
+import { config as TestConfig } from './test.config';
+import { config as Config } from './config';
 
-dotenv.config();
 import { User } from './entities/users.entity';
 import { ProcessorService } from './processor.service';
-import { DailySummary } from './entities/daily_summary.entity';
-import { Project } from './entities/project.entity';
 
 export const getCacheString = (
     prefix: string,
@@ -34,26 +32,29 @@ export class Processor {
     ) {}
 
     public static CreateAsync = async () => {
-        const redisDb = process.env.NODE_ENV === 'test' ? 14 : 0;
-        const typeormEntities = [User, DailySummary, Project];
-        const typeormDatabase =
-            process.env.NODE_ENV === 'test' ? 'test' : process.env.TYPEORM_DATABASE;
+        console.log('Start queue processor...');
+
+        const config = process.env.NODE_ENV === 'test' ? TestConfig : Config;
+        const databaseConfig = config.database;
+        const redisConfig = config.redis;
 
         const connection = await createConnection({
             name: 'processor',
             type: 'mysql',
-            host: process.env.TYPEORM_HOST,
-            port: +process.env.TYPEORM_PORT,
-            username: process.env.TYPEORM_USERNAME,
-            password: process.env.TYPEORM_PASSWORD,
-            database: typeormDatabase,
-            entities: typeormEntities,
+            host: databaseConfig.host,
+            port: +databaseConfig.port,
+            username: databaseConfig.username,
+            password: databaseConfig.password,
+            database: databaseConfig.database,
+            entities: databaseConfig.entities,
             synchronize: false,
-            logging: process.env.TYPEORM_LOGGING === 'true'
+            logging: databaseConfig.logging
         });
-        const redisClient = new Redis(6379, process.env.REDIS_HOST, { db: redisDb });
+        const redisClient = new Redis(6379, process.env.REDIS_HOST, {
+            db: redisConfig.db
+        });
         const queue = new Queue('summary', {
-            redis: { host: process.env.REDIS_HOST, db: redisDb }
+            redis: { host: redisConfig.host, db: redisConfig.db }
         });
 
         const io = new Server();
@@ -78,7 +79,7 @@ export class Processor {
         const userRepository = this.connection.getRepository(User);
 
         this.queue.process('sync', async (job) => {
-            console.log('queue processor handling sync');
+            console.log('Handling sync');
             try {
                 const { user, socketId, days } = job.data;
                 const userWhole: User = await userRepository.findOne(user.id);
