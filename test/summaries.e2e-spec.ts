@@ -17,7 +17,7 @@ import { endOfToday, format, subDays, subYears } from 'date-fns';
 import { getCacheString } from 'src/common/helpers/utils';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
-import { Processor } from 'processor/processor';
+import { Processor } from '../processor/processor';
 
 describe('SummariesController (e2e)', () => {
     let app: NestExpressApplication;
