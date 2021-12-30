@@ -70,6 +70,28 @@ jobs:
           push: true
           tags: noobj/nest-habit_node
 
+  publish_docker_images_for_processor:
+    needs: lintAndtest
+    runs-on: ubuntu-20.04
+    if: github.ref == 'refs/heads/processor_main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Change dir
+        run: cd processor
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: noobj/nest-habit_processor
+
   migrations-test:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04

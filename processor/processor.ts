@@ -35,7 +35,6 @@ export class Processor {
         console.log('Start queue processor...');
 
         const config = process.env.NODE_ENV === 'test' ? TestConfig : Config;
-        console.log(config);
         const databaseConfig = config.database;
         const redisConfig = config.redis;
 
