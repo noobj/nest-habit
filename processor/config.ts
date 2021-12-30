@@ -15,7 +15,7 @@ export const config = {
         logging: process.env.TYPEORM_LOGGING === 'true' || false
     },
     redis: {
-        host: '127.0.0.1',
-        db: 14
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        db: 0
     }
 };

@@ -1,6 +1,6 @@
 import { TogglClient } from './TogglClient';
-import { Project } from '../entities/project.entity';
-import { User } from '../entities/users.entity';
+import { Project } from '../../entities/project.entity';
+import { User } from '../../entities/users.entity';
 import { IThirdPartyService } from '../third-party.interface';
 
 export class TogglService implements IThirdPartyService {

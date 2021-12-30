@@ -1,5 +1,5 @@
-import { Project } from './entities/project.entity';
-import { User } from './entities/users.entity';
+import { Project } from '../entities/project.entity';
+import { User } from '../entities/users.entity';
 
 export interface IThirdPartyService {
     getProjects(user: Partial<User>): Promise<any>;

@@ -7,7 +7,7 @@ import { Server } from 'socket.io';
 import { Between, Connection, Repository } from 'typeorm';
 
 import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
-import { ThirdPartyFactory } from './third-party.factory';
+import { ThirdPartyFactory } from './third-party/third-party.factory';
 import { User } from './entities/users.entity';
 import { Project } from './entities/project.entity';
 import { DailySummary } from './entities/daily_summary.entity';
