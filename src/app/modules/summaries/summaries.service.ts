@@ -6,7 +6,7 @@ import {
     InternalServerErrorException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, LessThanOrEqual } from 'typeorm';
 import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
 import { Redis } from 'ioredis';
@@ -281,5 +281,22 @@ export class SummariesService
         if (today.length) streak++;
 
         return streak;
+    }
+
+    public async getMissingStreak(user: User): Promise<number> {
+        const lastDate = await this.dailySummaryRepository
+            .find({
+                select: ['date'],
+                where: {
+                    user,
+                    date: LessThanOrEqual(moment().format('YYYY-MM-DD'))
+                },
+                order: {
+                    date: 'DESC'
+                }
+            })
+            .then((res) => res[0].date);
+
+        return Math.floor(moment.duration(moment().diff(moment(lastDate))).as('days'));
     }
 }

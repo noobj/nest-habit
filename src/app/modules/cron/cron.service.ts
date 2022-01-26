@@ -189,6 +189,12 @@ export class CronService {
                         let streakAlert = '';
                         if (res.streak > 1)
                             streakAlert = `❗Keep going bro💪, don't lose your hard-earned ${res.streak} days steak✅\n\n`;
+                        else {
+                            const missDays = await this.summariesService.getMissingStreak(
+                                entry.user
+                            );
+                            streakAlert = `🤷 You've already missed ${missDays} days👎, make a change today!\n\n`;
+                        }
                         const text =
                             streakAlert +
                             `*🧘Weekly Meditation Progress👃*\nDays: ${res.days}\nTotal: ${res.total}\nStreak: ${res.streak} days`;
