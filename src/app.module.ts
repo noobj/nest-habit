@@ -7,6 +7,7 @@ import { join } from 'path';
 import { BullModule } from '@nestjs/bull';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import { TelegrafModule } from 'nestjs-telegraf';
 
 import { UsersModule } from './app/modules/users/users.module';
 import { SummariesModule, SummariesController } from './app/modules/summaries';
@@ -69,7 +70,10 @@ import { CronModule } from './app/modules/cron/cron.module';
                 })
             ]
         }),
-        SocketServerModule
+        SocketServerModule,
+        TelegrafModule.forRoot({
+            token: process.env.TELEGRAM_BOT_API_KEY
+        })
     ],
     controllers: [AppController]
 })

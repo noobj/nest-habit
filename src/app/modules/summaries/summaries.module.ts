@@ -13,6 +13,7 @@ import { SummariesGateway } from './summaries.gateway';
 import { RedisModule } from '../redis/redis.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SummariesUpdate } from './summaries.update';
 
 @Module({
     imports: [
@@ -36,6 +37,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         SummariesService,
         ProjectService,
         SummariesGateway,
+        SummariesUpdate,
         { provide: Interfaces.IBasicService, useClass: SummariesService }
     ],
     controllers: [SummariesController],
