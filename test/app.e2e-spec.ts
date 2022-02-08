@@ -166,6 +166,19 @@ describe('AppController (e2e)', () => {
             });
     });
 
+    it('/GET subscribe token', (done) => {
+        request(server)
+            .get('/sub_token')
+            .set('Cookie', cookies)
+            .send()
+            .end((err, res) => {
+                expect(res.status).toEqual(200);
+                expect(res.text).toMatch(/[a-zA-Z0-9]{21}/);
+
+                done();
+            });
+    });
+
     it('/GET logout', (done) => {
         request(server)
             .get('/logout')

@@ -6,6 +6,7 @@ import { ProjectService } from './app/modules/summaries';
 import { ThirdPartyFactory } from './app/modules/ThirdParty/third-party.factory';
 import { UsersService } from './app/modules/users/users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { RedisService } from './app/modules/redis';
 
 describe('AppController', () => {
     let appController: AppController;
@@ -23,7 +24,8 @@ describe('AppController', () => {
     };
 
     const mockService = {
-        add: jest.fn()
+        add: jest.fn(),
+        getClient: jest.fn()
     };
 
     beforeEach(async () => {
@@ -41,6 +43,10 @@ describe('AppController', () => {
                 },
                 {
                     provide: ConfigService,
+                    useValue: mockService
+                },
+                {
+                    provide: RedisService,
                     useValue: mockService
                 },
                 {

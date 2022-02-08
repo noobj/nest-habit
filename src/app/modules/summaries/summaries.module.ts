@@ -14,9 +14,11 @@ import { RedisModule } from '../redis/redis.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SummariesUpdate } from './summaries.update';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
     imports: [
+        NotificationModule,
         BullModule.registerQueue({
             name: 'summary'
         }),
