@@ -173,7 +173,7 @@ describe('AppController (e2e)', () => {
             .send()
             .end((err, res) => {
                 expect(res.status).toEqual(200);
-                expect(res.text).toMatch(/[a-zA-Z0-9]{21}/);
+                expect(res.text).toMatch(/[a-zA-Z0-9]{20}/);
 
                 done();
             });
