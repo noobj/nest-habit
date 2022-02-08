@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 
@@ -15,6 +15,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SummariesUpdate } from './summaries.update';
 import { NotificationModule } from '../notification/notification.module';
+
+const providers: Provider[] = [
+    SummariesService,
+    ProjectService,
+    SummariesGateway,
+    { provide: Interfaces.IBasicService, useClass: SummariesService }
+];
+
+if (process.env.NODE_ENV !== 'test') providers.push(SummariesUpdate);
 
 @Module({
     imports: [
@@ -35,13 +44,7 @@ import { NotificationModule } from '../notification/notification.module';
         }),
         ScheduleModule.forRoot()
     ],
-    providers: [
-        SummariesService,
-        ProjectService,
-        SummariesGateway,
-        SummariesUpdate,
-        { provide: Interfaces.IBasicService, useClass: SummariesService }
-    ],
+    providers,
     controllers: [SummariesController],
     exports: [SummariesService, ProjectService]
 })
