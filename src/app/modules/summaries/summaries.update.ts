@@ -1,5 +1,6 @@
 import { Help, InjectBot, Start, Update, Command, Action } from 'nestjs-telegraf';
 import { Context, Telegraf, deunionize, Markup } from 'telegraf';
+import { TimePicker } from 'telegraf-time-picker';
 import { Redis } from 'ioredis';
 import * as winston from 'winston';
 import { getCustomRepository } from 'typeorm';
@@ -17,6 +18,7 @@ import { timezoned } from 'src/common/helpers/utils';
 @Update()
 export class SummariesUpdate {
     private redisClient: Redis;
+    private timePicker: TimePicker;
 
     constructor(
         @InjectBot()
@@ -37,6 +39,8 @@ export class SummariesUpdate {
                 )
             })
         );
+
+        this.timePicker = new TimePicker(this.bot);
     }
 
     @Start()
@@ -89,35 +93,14 @@ export class SummariesUpdate {
 
     @Command('unsub')
     async onUnsub(ctx: Context): Promise<void> {
-        const chatId = ctx.message.chat.id.toString();
-        const notifyEntries = await this.notificationService.find({
-            relations: ['user'],
-            where: {
-                notify_id: chatId
-            }
-        });
+        const keyboards = await this.getUsersInlineKeyboards(ctx, 'unsub');
+        if (keyboards === false) return;
 
-        if (notifyEntries.length === 0) {
-            ctx.reply('You have not subscribed yet');
-            return;
-        }
-
-        const keyboards = notifyEntries.map((entry) => {
-            return [
-                {
-                    text: entry.user.account,
-                    callback_data: `unsub ${entry.user.id}`
-                }
-            ];
-        });
-
-        keyboards.push([{ text: 'Cancel', callback_data: 'unsub cancel' }]);
-
-        await ctx.reply('Which user to unsubscribe?', Markup.inlineKeyboard(keyboards));
+        await ctx.reply('Which user to unsubscribe?', keyboards);
     }
 
     @Action(/unsub ([0-9]+|cancel)/)
-    async onmessage(ctx: Context): Promise<void> {
+    async onUnsubCb(ctx: Context): Promise<void> {
         const ctxCbQuery = deunionize(ctx.update)?.callback_query;
         const userId = deunionize(ctxCbQuery)?.data.match(/unsub ([0-9]+|cancel)/)[1];
         const chatId = ctxCbQuery.message.chat.id.toString();
@@ -148,5 +131,87 @@ export class SummariesUpdate {
 
         await ctx.answerCbQuery('Unsubscribed');
         await ctx.deleteMessage(ctxCbQuery.message.message_id);
+    }
+
+    @Command('setnotifytime')
+    async onSetnotifytime(ctx: Context) {
+        const keyboards = await this.getUsersInlineKeyboards(ctx, 'setnotifytime');
+        if (keyboards === false) return;
+
+        ctx.reply('Choose a user to set the notification time.', keyboards);
+    }
+
+    @Action(/setnotifytime ([0-9]+|cancel)/)
+    async onSetnotifytimeCb(ctx: Context): Promise<void> {
+        const ctxCbQuery = deunionize(ctx.update)?.callback_query;
+        const userId = deunionize(ctxCbQuery)?.data.match(
+            /setnotifytime ([0-9]+|cancel)/
+        )[1];
+        const chatId = ctxCbQuery.message.chat.id.toString();
+
+        if (userId === 'cancel') {
+            await ctx.answerCbQuery('Cancelled');
+            await ctx.deleteMessage(ctxCbQuery.message.message_id);
+            return;
+        }
+
+        const notification = await this.notificationService.findOne({
+            user: +userId as Partial<User>,
+            notify_id: chatId
+        });
+
+        const currentHour = notification.notify_time.match(/(\d+):.*:.*/)[1];
+
+        if (notification === undefined) {
+            await ctx.answerCbQuery('setnotifytime failed');
+            await ctx.deleteMessage(ctxCbQuery.message.message_id);
+            return;
+        }
+
+        await ctx.answerCbQuery();
+        await ctx.reply(
+            'Choose a time to be notified:',
+            this.timePicker.getTimePicker(currentHour)
+        );
+
+        await this.timePicker.setTimePickerListener((ctx, time) => ctx.reply(time));
+        await ctx.deleteMessage(ctxCbQuery.message.message_id);
+    }
+
+    async getNotificationEntryByChatId(ctx: Context) {
+        const chatId = ctx.message.chat.id.toString();
+        const notifyEntries = await this.notificationService.find({
+            relations: ['user'],
+            where: {
+                notify_id: chatId
+            }
+        });
+
+        return notifyEntries;
+    }
+
+    /**
+     * Get the subscribed users inline keyboards by the chat_id of the context.
+     * Return false, if no users subscribed on this chat_id.
+     */
+    async getUsersInlineKeyboards(ctx: Context, callbackAction: string) {
+        const notifyEntries = await this.getNotificationEntryByChatId(ctx);
+        if (notifyEntries.length === 0) {
+            ctx.reply('You have not subscribed yet');
+            return false;
+        }
+
+        const keyboards = notifyEntries.map((entry) => {
+            return [
+                {
+                    text: entry.user.account,
+                    callback_data: `${callbackAction} ${entry.user.id}`
+                }
+            ];
+        });
+
+        keyboards.push([{ text: 'Cancel', callback_data: `${callbackAction} cancel` }]);
+
+        return Markup.inlineKeyboard(keyboards);
     }
 }

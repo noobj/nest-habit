@@ -19,4 +19,7 @@ export class Notification {
 
     @Column()
     notify_id: string;
+
+    @Column()
+    notify_time: string;
 }
