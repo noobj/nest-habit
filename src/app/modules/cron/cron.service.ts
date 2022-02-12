@@ -15,7 +15,6 @@ import * as dotenv from 'dotenv';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { QuoteService } from '../quote/quote.service';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { Notification } from '../notification/notification.entity';
@@ -30,7 +29,7 @@ export class CronService {
         @InjectQueue('summary') private readonly summaryQueue: Queue,
         private summariesService: SummariesService,
         private usersService: UsersService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: winston.Logger,
         private quoteService: QuoteService,
         private socketServerGateway: SocketServerGateway
     ) {
@@ -43,10 +42,9 @@ export class CronService {
                 )
             })
         );
-        moment.tz.setDefault('Asia/Taipei');
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_MINUTE)
     @Transaction()
     public async dailyNotify(
         @TransactionRepository(Notification)

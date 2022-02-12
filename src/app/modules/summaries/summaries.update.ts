@@ -103,13 +103,15 @@ export class SummariesUpdate {
         }
 
         const keyboards = notifyEntries.map((entry) => {
-            return {
-                text: entry.user.account,
-                callback_data: `unsub ${entry.user.id}`
-            };
+            return [
+                {
+                    text: entry.user.account,
+                    callback_data: `unsub ${entry.user.id}`
+                }
+            ];
         });
 
-        keyboards.push({ text: 'Cancel', callback_data: 'unsub cancel' });
+        keyboards.push([{ text: 'Cancel', callback_data: 'unsub cancel' }]);
 
         await ctx.reply('Which user to unsubscribe?', Markup.inlineKeyboard(keyboards));
     }
