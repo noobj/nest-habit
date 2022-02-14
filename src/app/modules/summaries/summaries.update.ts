@@ -174,7 +174,16 @@ export class SummariesUpdate {
             this.timePicker.getTimePicker(currentHour)
         );
 
-        await this.timePicker.setTimePickerListener((ctx, time) => ctx.reply(time));
+        const callBackAfterTimePickerSubmit = async (ctx: Context, time: string) => {
+            await this.notificationService.update(notification.id, {
+                notify_time: `${time}:0`
+            });
+            await ctx.answerCbQuery('Done');
+            await ctx.reply(`You will get the notice at ${time}👍.`)
+            await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id);
+        };
+
+        await this.timePicker.setTimePickerListener(callBackAfterTimePickerSubmit);
         await ctx.deleteMessage(ctxCbQuery.message.message_id);
     }
 
