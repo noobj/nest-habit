@@ -44,7 +44,7 @@ export class CronService {
         );
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     @Transaction()
     public async dailyNotify(
         @TransactionRepository(Notification)
@@ -65,7 +65,8 @@ export class CronService {
             },
             where: [
                 {
-                    last_notify: LessThan(moment().format('YYYY-MM-DD'))
+                    last_notify: LessThan(moment().format('YYYY-MM-DD')),
+                    notify_time: LessThan(moment().format('HH:mm:ss'))
                 },
                 { last_notify: IsNull() }
             ],
