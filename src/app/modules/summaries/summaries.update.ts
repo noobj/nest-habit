@@ -1,6 +1,6 @@
 import { Help, InjectBot, Start, Update, Command, Action } from 'nestjs-telegraf';
 import { Context, Telegraf, deunionize, Markup } from 'telegraf';
-import { TimePicker } from 'telegraf-time-picker';
+import { TimePicker, HourExpression } from 'telegraf-time-picker';
 import { Redis } from 'ioredis';
 import * as winston from 'winston';
 import { getCustomRepository } from 'typeorm';
@@ -106,8 +106,7 @@ export class SummariesUpdate {
         const chatId = ctxCbQuery.message.chat.id.toString();
 
         if (userId === 'cancel') {
-            await ctx.answerCbQuery('Cancelled');
-            await ctx.deleteMessage(ctxCbQuery.message.message_id);
+            await this.answerAndDeleteCb(ctx, 'Cancelled');
             return;
         }
 
@@ -118,19 +117,16 @@ export class SummariesUpdate {
             });
 
             if (result?.affected === 0) {
-                await ctx.answerCbQuery('Unsubscribe failed');
-                await ctx.deleteMessage(ctxCbQuery.message.message_id);
+                await this.answerAndDeleteCb(ctx, 'Unsubscribe failed');
                 return;
             }
         } catch (err) {
             this.logger.error(`TG bot error: Unsubscribe error ${err}`);
-            await ctx.answerCbQuery('Unsubscribe failed');
-            await ctx.deleteMessage(ctxCbQuery.message.message_id);
+            await this.answerAndDeleteCb(ctx, 'Unsubscribe failed');
             return;
         }
 
-        await ctx.answerCbQuery('Unsubscribed');
-        await ctx.deleteMessage(ctxCbQuery.message.message_id);
+        await this.answerAndDeleteCb(ctx, 'Unsubscribed');
     }
 
     @Command('setnotifytime')
@@ -150,8 +146,7 @@ export class SummariesUpdate {
         const chatId = ctxCbQuery.message.chat.id.toString();
 
         if (userId === 'cancel') {
-            await ctx.answerCbQuery('Cancelled');
-            await ctx.deleteMessage(ctxCbQuery.message.message_id);
+            await this.answerAndDeleteCb(ctx, 'Cancelled');
             return;
         }
 
@@ -163,28 +158,41 @@ export class SummariesUpdate {
         const currentHour = notification.notify_time.match(/(\d+):.*:.*/)[1];
 
         if (notification === undefined) {
-            await ctx.answerCbQuery('setnotifytime failed');
-            await ctx.deleteMessage(ctxCbQuery.message.message_id);
+            await this.answerAndDeleteCb(ctx, 'Setnotifytime failed');
+            this.logger.error(
+                `TG bot error: setting notify time error: notification not found`
+            );
             return;
         }
 
-        await ctx.answerCbQuery();
+        const callBackAfterTimePickerSubmit = async (
+            ctx: Context,
+            time: HourExpression
+        ) => {
+            try {
+                await this.notificationService.update(notification.id, {
+                    notify_time: `${time}:0`
+                });
+            } catch (err) {
+                this.logger.error(`TG bot error: setting notify time error: ${err}`);
+                await ctx.reply(`Update failed`);
+                await this.answerAndDeleteCb(ctx);
+                return;
+            }
+            await ctx.reply(`You will get the notice at ${time}👍.`);
+            await this.answerAndDeleteCb(ctx, 'done');
+        };
+        await this.timePicker.setTimePickerListener(callBackAfterTimePickerSubmit);
+
+        await this.answerAndDeleteCb(ctx);
         await ctx.reply(
             'Choose a time to be notified:',
-            this.timePicker.getTimePicker(currentHour)
+            this.timePicker.getTimePicker(+currentHour)
         );
+    }
 
-        const callBackAfterTimePickerSubmit = async (ctx: Context, time: string) => {
-            await this.notificationService.update(notification.id, {
-                notify_time: `${time}:0`
-            });
-            await ctx.answerCbQuery('Done');
-            await ctx.reply(`You will get the notice at ${time}👍.`)
-            await ctx.deleteMessage(ctx.callbackQuery?.message?.message_id);
-        };
-
-        await this.timePicker.setTimePickerListener(callBackAfterTimePickerSubmit);
-        await ctx.deleteMessage(ctxCbQuery.message.message_id);
+    answerAndDeleteCb(ctx: Context, answerString?: string) {
+        return Promise.all([ctx.answerCbQuery(answerString), ctx.deleteMessage()]);
     }
 
     async getNotificationEntryByChatId(ctx: Context) {
