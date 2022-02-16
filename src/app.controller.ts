@@ -26,8 +26,10 @@ import {
     ApiUnsupportedMediaTypeResponse
 } from '@nestjs/swagger';
 import * as aws from 'aws-sdk';
+import { Redis } from 'ioredis';
 
 import { AuthService } from './app/auth/auth.service';
+import { RedisService } from './app/modules/redis';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { imageFileFilter } from './common/helpers/file-upload.utils';
@@ -43,7 +45,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import * as winston from 'winston';
 import * as moment from 'moment';
-import { timezoned } from 'src/common/helpers/utils';
+import { timezoned, genRandomStr } from 'src/common/helpers/utils';
 import { User } from './app/modules/users/users.entity';
 
 class LoginDTO {
@@ -68,11 +70,14 @@ class FileUploadDto {
 @ApiTags('profile')
 @Controller()
 export class AppController {
+    private redisClient: Redis;
+
     constructor(
         private authService: AuthService,
         private userService: UsersService,
         private projectService: ProjectService,
         private configService: ConfigService,
+        private redisService: RedisService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: winston.Logger
     ) {
         logger.add(
@@ -84,6 +89,7 @@ export class AppController {
                 )
             })
         );
+        this.redisClient = this.redisService.getClient();
     }
 
     @UseGuards(AuthGuard('local'))
@@ -221,5 +227,18 @@ export class AppController {
         req.session.cookie.expires = Date.now();
         req.session.cookie.maxAge = 0;
         await this.userService.removeRefreshToken(req.user.id);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('sub_token')
+    @ApiOperation({ summary: 'Get the subscription token of Telegram' })
+    @ApiResponse({ status: 200, description: 'Success' })
+    async generateSubToken(
+        @Request() req: Express.Request & { session: any; user: { id: number } }
+    ): Promise<string> {
+        const token = genRandomStr(20);
+        // store token in Redis and set ttl;
+        await this.redisClient.set(`subtoken:${token}`, req.user.id, 'EX', 90);
+        return token;
     }
 }

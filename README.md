@@ -1,6 +1,7 @@
 # Habit Tracker
 <a href="https://github.com/noobj/nest-habit/actions"><img src="https://github.com/noobj/nest-habit/actions/workflows/main.yml/badge.svg" alt="Build Status"></a>
 [![Coverage Status](https://coveralls.io/repos/github/noobj/nest-habit/badge.png?branch=main)](https://coveralls.io/github/noobj/nest-habit?branch=main)
+[![GitHub top language](https://img.shields.io/github/languages/top/noobj/nest-habit?style=flat-square&logo=github)](https://github.com/noobj/nest-habit)
 ![GitHub](https://img.shields.io/github/license/noobj/nest-habit?color=blue)
 [![codebeat badge](https://codebeat.co/badges/0e9aa8a1-d23d-41df-8067-55b0cb19a17a)](https://codebeat.co/projects/github-com-noobj-nest-habit-main)
 
@@ -32,13 +33,16 @@
 
 * Fetch the record from Toggl and insert into DB.
 * A github-like activity board to diplay daily summary.
+* Get a daily notification from a Telegram bot
 
-![Display](./display.png)
+![Display](./img/display.png)
+![TG-Bot](./img/tg-bot.png)
 
 ### Built With
 
 * [NestJS](https://github.com/nestjs/nest)
 * [VueJS 2](https://vuejs.org/)
+* [Telegraf](https://telegraf.js.org/)
 * [Tailwind CSS](https://tailwindcss.com/)
 * [Swagger](https://swagger.io/solutions/api-documentation/)
 

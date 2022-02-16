@@ -21,10 +21,20 @@
       <input type="text" class="bg-gray-800 shadow appearance-none border rounded w-full border-blue-500 py-2 px-3 leading-tight
        focus:outline-none focus:shadow-outline" ref="token" id="token"/>
         <br /> <br />
-        <button class="flex-shrink-0 bg-purple-500 hover:bg-purple-700 border-purple-500 hover:border-purple-700 text-sm border-4
-         text-white py-1 px-2 rounded" v-on:click="setApiToken()" type="button">
+        <button class="flex-shrink-0 bg-purple-500 hover:bg-purple-700 text-sm
+         text-white py-2 px-3 rounded" v-on:click="setApiToken()" type="button">
             Submit
         </button>
+
+        <br /><br />
+        <button ref="subTokenBtn" class="flex-shrink-0 bg-blue-500 hover:bg-blue-700 text-sm
+         text-white py-2 px-3 rounded cursor-pointer" v-on:click="generateSubToken()" type="button">
+            Generate token for subscribing on Telegram
+        </button>
+        <br />
+        <p ref="subTokenWarning" class="mt-2 hidden text-xs font-medium text-red-600">This token will expire in {{ countDown }} seconds.</p>
+        <p ref="subToken" class="pr-2 inline" />
+        <button ref="subTokenCopy" class="hidden bg-red-500 hover:bg-red-700 rounded px-1 text-xs" v-on:click="copySubToken()">copy</button>
 
         <div id="mdiv" class="absolute top-0 right-0 cursor-pointer" v-on:click="formToggl = false">
             <div class="mdiv">
@@ -124,7 +134,8 @@ export default {
       currentPrj: {name: null, last_updated: null},
       lastUpdated: null,
       imgServerUrl: process.env.VUE_APP_IMG_S3_URL,
-      userId: null
+      userId: null,
+      countDown: process.env.VUE_APP_SUB_TOKEN_COUNTDOWN
     };
   },
   sockets: {
@@ -279,11 +290,52 @@ export default {
           alert(`Upload failed: ${e.message}`);
         });
     },
-    hide () {
+    hide() {
       document.querySelector('#settings').classList.add('invisible');
     },
-    show () {
+    show() {
       document.querySelector('#settings').classList.toggle('invisible');
+    },
+    generateSubToken() {
+      fetchOrRefreshAuth('/sub_token')
+      .then(async (res) => {
+        if (res.status != 200) throw new Error();
+        this.countDown = process.env.VUE_APP_SUB_TOKEN_COUNTDOWN;
+        this.countDownTimer();
+
+        this.$refs.subToken.innerHTML = await res.text();
+        this.$refs.subTokenBtn.classList.remove("bg-blue-500", "text-sm", "hover:bg-blue-700")
+        this.$refs.subTokenBtn.classList.add("bg-grey-500", "italic", "text-xs", "cursor-not-allowed");
+        this.$refs.subTokenBtn.disabled = true;
+        this.$refs.subTokenWarning.classList.remove("hidden");
+        this.$refs.subTokenCopy.classList.remove("hidden");
+        setTimeout(() => {
+          this.$refs.subTokenBtn.disabled = false;
+          this.$refs.subTokenBtn.classList.remove("bg-grey-500", "italic", "text-xs", "cursor-not-allowed")
+          this.$refs.subTokenBtn.classList.add("bg-blue-500", "text-sm", "hover:bg-blue-700");
+        }, process.env.VUE_APP_SUB_TOKEN_COUNTDOWN * 1000);
+      })
+      .catch((err) => {
+        console.log(err);
+        alert('fetch sub token error.');
+      })
+    },
+    countDownTimer() {
+      if (this.countDown > 0) {
+          setTimeout(() => {
+              this.countDown -= 1
+              this.countDownTimer();
+          }, 1000)
+      }
+    },
+    copySubToken() {
+      const node = this.$refs.subToken;
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand("copy");
     }
   },
   mounted() {
