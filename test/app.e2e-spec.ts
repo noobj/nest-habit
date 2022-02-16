@@ -72,7 +72,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/POST upload_avatar', async () => {
-        const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
+        const buffer = await fs.promises.readFile(join(__dirname, '../img/display.png'));
 
         return request(server)
             .post('/upload_avatar')
@@ -85,7 +85,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/POST upload_avatar unsupported file extension', async () => {
-        const buffer = await fs.promises.readFile(join(__dirname, '../display.png'));
+        const buffer = await fs.promises.readFile(join(__dirname, '../img/display.png'));
         const spyLog = jest.spyOn(console, 'log').mockImplementation();
         return request(server)
             .post('/upload_avatar')
