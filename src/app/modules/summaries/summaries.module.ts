@@ -15,6 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SummariesUpdate } from './summaries.update';
 import { NotificationModule } from '../notification/notification.module';
+import { configs } from 'src/config/configuration';
 
 const providers: Provider[] = [
     SummariesService,
@@ -23,7 +24,8 @@ const providers: Provider[] = [
     { provide: Interfaces.IBasicService, useClass: SummariesService }
 ];
 
-if (process.env.NODE_ENV !== 'test') providers.push(SummariesUpdate);
+if (configs.telegram.bot_enable === true && configs.node_env !== 'test')
+    providers.push(SummariesUpdate);
 
 @Module({
     imports: [

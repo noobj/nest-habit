@@ -1,4 +1,7 @@
-export default () => ({
+import 'dotenv/config';
+
+const configfactory = () => ({
+    node_env: process.env.NODE_ENV || 'dev',
     port: parseInt(process.env.PORT, 10) || 3000,
     database: {
         type: process.env.TYPEORM_CONNECTION || 'mysql',
@@ -42,3 +45,7 @@ export default () => ({
         bot_api_key: process.env.TELEGRAM_BOT_API_KEY || null
     }
 });
+
+export default configfactory;
+
+export const configs = configfactory();
