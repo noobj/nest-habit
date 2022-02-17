@@ -36,5 +36,9 @@ export default () => ({
             key_id: process.env.AWS_S3_KEY_ID,
             secret: process.env.AWS_S3_SECRET_KEY
         }
+    },
+    telegram: {
+        bot_enable: process.env.TELEGRAM_BOT_ENABLE === 'true' || false,
+        bot_api_key: process.env.TELEGRAM_BOT_API_KEY || null
     }
 });

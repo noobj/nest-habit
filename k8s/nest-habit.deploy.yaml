@@ -21,3 +21,12 @@ spec:
             name: env
         image: noobj/nest-habit_node
         imagePullPolicy: Always
+      - name: nest-habit-with
+        envFrom:
+        - configMapRef:
+            name: env
+        env:
+        - name: TELEGRAM_BOT_ENABLE
+          value: true
+        image: noobj/nest-habit_node
+        imagePullPolicy: Always
