@@ -5,7 +5,8 @@ import VSocket from 'vue-socket.io';
 
 Vue.use(
     new VSocket({
-        connection: window.location.host
+        connection: window.location.host,
+        options: { transports: ['websocket'] }
     })
 );
 
