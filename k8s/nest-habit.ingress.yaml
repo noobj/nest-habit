@@ -13,6 +13,6 @@ spec:
         path: "/"
         backend:
           service:
-            name: nest-habit
+            name: nest-habit-svc
             port:
               number: 3200

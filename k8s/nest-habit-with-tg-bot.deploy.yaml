@@ -2,21 +2,24 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: nest-habit
-  name: nest-habit
+    app: nest-habit-with-tg-bot
+  name: nest-habit-with-tg-bot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nest-habit
+      app: nest-habit-with-tg-bot
   template:
     metadata:
       labels:
-        app: nest-habit
+        app: nest-habit-with-tg-bot
         backend: 'true'
     spec:
       containers:
-      - name: nest-habit
+      - name: nest-habit-with-tg-bot
+        env:
+        - name: TELEGRAM_BOT_ENABLE
+          value: 'true'
         envFrom:
         - configMapRef:
             name: env
