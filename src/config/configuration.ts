@@ -14,6 +14,11 @@ const configfactory = () => ({
         synchronize: false,
         logging: process.env.TYPEORM_LOGGING === 'true' || false
     },
+    mongo: {
+        user: process.env.MONGO_USER || 'jjj',
+        password: process.env.MONGO_PASSWORD || '1234',
+        host: process.env.MONGO_HOST || '127.0.0.1'
+    },
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',
         expiration_time: process.env.JWT_EXPIRATION_TIME || 3600,

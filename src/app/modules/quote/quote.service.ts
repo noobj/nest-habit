@@ -1,18 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Quote } from './quote.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Quote, QuoteDocument } from './schemas/quote.schema';
+import { Model } from 'mongoose';
+// import { Quote } from './quote.entity';
 
 @Injectable()
 export class QuoteService {
     constructor(
-        @InjectRepository(Quote)
-        private quoteRepository: Repository<Quote>
+        @InjectModel(Quote.name)
+        private quoteModel: Model<QuoteDocument>
     ) {}
 
-    public randomFetchQuote(): Promise<Quote[]> {
-        return this.quoteRepository.query(
-            'Select text, author FROM quotes ORDER BY RAND() LIMIT 1'
-        );
+    public randomFetchQuote(): Promise<Quote> {
+        return this.quoteModel
+            .aggregate([{ $sample: { size: 1 } }])
+            .exec()
+            .then((res: Quote[]) => res[0]);
     }
 }

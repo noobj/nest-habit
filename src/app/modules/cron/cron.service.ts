@@ -145,11 +145,11 @@ export class CronService {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_MINUTES)
+    @Cron(CronExpression.EVERY_10_SECONDS)
     public async quoteCarousel() {
         try {
             const quote = await this.quoteService.randomFetchQuote();
-            this.socketServerGateway.server.emit('quote', JSON.stringify(quote[0]));
+            this.socketServerGateway.server.emit('quote', JSON.stringify(quote));
         } catch (err) {
             throw err;
         }

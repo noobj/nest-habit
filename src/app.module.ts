@@ -8,6 +8,7 @@ import { BullModule } from '@nestjs/bull';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { TelegrafModule } from 'nestjs-telegraf';
+import { MongooseModule } from '@nestjs/mongoose';
 
 import { UsersModule } from './app/modules/users/users.module';
 import { SummariesModule, SummariesController } from './app/modules/summaries';
@@ -21,6 +22,16 @@ import { SocketServerModule } from 'src/app/modules/socket-server/socket-server.
 import { CronModule } from './app/modules/cron/cron.module';
 
 const modulesForImport = [
+    MongooseModule.forRootAsync({
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+            loggerLevel: 'debug',
+            uri: `mongodb+srv://${configService.get('mongo.user')}:${configService.get(
+                'mongo.password'
+            )}@${configService.get('mongo.host')}`
+        })
+    }),
     BullModule.forRootAsync({
         imports: [ConfigModule],
         inject: [ConfigService],

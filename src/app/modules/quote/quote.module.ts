@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Quote } from './quote.entity';
 import { QuoteService } from './quote.service';
+import { Quote, QuoteSchema } from './schemas/quote.schema';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Quote]), ScheduleModule.forRoot()],
+    imports: [
+        ScheduleModule.forRoot(),
+        MongooseModule.forFeature([{ name: Quote.name, schema: QuoteSchema }])
+    ],
     providers: [QuoteService],
     exports: [QuoteService]
 })
