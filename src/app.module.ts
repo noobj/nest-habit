@@ -29,8 +29,6 @@ const modulesForImport = [
             return {
                 loggerLevel: 'debug',
                 uri: `${configService.get('mongo.prefix')}://${configService.get(
-                    'mongo.user'
-                )}:${configService.get('mongo.password')}@${configService.get(
                     'mongo.host'
                 )}`,
                 user: configService.get('mongo.user'),
