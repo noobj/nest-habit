@@ -32,7 +32,9 @@ const modulesForImport = [
                     'mongo.user'
                 )}:${configService.get('mongo.password')}@${configService.get(
                     'mongo.host'
-                )}`
+                )}`,
+                user: configService.get('mongo.user'),
+                pass: configService.get('mongo.password')
             };
         }
     }),
