@@ -12,6 +12,10 @@ env:
   DB_PASSWORD: root
   AWS_S3_KEY_ID: ${{ secrets.AWS_S3_KEY_ID }}
   AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
+  MONGO_PREFIX: mongodb
+  MONGO_USER: root
+  MONGO_PASSWORD: root
+  MONGO_HOST: 127.0.0.1/habit
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -37,6 +41,13 @@ jobs:
         uses: supercharge/redis-github-action@1.2.0
         with:
           redis-version: 5
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: 5.0
+          mongodb-username: root
+          mongodb-password: root
+          mongodb-db: habit
       - name: npm install
         run: |
           npm ci

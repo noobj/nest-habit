@@ -15,6 +15,7 @@ const configfactory = () => ({
         logging: process.env.TYPEORM_LOGGING === 'true' || false
     },
     mongo: {
+        prefix: process.env.MONGO_PREFIX || 'mongodb',
         user: process.env.MONGO_USER || 'jjj',
         password: process.env.MONGO_PASSWORD || '1234',
         host: process.env.MONGO_HOST || '127.0.0.1'
