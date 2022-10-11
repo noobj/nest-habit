@@ -30,9 +30,7 @@ const modulesForImport = [
                 loggerLevel: 'debug',
                 uri: `${configService.get('mongo.prefix')}://${configService.get(
                     'mongo.host'
-                )}`,
-                user: configService.get('mongo.user'),
-                pass: configService.get('mongo.password')
+                )}`
             };
         }
     }),
