@@ -231,9 +231,10 @@ export class SummariesService
         entries.map((entry) => {
             // Only new records have user data
             if (entry.user) {
-                const { user, duration, ...rest } = entry; // sift out sensetive user info
+                entry.user = null;
+                entry.duration = null;
                 const result = {
-                    ...rest,
+                    ...entry,
                     duration: convertRawDurationToFormat(entry.duration),
                     userId: entry.user.id,
                     account: entry.user.account

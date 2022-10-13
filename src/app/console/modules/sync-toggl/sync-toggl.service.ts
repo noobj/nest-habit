@@ -22,10 +22,8 @@ export class SyncTogglService implements ICommand, OnModuleInit {
 
     /**
      * Usage - npm run artisan syncToggl 180 user
-     * @param argv[0] optional - how many days prior to today to fetch
-     * @param argv[1] optional - pass the specific user's account for fetching
      */
-    async run(argv: string[]) {
+    async run() {
         const projects = await this.projectService.getLeastUpdatedProjects(10);
 
         if (projects.length == 0) throw new ImATeapotException('No project found');
