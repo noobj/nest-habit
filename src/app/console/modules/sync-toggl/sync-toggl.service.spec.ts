@@ -66,7 +66,7 @@ describe('SyncTogglService', () => {
     });
 
     it('should run the command', async () => {
-        await service.run(['']);
+        await service.run();
         expect(mockSummariesService.syncWithThirdParty).toBeCalledWith(365, user, false);
     });
 });

@@ -15,7 +15,7 @@ export class SummariesGateway {
     @UseFilters(new WSExceptionsFilter())
     @UseGuards(AuthGuard('jwt'))
     @SubscribeMessage('sync')
-    async onEvent(socket: Socket & { user: Partial<User> }, data: any): Promise<void> {
+    async onEvent(socket: Socket & { user: Partial<User> }): Promise<void> {
         socket.join(`Room ${socket.user.id}`);
         await this.summaryQueue.add('sync', {
             user: socket.user,

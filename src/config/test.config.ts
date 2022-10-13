@@ -17,6 +17,10 @@ export default () => ({
         synchronize: true,
         logging: false
     },
+    mongo: {
+        prefix: 'mongodb',
+        host: '127.0.0.1'
+    },
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',
         expiration_time: process.env.JWT_EXPIRATION_TIME || 3600,

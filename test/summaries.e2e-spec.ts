@@ -6,18 +6,16 @@ import { AppModule } from './../src/app.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/test.config';
 import { User } from './../src/app/modules/users/users.entity';
+import { Project } from './../src/app/modules/summaries/entities/project.entity';
 import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adapter';
-import { io } from 'socket.io-client';
 import * as redis from 'redis';
 import * as connectRedis from 'connect-redis';
 import { DailySummary } from 'src/app/modules/summaries/entities';
-import { endOfToday, format, subDays, subYears } from 'date-fns';
 import { getCacheString } from 'src/common/helpers/utils';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
-import { Processor } from '../processor/processor';
 
 describe('SummariesController (e2e)', () => {
     let app: NestExpressApplication;
@@ -25,11 +23,10 @@ describe('SummariesController (e2e)', () => {
     let server: INestApplicationContext | any;
     let redisClient: redis.RedisClient;
     let summariesReop: Repository<DailySummary>;
-    let processor: any;
+    let project: Project;
+    let currentUser: User;
 
     beforeAll(async () => {
-        processor = await Processor.CreateAsync();
-        await processor.listen();
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [AppModule, ConfigModule.forRoot({ load: [configuration] })]
         }).compile();
@@ -53,7 +50,7 @@ describe('SummariesController (e2e)', () => {
 
         const userRepository: Repository<User> = moduleFixture.get('UserRepository');
         summariesReop = moduleFixture.get('DailySummaryRepository');
-        const user = {
+        currentUser = {
             id: 222,
             account: 'jjj',
             email: 'marley.lemke@example.org',
@@ -61,7 +58,7 @@ describe('SummariesController (e2e)', () => {
             toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
             third_party_service: 'toggl' as ThirdPartyServiceKeys
         };
-        await userRepository.save(user);
+        await userRepository.save(currentUser);
     });
 
     it('/POST auth/login', (done) => {
@@ -132,6 +129,7 @@ describe('SummariesController (e2e)', () => {
                 expect(res.status).toEqual(200);
                 expect(res.body.data.allProjects).toEqual(['ffff', 'ggg', 'meditation']);
                 expect(res.body.data.currentProject.name).toEqual('meditation');
+                project = res.body.data.currentProject;
                 done();
             });
     });
@@ -156,73 +154,95 @@ describe('SummariesController (e2e)', () => {
             });
     });
 
-    it('/WS sync', (done) => {
-        const opts = {
-            extraHeaders: {
-                Cookie: cookies
+    // it('/WS sync', (done) => {
+    //     const opts = {
+    //         extraHeaders: {
+    //             Cookie: cookies
+    //         }
+    //     };
+    //     summariesReop.delete(1);
+    //     const socket = io('ws://localhost:3333', opts);
+
+    //     socket.on('connect', () => {
+    //         socket.emit('sync', { projectName: 'meditation' });
+    //     });
+
+    //     socket.on('sync', (data: any) => {
+    //         expect(data).toBeDefined();
+    //         socket.disconnect();
+    //         done();
+    //     });
+
+    //     socket.on('notice', (data: any) => {
+    //         expect(JSON.parse(data)).toEqual({
+    //             date: '2021-06-15',
+    //             project: 2,
+    //             id: 6,
+    //             duration: '3m',
+    //             userId: 222,
+    //             account: 'jjj'
+    //         });
+    //     });
+    // });
+
+    // it('/WS sync cache', (done) => {
+    //     const opts = {
+    //         extraHeaders: {
+    //             Cookie: cookies
+    //         }
+    //     };
+
+    //     const socket = io('ws://localhost:3333', opts);
+
+    //     socket.on('connect', () => {
+    //         socket.emit('sync', { projectName: 'meditation' });
+    //     });
+
+    //     socket.on('sync', async (data: any) => {
+    //         expect(data).toBeDefined();
+
+    //         const tmpEnd = endOfToday();
+    //         const tmpStart = subYears(tmpEnd, 1);
+    //         const endDate = format(tmpEnd, 'yyyy-MM-dd');
+    //         const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
+    //         const cacheString = getCacheString('Summaries', 222, startDate, endDate);
+
+    //         redisClient.get(cacheString, (err, result) => {
+    //             expect(JSON.parse(result).summaries).toEqual(JSON.parse(data).summaries);
+    //         });
+    //         socket.disconnect();
+    //         done();
+    //     });
+    // });
+
+    it('/GET summaries', async () => {
+        const summaries = [
+            {
+                date: '2022-05-23',
+                duration: 3600000,
+                project: project.id,
+                user: currentUser
+            },
+            {
+                date: '2022-05-24',
+                duration: 7800000,
+                project: project.id,
+                user: currentUser
+            },
+            {
+                date: '2022-05-25',
+                duration: 1800000,
+                project: project.id,
+                user: currentUser
             }
-        };
-        summariesReop.delete(1);
-        const socket = io('ws://localhost:3333', opts);
+        ];
+        await summariesReop.insert(summaries);
 
-        socket.on('connect', () => {
-            socket.emit('sync', { projectName: 'meditation' });
-        });
-
-        socket.on('sync', (data: any) => {
-            expect(data).toBeDefined();
-            socket.disconnect();
-            done();
-        });
-
-        socket.on('notice', (data: any) => {
-            expect(JSON.parse(data)).toEqual({
-                date: '2021-06-15',
-                project: 2,
-                id: 6,
-                duration: '3m',
-                userId: 222,
-                account: 'jjj'
-            });
-        });
-    });
-
-    it('/WS sync cache', (done) => {
-        const opts = {
-            extraHeaders: {
-                Cookie: cookies
-            }
-        };
-
-        const socket = io('ws://localhost:3333', opts);
-
-        socket.on('connect', () => {
-            socket.emit('sync', { projectName: 'meditation' });
-        });
-
-        socket.on('sync', async (data: any) => {
-            expect(data).toBeDefined();
-
-            const tmpEnd = endOfToday();
-            const tmpStart = subYears(tmpEnd, 1);
-            const endDate = format(tmpEnd, 'yyyy-MM-dd');
-            const startDate = format(subDays(tmpStart, 7), 'yyyy-MM-dd');
-            const cacheString = getCacheString('Summaries', 222, startDate, endDate);
-
-            redisClient.get(cacheString, (err, result) => {
-                expect(JSON.parse(result).summaries).toEqual(JSON.parse(data).summaries);
-            });
-            socket.disconnect();
-            done();
-        });
-    });
-
-    it('/GET summaries', (done) => {
         const query = {
-            start_date: '2021-05-22',
-            end_date: '2021-05-26'
+            start_date: '2022-05-22',
+            end_date: '2022-05-26'
         };
-        jest.useFakeTimers('modern').setSystemTime(new Date('2021-05-25').getTime());
+        jest.useFakeTimers('modern').setSystemTime(new Date('2022-05-25').getTime());
         request(server)
             .get('/summaries')
             .set('Cookie', cookies)
@@ -230,37 +250,36 @@ describe('SummariesController (e2e)', () => {
             .end((err, res) => {
                 expect(res.body.data.summaries).toEqual([
                     {
-                        date: 'May 25, 2021',
-                        level: 4,
-                        timestamp: 1621872000000,
-                        duration: '3h0m'
-                    },
-                    {
-                        date: 'May 24, 2021',
+                        date: 'May 23, 2022',
                         level: 3,
-                        timestamp: 1621785600000,
-                        duration: '2h0m'
-                    },
-                    {
-                        date: 'May 23, 2021',
-                        level: 3,
-                        timestamp: 1621699200000,
+                        timestamp: 1653235200000,
                         duration: '1h0m'
+                    },
+                    {
+                        date: 'May 24, 2022',
+                        level: 3,
+                        timestamp: 1653321600000,
+                        duration: '2h10m'
+                    },
+                    {
+                        date: 'May 25, 2022',
+                        level: 2,
+                        timestamp: 1653408000000,
+                        duration: '30m'
                     }
                 ]);
                 expect(res.body.data.streak).toEqual(1);
-                expect(res.body.data.total_last_year).toEqual('6h0m');
+                expect(res.body.data.total_last_year).toEqual('3h40m');
                 expect(res.status).toEqual(200);
                 jest.useRealTimers();
-                done();
             });
     });
 
     // Don't need to set the system datetime, since its fetched from cache
     it('/GET summaries from cache', (done) => {
         const query = {
-            start_date: '2021-05-22',
-            end_date: '2021-05-26'
+            start_date: '2022-05-22',
+            end_date: '2022-05-26'
         };
         request(server)
             .get('/summaries')
@@ -278,7 +297,7 @@ describe('SummariesController (e2e)', () => {
                 });
 
                 expect(res.body.data.streak).toEqual(1);
-                expect(res.body.data.total_last_year).toEqual('6h0m');
+                expect(res.body.data.total_last_year).toEqual('3h40m');
                 expect(res.status).toEqual(200);
                 done();
             });
@@ -324,7 +343,5 @@ describe('SummariesController (e2e)', () => {
         await redisClient.quit();
 
         await app.close();
-
-        await processor.close();
     });
 });

@@ -25,12 +25,24 @@ const modulesForImport = [
     MongooseModule.forRootAsync({
         imports: [ConfigModule],
         inject: [ConfigService],
-        useFactory: (configService: ConfigService) => ({
-            loggerLevel: 'debug',
-            uri: `mongodb+srv://${configService.get('mongo.user')}:${configService.get(
-                'mongo.password'
-            )}@${configService.get('mongo.host')}`
-        })
+        useFactory: (configService: ConfigService) => {
+            let url = '';
+            if (configService.get('mongo.user') == undefined)
+                url = `${configService.get('mongo.prefix')}://${configService.get(
+                    'mongo.host'
+                )}`;
+            else
+                url = `${configService.get('mongo.prefix')}://${configService.get(
+                    'mongo.user'
+                )}:${configService.get('mongo.password')}@${configService.get(
+                    'mongo.host'
+                )}`;
+
+            return {
+                loggerLevel: 'debug',
+                uri: url
+            };
+        }
     }),
     BullModule.forRootAsync({
         imports: [ConfigModule],

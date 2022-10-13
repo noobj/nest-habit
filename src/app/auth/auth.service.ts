@@ -21,8 +21,8 @@ export class AuthService {
         user.password = user.password.replace('$2y$', '$2a$');
 
         if (user && (await bcrypt.compare(pass, user.password))) {
-            const { password, ...result } = user;
-            return result;
+            user.password = '';
+            return user;
         }
 
         return null;
