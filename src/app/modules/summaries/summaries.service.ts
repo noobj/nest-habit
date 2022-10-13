@@ -231,13 +231,15 @@ export class SummariesService
         entries.map((entry) => {
             // Only new records have user data
             if (entry.user) {
+                const userId = entry.user.id;
+                const userAccount = entry.user.account;
                 entry.user = null;
                 entry.duration = null;
                 const result = {
                     ...entry,
                     duration: convertRawDurationToFormat(entry.duration),
-                    userId: entry.user.id,
-                    account: entry.user.account
+                    userId: userId,
+                    account: userAccount
                 };
                 this.socketServerGateway.server.emit('notice', JSON.stringify(result));
             }

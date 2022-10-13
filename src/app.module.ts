@@ -27,10 +27,6 @@ const modulesForImport = [
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => {
             let url = '';
-            console.log(
-                configService.get('mongo.user'),
-                configService.get('mongo.user') == undefined
-            );
             if (configService.get('mongo.user') == undefined)
                 url = `${configService.get('mongo.prefix')}://${configService.get(
                     'mongo.host'
