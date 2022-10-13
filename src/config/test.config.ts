@@ -18,10 +18,8 @@ export default () => ({
         logging: false
     },
     mongo: {
-        prefix: process.env.MONGO_PREFIX || 'mongodb',
-        user: process.env.MONGO_USER || 'jjj',
-        password: process.env.MONGO_PASSWORD || '1234',
-        host: process.env.MONGO_HOST || '127.0.0.1'
+        prefix: 'mongodb',
+        host: '127.0.0.1'
     },
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',

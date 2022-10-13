@@ -26,11 +26,25 @@ const modulesForImport = [
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => {
+            let url = '';
+            console.log(
+                configService.get('mongo.user'),
+                configService.get('mongo.user') == undefined
+            );
+            if (configService.get('mongo.user') == undefined)
+                url = `${configService.get('mongo.prefix')}://${configService.get(
+                    'mongo.host'
+                )}`;
+            else
+                url = `${configService.get('mongo.prefix')}://${configService.get(
+                    'mongo.user'
+                )}:${configService.get('mongo.password')}@${configService.get(
+                    'mongo.host'
+                )}`;
+
             return {
                 loggerLevel: 'debug',
-                uri: `${configService.get('mongo.prefix')}://${configService.get(
-                    'mongo.host'
-                )}`
+                uri: url
             };
         }
     }),
