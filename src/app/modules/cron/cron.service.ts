@@ -57,7 +57,7 @@ export class CronService {
                 $or: [
                     {
                         last_notify: { $lt: moment().format('YYYY-MM-DD') },
-                        notify_time: { $lt: moment().format('HH:mm:ss') }
+                        notify_time: { $lt: moment().format('HH:mm') }
                     },
                     { last_notify: null }
                 ]
@@ -73,7 +73,7 @@ export class CronService {
                 });
                 const user = { id: mysqlUserId.mysqlUid, ...entry.user };
                 return this.summariesService
-                    .getRawDailySummaries(startDate, endDate, entry.user)
+                    .getRawDailySummaries(startDate, endDate, user)
                     .then(async (rawData) => {
                         return {
                             total: this.summariesService.getTotalDuration(rawData),
