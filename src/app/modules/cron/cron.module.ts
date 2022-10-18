@@ -5,6 +5,9 @@ import { SummariesModule } from 'src/app/modules/summaries/summaries.module';
 import { QuoteModule } from '../quote/quote.module';
 import { UsersModule } from '../users';
 import { CronService } from './cron.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Notification, NotificationSchema } from '../notification/notification.schema';
+import { MysqlUserId, MysqlUserIdSchema } from '../users/mysqlUserId.schema';
 
 @Module({})
 export class CronModule {
@@ -22,7 +25,11 @@ export class CronModule {
                     BullModule.registerQueue({
                         name: 'summary'
                     }),
-                    QuoteModule
+                    QuoteModule,
+                    MongooseModule.forFeature([
+                        { name: Notification.name, schema: NotificationSchema },
+                        { name: MysqlUserId.name, schema: MysqlUserIdSchema }
+                    ])
                 ],
                 providers: [CronService]
             };

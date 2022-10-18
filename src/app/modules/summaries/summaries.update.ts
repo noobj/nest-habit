@@ -3,17 +3,17 @@ import { Context, Telegraf, deunionize, Markup } from 'telegraf';
 import { TimePicker, HourExpression } from 'telegraf-time-picker';
 import { Redis } from 'ioredis';
 import * as winston from 'winston';
-import { getCustomRepository } from 'typeorm';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Inject } from '@nestjs/common';
 import * as moment from 'moment';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 import { RedisService } from 'src/app/modules/redis';
-import { UsersService } from 'src/app/modules/users/users.service';
-import { NotificationService } from '../notification/notification.service';
-import { Notification } from '../notification/notification.entity';
-import { User } from '../users';
 import { timezoned } from 'src/common/helpers/utils';
+import { Notification, NotificationDocument } from '../notification/notification.schema';
+import { MysqlUserId, MysqlUserIdDocument } from '../users/mysqlUserId.schema';
+import { User, UserDocument } from '../users/user.schema';
 
 @Update()
 export class SummariesUpdate {
@@ -24,12 +24,15 @@ export class SummariesUpdate {
         @InjectBot()
         private readonly bot: Telegraf,
         private redisService: RedisService,
-        private usersService: UsersService,
-        private notificationService: NotificationService,
+        @InjectModel(User.name)
+        private userModel: Model<UserDocument>,
+        @InjectModel(Notification.name)
+        private notificationModel: Model<NotificationDocument>,
+        @InjectModel(MysqlUserId.name)
+        private mysqlUserIdModel: Model<MysqlUserIdDocument>,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: winston.Logger
     ) {
         this.redisClient = this.redisService.getClient();
-        this.notificationService = getCustomRepository(NotificationService);
         logger.add(
             new winston.transports.File({
                 filename: `logs/cron-${moment().format('YYYY-MM-DD')}.log`,
@@ -65,26 +68,32 @@ export class SummariesUpdate {
             return;
         }
 
-        const user = await this.usersService.findOne(+userIdFromRedis);
+        const userId = await this.mysqlUserIdModel.findOne({
+            mysqlUid: +userIdFromRedis
+        });
+        const user = await this.userModel.findById(userId.uid);
+
         if (!user) {
             ctx.reply('User not found');
             return;
         }
 
-        const notifyEntry = await this.notificationService.findOne({
-            where: {
-                user: user
-            }
+        const notifyEntry = await this.notificationModel.findOne({
+            user: user
         });
 
-        const newEntry: Partial<Notification> = {
+        const newEntry: Partial<NotificationDocument> = {
             user: user,
-            notify_id: ctx.message.chat.id.toString()
+            notify_id: ctx.message.chat.id.toString(),
+            notify_time: '00:00'
         };
 
-        if (notifyEntry !== undefined) newEntry['id'] = notifyEntry.id;
+        if (notifyEntry !== null)
+            await this.notificationModel.updateOne({ _id: notifyEntry?.id }, newEntry, {
+                upsert: true
+            });
+        else await this.notificationModel.create(newEntry);
 
-        await this.notificationService.save(newEntry);
         ctx.reply('Thanks for Subscribing');
 
         // delete token after subscribed
@@ -99,10 +108,12 @@ export class SummariesUpdate {
         await ctx.reply('Which user to unsubscribe?', keyboards);
     }
 
-    @Action(/unsub ([0-9]+|cancel)/)
+    @Action(/unsub ([0-9a-fA-F]+|cancel)/)
     async onUnsubCb(ctx: Context): Promise<void> {
         const ctxCbQuery = deunionize(ctx.update)?.callback_query;
-        const userId = deunionize(ctxCbQuery)?.data.match(/unsub ([0-9]+|cancel)/)[1];
+        const userId = deunionize(ctxCbQuery)?.data.match(
+            /unsub ([0-9a-fA-F]{24}|cancel)/
+        )[1];
         const chatId = ctxCbQuery.message.chat.id.toString();
 
         if (userId === 'cancel') {
@@ -111,12 +122,13 @@ export class SummariesUpdate {
         }
 
         try {
-            const result = await this.notificationService.delete({
-                user: +userId as Partial<User>,
+            const user = await this.userModel.findById(userId);
+            const result = await this.notificationModel.findOneAndDelete({
+                user: user,
                 notify_id: chatId
             });
 
-            if (result?.affected === 0) {
+            if (result === null) {
                 await this.answerAndDeleteCb(ctx, 'Unsubscribe failed');
                 return;
             }
@@ -137,11 +149,11 @@ export class SummariesUpdate {
         ctx.reply('Choose a user to set the notification time.', keyboards);
     }
 
-    @Action(/setnotifytime ([0-9]+|cancel)/)
+    @Action(/setnotifytime ([0-9a-fA-F]+|cancel)/)
     async onSetnotifytimeCb(ctx: Context): Promise<void> {
         const ctxCbQuery = deunionize(ctx.update)?.callback_query;
         const userId = deunionize(ctxCbQuery)?.data.match(
-            /setnotifytime ([0-9]+|cancel)/
+            /setnotifytime ([0-9a-fA-F]{24}|cancel)/
         )[1];
         const chatId = ctxCbQuery.message.chat.id.toString();
 
@@ -150,12 +162,13 @@ export class SummariesUpdate {
             return;
         }
 
-        const notification = await this.notificationService.findOne({
-            user: +userId as Partial<User>,
+        const user = await this.userModel.findById(userId);
+        const notification = await this.notificationModel.findOne({
+            user: user,
             notify_id: chatId
         });
 
-        const currentHour = notification.notify_time.match(/(\d+):.*:.*/)[1];
+        const currentHour = notification.notify_time.match(/(\d+):00/)[1];
 
         if (notification === undefined) {
             await this.answerAndDeleteCb(ctx, 'Setnotifytime failed');
@@ -170,9 +183,12 @@ export class SummariesUpdate {
             time: HourExpression
         ) => {
             try {
-                await this.notificationService.update(notification.id, {
-                    notify_time: `${time}:0`
-                });
+                await this.notificationModel.updateOne(
+                    { _id: notification.id },
+                    {
+                        notify_time: `${time}:00`
+                    }
+                );
             } catch (err) {
                 this.logger.error(`TG bot error: setting notify time error: ${err}`);
                 await ctx.reply(`Update failed`);
@@ -197,12 +213,11 @@ export class SummariesUpdate {
 
     async getNotificationEntryByChatId(ctx: Context) {
         const chatId = ctx.message.chat.id.toString();
-        const notifyEntries = await this.notificationService.find({
-            relations: ['user'],
-            where: {
+        const notifyEntries = await this.notificationModel
+            .find({
                 notify_id: chatId
-            }
-        });
+            })
+            .populate('user');
 
         return notifyEntries;
     }

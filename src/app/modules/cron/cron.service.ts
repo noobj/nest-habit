@@ -4,22 +4,18 @@ import * as moment from 'moment-timezone';
 import { SummariesService } from '../summaries';
 import { UsersService } from '../users';
 import axios from 'axios';
-import {
-    LessThan,
-    IsNull,
-    Transaction,
-    TransactionRepository,
-    Repository
-} from 'typeorm';
 import * as dotenv from 'dotenv';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { QuoteService } from '../quote/quote.service';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
-import { Notification } from '../notification/notification.entity';
+import { Notification, NotificationDocument } from '../notification/notification.schema';
+import { MysqlUserId, MysqlUserIdDocument } from '../users/mysqlUserId.schema';
 import * as winston from 'winston';
 import { timezoned } from 'src/common/helpers/utils';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 dotenv.config();
 
@@ -31,7 +27,11 @@ export class CronService {
         private usersService: UsersService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: winston.Logger,
         private quoteService: QuoteService,
-        private socketServerGateway: SocketServerGateway
+        private socketServerGateway: SocketServerGateway,
+        @InjectModel(Notification.name)
+        private notificationModel: Model<NotificationDocument>,
+        @InjectModel(MysqlUserId.name)
+        private mysqlUserIdModel: Model<MysqlUserIdDocument>
     ) {
         logger.add(
             new winston.transports.File({
@@ -45,49 +45,40 @@ export class CronService {
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
-    @Transaction()
-    public async dailyNotify(
-        @TransactionRepository(Notification)
-        notificationRepository: Repository<Notification>
-    ) {
+    public async dailyNotify() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
             baseURL: 'https://api.telegram.org/' + botApi,
             timeout: 10000
         });
 
-        const notificationWithUsers = await notificationRepository.find({
-            join: {
-                alias: 'notify',
-                leftJoinAndSelect: {
-                    user: 'notify.user'
-                }
-            },
-            where: [
-                {
-                    last_notify: LessThan(moment().format('YYYY-MM-DD')),
-                    notify_time: LessThan(moment().format('HH:mm:ss'))
-                },
-                { last_notify: IsNull() }
-            ],
-            lock: {
-                mode: 'pessimistic_write'
-            }
-        });
+        const notificationWithUsers = await this.notificationModel
+            .find({
+                $or: [
+                    {
+                        last_notify: { $lt: moment().format('YYYY-MM-DD') },
+                        notify_time: { $lt: moment().format('HH:mm:ss') }
+                    },
+                    { last_notify: null }
+                ]
+            })
+            .populate('user');
 
         await Promise.all(
-            notificationWithUsers.map((entry) => {
+            notificationWithUsers.map(async (entry) => {
                 const startDate = moment().isoWeekday(1).format('YYYY-MM-DD');
                 const endDate = moment().isoWeekday(7).format('YYYY-MM-DD');
+                const mysqlUserId = await this.mysqlUserIdModel.findOne({
+                    uid: entry.user._id
+                });
+                const user = { id: mysqlUserId.mysqlUid, ...entry.user };
                 return this.summariesService
                     .getRawDailySummaries(startDate, endDate, entry.user)
                     .then(async (rawData) => {
                         return {
                             total: this.summariesService.getTotalDuration(rawData),
                             days: rawData.length,
-                            streak: await this.summariesService.getCurrentStreak(
-                                entry.user
-                            )
+                            streak: await this.summariesService.getCurrentStreak(user)
                         };
                     })
                     .then(async (res) => {
@@ -96,7 +87,7 @@ export class CronService {
                             streakAlert = `❗Keep going bro💪, don't lose your hard-earned ${res.streak} days steak✅\n\n`;
                         else {
                             const missDays = await this.summariesService.getMissingStreak(
-                                entry.user
+                                user
                             );
                             streakAlert = `🤷 You've already missed ${missDays} days👎, make a change today!\n\n`;
                         }
@@ -108,9 +99,12 @@ export class CronService {
                             text: text,
                             parse_mode: 'markdown'
                         };
-                        await notificationRepository.update(entry.id, {
-                            last_notify: moment().format('YYYY-MM-DD')
-                        });
+                        await this.notificationModel.updateOne(
+                            { _id: entry.id },
+                            {
+                                last_notify: moment().format('YYYY-MM-DD')
+                            }
+                        );
 
                         return client.get('sendMessage', { params });
                     })

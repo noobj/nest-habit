@@ -1,6 +1,7 @@
 import { Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
+import { MongooseModule } from '@nestjs/mongoose';
 
 import { SummariesService } from './summaries.service';
 import { SummariesController } from './summaries.controller';
@@ -16,6 +17,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SummariesUpdate } from './summaries.update';
 import { NotificationModule } from '../notification/notification.module';
 import { configs } from 'src/config/configuration';
+import { Notification, NotificationSchema } from '../notification/notification.schema';
+import { MysqlUserId, MysqlUserIdSchema } from '../users/mysqlUserId.schema';
+import { User, UserSchema } from '../users/user.schema';
 
 const providers: Provider[] = [
     SummariesService,
@@ -44,7 +48,12 @@ if (configs.telegram.bot_enable === true && configs.node_env !== 'test')
             inject: [ConfigService],
             imports: [ConfigModule]
         }),
-        ScheduleModule.forRoot()
+        ScheduleModule.forRoot(),
+        MongooseModule.forFeature([
+            { name: Notification.name, schema: NotificationSchema },
+            { name: MysqlUserId.name, schema: MysqlUserIdSchema },
+            { name: User.name, schema: UserSchema }
+        ])
     ],
     providers,
     controllers: [SummariesController],
