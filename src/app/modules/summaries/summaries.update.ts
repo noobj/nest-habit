@@ -11,9 +11,9 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { RedisService } from 'src/app/modules/redis';
 import { timezoned } from 'src/common/helpers/utils';
-import { Notification, NotificationDocument } from '../notification/notification.schema';
-import { MysqlUserId, MysqlUserIdDocument } from '../users/mysqlUserId.schema';
-import { User, UserDocument } from '../users/user.schema';
+import { Notification, NotificationDocument } from '../../../schemas/notification.schema';
+import { MysqlUserId, MysqlUserIdDocument } from '../../../schemas/mysqlUserId.schema';
+import { User, UserDocument } from '../../../schemas/user.schema';
 
 @Update()
 export class SummariesUpdate {

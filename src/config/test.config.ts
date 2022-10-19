@@ -1,8 +1,6 @@
 import { User } from 'src/app/modules/users/users.entity';
 import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
 import { Project } from 'src/app/modules/summaries/entities/project.entity';
-import { Quote } from 'src/app/modules/quote/quote.entity';
-import { Notification } from 'src/app/modules/notification/notification.entity';
 
 export default () => ({
     port: parseInt(process.env.PORT, 10) || 3000,
@@ -13,7 +11,7 @@ export default () => ({
         database: 'test',
         username: process.env.DB_USER || 'linuxj', // fetch the main.yml setting for github actions
         password: process.env.DB_PASSWORD || '1234', // fetch the main.yml setting for github actions
-        entities: [User, DailySummary, Project, Quote, Notification],
+        entities: [User, DailySummary, Project],
         synchronize: true,
         logging: false
     },

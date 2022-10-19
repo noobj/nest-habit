@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { QuoteService } from './quote.service';
-import { Quote, QuoteSchema } from './schemas/quote.schema';
+import { Quote, QuoteSchema } from '../../../schemas/quote.schema';
 
 @Module({
     imports: [

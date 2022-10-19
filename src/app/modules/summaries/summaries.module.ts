@@ -15,11 +15,10 @@ import { RedisModule } from '../redis/redis.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SummariesUpdate } from './summaries.update';
-import { NotificationModule } from '../notification/notification.module';
 import { configs } from 'src/config/configuration';
-import { Notification, NotificationSchema } from '../notification/notification.schema';
-import { MysqlUserId, MysqlUserIdSchema } from '../users/mysqlUserId.schema';
-import { User, UserSchema } from '../users/user.schema';
+import { Notification, NotificationSchema } from '../../../schemas/notification.schema';
+import { MysqlUserId, MysqlUserIdSchema } from '../../../schemas/mysqlUserId.schema';
+import { User, UserSchema } from '../../../schemas/user.schema';
 
 const providers: Provider[] = [
     SummariesService,
@@ -33,7 +32,6 @@ if (configs.telegram.bot_enable === true && configs.node_env !== 'test')
 
 @Module({
     imports: [
-        NotificationModule,
         BullModule.registerQueue({
             name: 'summary'
         }),

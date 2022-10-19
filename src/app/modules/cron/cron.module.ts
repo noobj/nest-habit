@@ -6,8 +6,8 @@ import { QuoteModule } from '../quote/quote.module';
 import { UsersModule } from '../users';
 import { CronService } from './cron.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Notification, NotificationSchema } from '../notification/notification.schema';
-import { MysqlUserId, MysqlUserIdSchema } from '../users/mysqlUserId.schema';
+import { Notification, NotificationSchema } from '../../../schemas/notification.schema';
+import { MysqlUserId, MysqlUserIdSchema } from '../../../schemas/mysqlUserId.schema';
 
 @Module({})
 export class CronModule {

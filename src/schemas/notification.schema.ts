@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { UserDocument } from 'src/app/modules/users/user.schema';
+import { UserDocument } from 'src/schemas/user.schema';
 
 export type NotificationDocument = Notification & Document;
 

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { ThirdPartyServiceKeys } from '../ThirdParty/third-party.factory';
+import { ThirdPartyServiceKeys } from '../app/modules/ThirdParty/third-party.factory';
 
 export type UserDocument = User & Document;
 
