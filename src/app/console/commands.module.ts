@@ -6,8 +6,10 @@ import * as winston from 'winston';
 
 import { CommandsService } from './commands.service';
 import { SummariesModule } from '../modules/summaries';
-import configuration from 'src/config/configuration';
+import configuration, { configs } from 'src/config/console.config';
 import { SocketServerModule } from 'src/app/modules/socket-server/socket-server.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { TelegrafModule } from 'nestjs-telegraf';
 
 @Module({})
 class IntermediateModule {
@@ -76,6 +78,32 @@ export class CommandsModule {
                         synchronize: configService.get<boolean>('database.synchronize'),
                         logging: configService.get<boolean>('database.logging')
                     })
+                }),
+                MongooseModule.forRootAsync({
+                    imports: [ConfigModule],
+                    inject: [ConfigService],
+                    useFactory: (configService: ConfigService) => {
+                        let url = '';
+                        if (configService.get('mongo.user') == undefined)
+                            url = `${configService.get(
+                                'mongo.prefix'
+                            )}://${configService.get('mongo.host')}`;
+                        else
+                            url = `${configService.get(
+                                'mongo.prefix'
+                            )}://${configService.get('mongo.user')}:${configService.get(
+                                'mongo.password'
+                            )}@${configService.get('mongo.host')}`;
+
+                        return {
+                            loggerLevel: 'debug',
+                            uri: url
+                        };
+                    }
+                }),
+                // TODO: try to remove this
+                TelegrafModule.forRoot({
+                    token: configs.telegram.bot_api_key
                 }),
                 SummariesModule,
                 ConfigModule.forRoot({ load: [configuration] }),

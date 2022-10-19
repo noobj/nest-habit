@@ -1,17 +1,17 @@
-import { Repository, Connection } from 'typeorm';
+import { Connection, Model } from 'mongoose';
 
-import { Quote } from 'src/app/modules/quote/quote.entity';
-import { ISeeder } from './seeder.interface';
+import { QuoteSchema, QuoteDocument, Quote } from 'src/schemas/quote.schema';
+import { ISeeder } from '../seeders/seeder.interface';
 
 export class QuoteSeeder implements ISeeder {
-    private repository: Repository<Quote>;
+    private model: Model<QuoteDocument>;
 
     constructor(public connection: Connection) {
-        this.repository = connection.getRepository(Quote);
+        this.model = connection.model<QuoteDocument>(Quote.name, QuoteSchema);
     }
 
     async run() {
-        await this.repository.delete({});
+        await this.model.deleteMany({});
 
         const quotes = [
             {
@@ -35,7 +35,7 @@ export class QuoteSeeder implements ISeeder {
                 author: 'Eckhart Tolle'
             }
         ];
-        const result = await this.repository.save(quotes);
+        const result = await this.model.insertMany(quotes);
         console.log(result);
     }
 }

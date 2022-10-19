@@ -12,6 +12,7 @@ import { MysqlUserId, MysqlUserIdSchema } from '../../../schemas/mysqlUserId.sch
 @Module({})
 export class CronModule {
     static register(): DynamicModule {
+        // TODO: using Configservice instead
         const enable =
             process.env.NODE_ENV != 'test' && process.env.CRON_ENABLE === 'true';
 

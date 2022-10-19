@@ -27,6 +27,7 @@ const providers: Provider[] = [
     { provide: Interfaces.IBasicService, useClass: SummariesService }
 ];
 
+// TODO: should fetch the configs depends on env
 if (configs.telegram.bot_enable === true && configs.node_env !== 'test')
     providers.push(SummariesUpdate);
 
