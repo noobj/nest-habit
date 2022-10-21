@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { DailySummary } from '../summaries/entities';
+import { DailySummary } from '../summaries/entities/daily_summary.entity';
 import { ThirdPartyServiceKeys } from '../ThirdParty/third-party.factory';
 
 //pass the name of table inside @Entity() i.e "users", if you don't pass table name it will create "users_entity" table by default
