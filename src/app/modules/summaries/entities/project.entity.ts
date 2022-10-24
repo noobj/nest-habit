@@ -1,7 +1,7 @@
-import { Entity, Column, PrimaryColumn, OneToMany, OneToOne, JoinColumn } from 'typeorm';
-import { User } from '../../users';
+import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
+import { User } from '../../users/users.entity';
 
-import { DailySummary } from './daily_summary.entity';
+// import { DailySummary } from './daily_summary.entity';
 
 @Entity({ name: 'projects' })
 export class Project {
@@ -10,9 +10,6 @@ export class Project {
 
     @Column()
     name: string;
-
-    @OneToMany(() => DailySummary, (summary) => summary.project)
-    summaries?: DailySummary[];
 
     @OneToOne(() => User)
     @JoinColumn({
