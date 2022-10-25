@@ -4,7 +4,6 @@ import {
     Query,
     HttpStatus,
     ValidationPipe,
-    Inject,
     UseGuards,
     Request,
     Post,
@@ -18,11 +17,8 @@ import { map, mergeMap, tap } from 'rxjs/operators';
 import { Redis } from 'ioredis';
 import { Express } from 'express';
 
-import { IBasicService } from './interfaces/basic.service';
-import { Interfaces } from './constants';
 import { ProjectService } from './projects.service';
 import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception.filter';
-import { DailySummary } from './entities';
 import { RedisService } from '../redis';
 import { getCacheString } from 'src/common/helpers/utils';
 import {
@@ -36,7 +32,8 @@ import {
     ApiResponse,
     ApiTags
 } from '@nestjs/swagger';
-import { IFormatedSummary } from './summaries.service';
+import { SummariesService } from './summaries.service';
+import { SummaryDocument } from 'src/schemas/summary.schema';
 
 class DateRange {
     @ApiProperty()
@@ -59,8 +56,7 @@ export class SummariesController {
     private redisClient: Redis;
 
     constructor(
-        @Inject(Interfaces.IBasicService)
-        private summariesService: IBasicService<DailySummary, IFormatedSummary>,
+        private summariesService: SummariesService,
         private projectService: ProjectService,
         private readonly redisService: RedisService
     ) {
@@ -154,7 +150,7 @@ export class SummariesController {
                 req.user
             )
         ).pipe(
-            mergeMap((rawData: DailySummary[]) => {
+            mergeMap((rawData: SummaryDocument[]) => {
                 if (rawData.length === 0) {
                     return of({
                         statusCode: HttpStatus.NO_CONTENT,

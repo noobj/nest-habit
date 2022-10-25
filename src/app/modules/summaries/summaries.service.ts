@@ -6,14 +6,13 @@ import {
     InternalServerErrorException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThanOrEqual } from 'typeorm';
+import { Repository, LessThanOrEqual } from 'typeorm';
 import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
 import { Redis } from 'ioredis';
 
 import { RedisService } from '../redis';
 import { DailySummary } from './entities';
-import { IBasicService } from './interfaces';
 import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
 import { validate } from 'class-validator';
 import { ProjectService } from './projects.service';
@@ -24,6 +23,11 @@ import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { ModuleRef } from '@nestjs/core';
 import { convertRawDurationToFormat } from 'src/common/helpers/utils';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Project as MongoProject, ProjectDocument } from 'src/schemas/project.schema';
+import { Summary, SummaryDocument } from 'src/schemas/summary.schema';
+import { User as MongoUser, UserDocument } from 'src/schemas/user.schema';
 
 /**
  * The return format for frontend use
@@ -36,15 +40,19 @@ export interface IFormatedSummary {
 }
 
 @Injectable()
-export class SummariesService
-    implements IBasicService<DailySummary, IFormatedSummary>, OnModuleInit
-{
+export class SummariesService implements OnModuleInit {
     private projectService: ProjectService;
     private redisClient: Redis;
 
     constructor(
         @InjectRepository(DailySummary)
         private dailySummaryRepository: Repository<DailySummary>,
+        @InjectModel(MongoProject.name)
+        private projectModel: Model<ProjectDocument>,
+        @InjectModel(Summary.name)
+        private summaryModel: Model<SummaryDocument>,
+        @InjectModel(MongoUser.name)
+        private userModel: Model<UserDocument>,
         private moduleRef: ModuleRef,
         private readonly socketServerGateway: SocketServerGateway,
         private readonly redisService: RedisService
@@ -61,23 +69,20 @@ export class SummariesService
         startDate: string,
         endDate: string,
         user: Partial<User>
-    ): Promise<DailySummary[]> {
-        const { id: projectId } =
-            (await this.projectService.getProjectByUser(user)) || {};
+    ): Promise<SummaryDocument[]> {
+        const { id } = (await this.projectService.getProjectByUser(user)) || {};
+        const project = await this.projectModel.findOne({ mysqlId: id });
+        const mongoUser = await this.userModel.findOne({ mysqlId: user.id });
 
-        return await this.dailySummaryRepository.find({
-            where: [
-                {
-                    date: Between(startDate, endDate),
-                    project: projectId,
-                    user: user
-                }
-            ]
+        return await this.summaryModel.find({
+            project: project,
+            user: mongoUser,
+            date: { $gte: startDate, $lte: endDate }
         });
     }
 
     public async processTheRawSummaries(
-        rawData: DailySummary[]
+        rawData: SummaryDocument[]
     ): Promise<IFormatedSummary[]> {
         return rawData.map((entry) => {
             const level = this.calLevel(entry.duration);
@@ -111,7 +116,7 @@ export class SummariesService
             : durationLevelMap.get(levelIndex);
     }
 
-    public getLongestDayRecord(rawData: DailySummary[]): {
+    public getLongestDayRecord(rawData: SummaryDocument[]): {
         date: string;
         duration: string;
     } {
@@ -125,7 +130,7 @@ export class SummariesService
         };
     }
 
-    public getTotalDuration(rawData: DailySummary[]): string {
+    public getTotalDuration(rawData: SummaryDocument[]): string {
         return convertRawDurationToFormat(
             rawData.reduce((sum, entry) => {
                 return (sum += entry.duration);
@@ -133,7 +138,7 @@ export class SummariesService
         );
     }
 
-    public getTotalThisMonth(rawData: DailySummary[]): string {
+    public getTotalThisMonth(rawData: SummaryDocument[]): string {
         const stingOfThisMonth = moment().format('YYYY-MM');
 
         const sum = rawData
@@ -264,24 +269,24 @@ export class SummariesService
         });
     }
 
-    public async getCurrentStreak(user: User): Promise<number> {
-        let streak = await this.dailySummaryRepository
-            .query(`select if(max(maxcount) < 0, 0, max(maxcount)) streak
-        from (
-        select
-          if(datediff(@prevDate, \`date\`) = 1, @count := @count + 1, @count := -99999) maxcount,
-          @prevDate := \`date\`
-          from daily_summaries as v cross join
-            (select @prevDate := curdate(), @count := 0) t1
-          where user_id = ${user.id}
-          and \`date\` < curdate()
-          order by \`date\` desc
-        ) t1; `);
+    public async getCurrentStreak(user: Partial<User>): Promise<number> {
+        let streak = 0;
+        let today = new Date('2022-06-15').toISOString().slice(0, 10).replace(/T.*/, '');
 
-        const todayDateString = moment().format('YYYY-MM-DD');
-        const today = await this.dailySummaryRepository.find({ date: todayDateString });
-        streak = streak[0].streak;
-        if (today.length) streak++;
+        const userComplete = await this.userModel.findOne({ mysqlId: user.id });
+        const entries = await this.summaryModel
+            .find({ user: userComplete })
+            .sort({ date: -1 });
+        for (const entry of entries) {
+            if (entry.date != today) {
+                break;
+            }
+
+            streak++;
+            const prevDate = new Date(today);
+            prevDate.setDate(prevDate.getDate() - 1);
+            today = prevDate.toISOString().slice(0, 10).replace(/T.*/, '');
+        }
 
         return streak;
     }
