@@ -1,6 +1,6 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { TogglClient } from 'src/common/helpers/TogglClient';
-import { Project } from '../../summaries/entities';
+import { ProjectDocument } from 'src/schemas/project.schema';
 import { User } from '../../users';
 import { IThirdPartyService } from '../third-party.interface';
 
@@ -33,7 +33,7 @@ export class TogglService implements IThirdPartyService {
         if (!workSpaceId) throw new HttpException('Invalid api token', 400);
     }
 
-    public async fetch(project: Project, since: string): Promise<any[]> {
+    public async fetch(project: ProjectDocument, since: string): Promise<any[]> {
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
             timeout: 10000,
@@ -50,7 +50,7 @@ export class TogglService implements IThirdPartyService {
         let response;
 
         do {
-            response = await togglClient.getDetails(workSpaceId, project.project_id, {
+            response = await togglClient.getDetails(workSpaceId, project.thirdPartyId, {
                 page: page++,
                 userAgent: 'Toggl NestJS Client',
                 since: since

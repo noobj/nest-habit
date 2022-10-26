@@ -7,7 +7,6 @@ import { UsersModule } from '../users';
 import { CronService } from './cron.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Notification, NotificationSchema } from '../../../schemas/notification.schema';
-import { MysqlUserId, MysqlUserIdSchema } from '../../../schemas/mysqlUserId.schema';
 
 @Module({})
 export class CronModule {
@@ -28,8 +27,7 @@ export class CronModule {
                     }),
                     QuoteModule,
                     MongooseModule.forFeature([
-                        { name: Notification.name, schema: NotificationSchema },
-                        { name: MysqlUserId.name, schema: MysqlUserIdSchema }
+                        { name: Notification.name, schema: NotificationSchema }
                     ])
                 ],
                 providers: [CronService]

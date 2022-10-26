@@ -5,19 +5,12 @@ import {
     BadRequestException,
     InternalServerErrorException
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual } from 'typeorm';
 import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
 import { Redis } from 'ioredis';
 
 import { RedisService } from '../redis';
-import { DailySummary } from './entities';
-import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
-import { validate } from 'class-validator';
 import { ProjectService } from './projects.service';
-import { Project } from './entities/project.entity';
-import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
 import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
@@ -45,8 +38,6 @@ export class SummariesService implements OnModuleInit {
     private redisClient: Redis;
 
     constructor(
-        @InjectRepository(DailySummary)
-        private dailySummaryRepository: Repository<DailySummary>,
         @InjectModel(MongoProject.name)
         private projectModel: Model<ProjectDocument>,
         @InjectModel(Summary.name)
@@ -150,45 +141,30 @@ export class SummariesService implements OnModuleInit {
         return convertRawDurationToFormat(sum);
     }
 
-    public async upsert(data: CreateDailySummaryDto[]): Promise<any> {
-        const classTransformer = new ClassTransformer();
-        const entity = classTransformer.plainToClass(CreateDailySummaryDto, data);
-        const wrapped = new WrapperCreateDailySummaryDto(entity);
-        const errors = await validate(wrapped);
-        if (errors.length > 0) {
-            throw new ImATeapotException('Validation failed');
-        }
-
+    public async upsert(entries: Summary[]): Promise<any> {
         try {
             let affected = 0;
             // search for those existing entries and insert their id
-            data = await Promise.all(
-                data.map(async (entry) => {
-                    return this.dailySummaryRepository
-                        .findOne({
-                            where: {
+            await Promise.all(
+                entries.map(async (entry) => {
+                    return this.summaryModel
+                        .updateOne(
+                            {
                                 user: entry.user,
                                 date: entry.date,
                                 project: entry.project
-                            }
-                        })
+                            },
+                            entry,
+                            { upsert: true, new: true }
+                        )
                         .then((result) => {
-                            if (result) {
-                                if (result.duration != entry.duration) {
-                                    affected++;
-                                    result.duration = entry.duration;
-                                }
-
-                                return result;
-                            } else {
+                            if (result.nModified > 0 || result.upserted) {
                                 affected++;
-                                return entry;
                             }
                         });
                 })
             );
 
-            const entries = await this.dailySummaryRepository.save(data);
             return {
                 affected,
                 entries
@@ -201,17 +177,18 @@ export class SummariesService implements OnModuleInit {
     async syncWithThirdParty(days: number, user: User, emitNotice = true) {
         const since = moment().subtract(days, 'days').format('YYYY-MM-DD');
 
-        const project = await this.projectService.getProjectByUser(user);
-        project.user = user;
+        const projectMysql = await this.projectService.getProjectByUser(user);
 
-        if (!project) throw new BadRequestException('No project found');
+        if (!projectMysql) throw new BadRequestException('No project found');
+        const project = await this.projectModel
+            .findOne({ mysqlId: projectMysql.id })
+            .populate('user');
 
         try {
-            await this.projectService.updateProjectLastUpdated(project);
+            await this.projectService.updateProjectLastUpdated(projectMysql);
             const details = await ThirdPartyFactory.getService(
                 user.third_party_service
             ).fetch(project, since);
-
             if (!details.length) return 0;
 
             const fetchedData = this.processFetchedData(details, project);
@@ -232,7 +209,7 @@ export class SummariesService implements OnModuleInit {
         }
     }
 
-    private sendMessageToSocketClients(entries: CreateDailySummaryDto[]) {
+    private sendMessageToSocketClients(entries: SummaryDocument[]) {
         entries.map((entry) => {
             // Only new records have user data
             if (entry.user) {
@@ -253,8 +230,8 @@ export class SummariesService implements OnModuleInit {
 
     private processFetchedData(
         details: any[],
-        project: Project
-    ): CreateDailySummaryDto[] {
+        project: ProjectDocument
+    ): Summary[] {
         const tmp = _.groupBy(details, (entry) => {
             return moment(entry.start).format('YYYY-MM-DD');
         });
@@ -262,7 +239,7 @@ export class SummariesService implements OnModuleInit {
         return Object.entries(tmp).map((key) => {
             return {
                 date: key[0],
-                project: project.id,
+                project: project,
                 duration: key[1].reduce((sum, entry) => sum + entry.dur, 0),
                 user: project.user
             };
@@ -291,20 +268,12 @@ export class SummariesService implements OnModuleInit {
         return streak;
     }
 
-    public async getMissingStreak(user: User): Promise<number> {
-        const lastDate = await this.dailySummaryRepository
-            .find({
-                select: ['date'],
-                where: {
-                    user,
-                    date: LessThanOrEqual(moment().format('YYYY-MM-DD'))
-                },
-                order: {
-                    date: 'DESC'
-                }
-            })
-            .then((res) => res[0].date);
+    public async getMissingStreak(user: UserDocument): Promise<number> {
+        const lastEntry = await this.summaryModel
+            .findOne({
+                user
+            });
 
-        return Math.floor(moment.duration(moment().diff(moment(lastDate))).as('days'));
+        return Math.floor(moment.duration(moment().diff(moment(lastEntry.date))).as('days'));
     }
 }
