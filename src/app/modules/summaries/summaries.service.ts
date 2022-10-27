@@ -213,7 +213,7 @@ export class SummariesService implements OnModuleInit {
         entries.map((entry) => {
             // Only new records have user data
             if (entry.user) {
-                const userId = entry.user.id;
+                const userId = entry.user;
                 const userAccount = entry.user.account;
                 entry.user = null;
                 entry.duration = null;
@@ -228,10 +228,7 @@ export class SummariesService implements OnModuleInit {
         });
     }
 
-    private processFetchedData(
-        details: any[],
-        project: ProjectDocument
-    ): Summary[] {
+    private processFetchedData(details: any[], project: ProjectDocument): Summary[] {
         const tmp = _.groupBy(details, (entry) => {
             return moment(entry.start).format('YYYY-MM-DD');
         });
@@ -269,11 +266,12 @@ export class SummariesService implements OnModuleInit {
     }
 
     public async getMissingStreak(user: UserDocument): Promise<number> {
-        const lastEntry = await this.summaryModel
-            .findOne({
-                user
-            });
+        const lastEntry = await this.summaryModel.findOne({
+            user
+        });
 
-        return Math.floor(moment.duration(moment().diff(moment(lastEntry.date))).as('days'));
+        return Math.floor(
+            moment.duration(moment().diff(moment(lastEntry.date))).as('days')
+        );
     }
 }

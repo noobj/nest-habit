@@ -65,7 +65,7 @@ export class SummariesUpdate {
             return;
         }
 
-        const user = await this.userModel.findOne({mysqlId: +userIdFromRedis});
+        const user = await this.userModel.findOne({ mysqlId: +userIdFromRedis });
 
         if (!user) {
             ctx.reply('User not found');

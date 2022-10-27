@@ -10,6 +10,7 @@ import { ModuleRef } from '@nestjs/core';
 import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { RedisService } from 'src/app/modules/redis';
 import { SocketServerGateway } from 'src/app/modules/socket-server/socket-server.gateway';
+import { Project } from 'src/schemas/project.schema';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -20,6 +21,19 @@ describe('SummariesService', () => {
         email: 'test',
         password: 'DGAF',
         toggl_token: 'DGAF'
+    };
+
+    const userWithMysqlId = {
+        ...user,
+        mysqlId: 1
+    };
+
+    const project: Project = {
+        mysqlId: 30.0,
+        user: userWithMysqlId,
+        thirdPartyId: 157099012,
+        name: 'meditation',
+        lastUpdated: new Date('2022-10-24 16:50:19')
     };
 
     const mockDailySummaryRepo = {
@@ -211,7 +225,12 @@ describe('SummariesService', () => {
 
     it('should return upsert result', async () => {
         const result = await service.upsert([
-            { project: 9, date: '2021-04-23', duration: 1500000, user: user }
+            {
+                project: project,
+                date: '2021-04-23',
+                duration: 1500000,
+                user: userWithMysqlId
+            }
         ]);
 
         expect(result.entries).toEqual([
@@ -228,7 +247,12 @@ describe('SummariesService', () => {
     it('should upsert failed and throw Validation error', async () => {
         await expect(async () => {
             await service.upsert([
-                { project: 9, date: '123', duration: 1500000, user: user }
+                {
+                    project: project,
+                    date: '123',
+                    duration: 1500000,
+                    user: userWithMysqlId
+                }
             ]);
         }).rejects.toThrow(ImATeapotException);
     });
@@ -242,7 +266,12 @@ describe('SummariesService', () => {
 
         await expect(async () => {
             await service.upsert([
-                { project: 9, date: '2021-04-23', duration: 1500000, user: user }
+                {
+                    project: project,
+                    date: '2021-04-23',
+                    duration: 1500000,
+                    user: userWithMysqlId
+                }
             ]);
         }).rejects.toThrow(ImATeapotException);
         spyMockDSRepo.mockImplementation((entry) =>

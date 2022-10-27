@@ -1,17 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { UserDocument } from './user.schema';
-import { ProjectDocument } from './project.schema';
+import { User } from './user.schema';
+import { Project } from './project.schema';
 
 export type SummaryDocument = Summary & Document;
 
 @Schema()
 export class Summary {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
-    user: UserDocument;
+    user: User;
 
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Project' })
-    project: ProjectDocument;
+    project: Project;
 
     @Prop()
     date: string;
