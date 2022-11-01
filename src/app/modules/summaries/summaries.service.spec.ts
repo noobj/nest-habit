@@ -11,6 +11,10 @@ import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { RedisService } from 'src/app/modules/redis';
 import { SocketServerGateway } from 'src/app/modules/socket-server/socket-server.gateway';
 import { Project } from 'src/schemas/project.schema';
+import { User as MongoUser } from 'src/schemas/user.schema';
+import { getModelToken } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { Summary } from 'src/schemas/summary.schema';
 
 describe('SummariesService', () => {
     let service: SummariesService;
@@ -36,38 +40,132 @@ describe('SummariesService', () => {
         lastUpdated: new Date('2022-10-24 16:50:19')
     };
 
-    const mockDailySummaryRepo = {
+    const mockSummaryModel = {
         findOne: jest.fn((entry) =>
-            Promise.resolve<DailySummary>({
-                id: entry.where.project,
-                project: entry.where.project,
-                date: entry.where.date,
+            Promise.resolve<Summary>({
+                project: entry.project,
+                date: entry.date,
                 duration: 1500000,
-                user: entry.where.user
+                user: entry.user
             })
         ),
         save: jest.fn((entries) => Promise.resolve<DailySummary[]>(entries)),
         find: jest.fn(() =>
-            Promise.resolve<Partial<DailySummary>[]>([
-                { id: 9, date: '2021-04-23', duration: 1500000, user: user },
-                { id: 10, date: '2021-04-21', duration: 12000000, user: user },
-                { id: 11, date: '2021-04-20', duration: 3300000, user: user },
-                { id: 12, date: '2021-04-19', duration: 1800000, user: user },
-                { id: 13, date: '2021-04-17', duration: 2700000, user: user },
-                { id: 14, date: '2021-04-13', duration: 2700000, user: user },
-                { id: 15, date: '2021-04-12', duration: 1800000, user: user },
-                { id: 16, date: '2021-04-11', duration: 2700000, user: user },
-                { id: 17, date: '2021-04-10', duration: 1800000, user: user },
-                { id: 18, date: '2021-04-09', duration: 3000000, user: user },
-                { id: 19, date: '2021-04-07', duration: 2700000, user: user },
-                { id: 20, date: '2021-04-03', duration: 2700000, user: user },
-                { id: 21, date: '2021-04-02', duration: 16200000, user: user },
-                { id: 22, date: '2021-03-31', duration: 2700000, user: user },
-                { id: 23, date: '2021-03-30', duration: 1800000, user: user },
-                { id: 24, date: '2021-03-16', duration: 2700000, user: user },
-                { id: 25, date: '2021-03-09', duration: 1800000, user: user },
-                { id: 26, date: '2021-03-05', duration: 5400000, user: user },
-                { id: 27, date: '2021-03-01', duration: 2700000, user: user }
+            Promise.resolve<Summary[]>([
+                {
+                    date: '2021-04-23',
+                    duration: 1500000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-21',
+                    duration: 12000000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-20',
+                    duration: 3300000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-19',
+                    duration: 1800000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-17',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-13',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-12',
+                    duration: 1800000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-11',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-10',
+                    duration: 1800000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-09',
+                    duration: 3000000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-07',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-03',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-04-02',
+                    duration: 16200000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-03-31',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-03-30',
+                    duration: 1800000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-03-16',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-03-09',
+                    duration: 1800000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-03-05',
+                    duration: 5400000,
+                    user: userWithMysqlId,
+                    project: project
+                },
+                {
+                    date: '2021-03-01',
+                    duration: 2700000,
+                    user: userWithMysqlId,
+                    project: project
+                }
             ])
         ),
         query: jest.fn(() => Promise.resolve<any>([{ streak: 3 }]))
@@ -127,8 +225,16 @@ describe('SummariesService', () => {
             providers: [
                 SummariesService,
                 {
-                    provide: getRepositoryToken(DailySummary),
-                    useValue: mockDailySummaryRepo
+                    provide: getModelToken(Summary.name),
+                    useValue: mockSummaryModel
+                },
+                {
+                    provide: getModelToken(Project.name),
+                    useValue: mockSummaryModel
+                },
+                {
+                    provide: getModelToken(MongoUser.name),
+                    useValue: mockSummaryModel
                 },
                 {
                     provide: ProjectService,
@@ -166,14 +272,10 @@ describe('SummariesService', () => {
             duration: 1500000,
             user: user
         });
-        expect(mockDailySummaryRepo.find).toBeCalledWith({
-            where: [
-                {
-                    date: Between('startDate', 'endDate'),
-                    project: 123,
-                    user: user
-                }
-            ]
+        expect(mockSummaryModel.find).toBeCalledWith({
+            project: project,
+            user: user,
+            date: { $gte: 'startDate', $lte: 'endDate' }
         });
     });
 
@@ -259,7 +361,7 @@ describe('SummariesService', () => {
 
     it('should upsert failed and throw out exception', async () => {
         const spyMockDSRepo = jest
-            .spyOn(mockDailySummaryRepo, 'findOne')
+            .spyOn(mockSummaryModel, 'findOne')
             .mockImplementation(() => {
                 throw ImATeapotException;
             });
@@ -275,12 +377,11 @@ describe('SummariesService', () => {
             ]);
         }).rejects.toThrow(ImATeapotException);
         spyMockDSRepo.mockImplementation((entry) =>
-            Promise.resolve<DailySummary>({
-                id: entry.where.project,
-                project: entry.where.project,
-                date: entry.where.date,
+            Promise.resolve<Summary>({
+                project: entry.project,
+                date: entry.date,
                 duration: 1500000,
-                user: entry.where.user
+                user: entry.user
             })
         );
     });
