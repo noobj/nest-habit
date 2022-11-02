@@ -142,6 +142,8 @@ export class SummariesService implements OnModuleInit {
     }
 
     public async upsert(entries: Summary[]): Promise<any> {
+        // TODO: validate the entries
+
         try {
             let affected = 0;
             // search for those existing entries and insert their id
@@ -245,12 +247,13 @@ export class SummariesService implements OnModuleInit {
 
     public async getCurrentStreak(user: Partial<User>): Promise<number> {
         let streak = 0;
-        let today = new Date('2022-06-15').toISOString().slice(0, 10).replace(/T.*/, '');
+        let today = new Date().toISOString().slice(0, 10).replace(/T.*/, '');
 
         const userComplete = await this.userModel.findOne({ mysqlId: user.id });
         const entries = await this.summaryModel
             .find({ user: userComplete })
             .sort({ date: -1 });
+
         for (const entry of entries) {
             if (entry.date != today) {
                 break;
