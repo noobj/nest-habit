@@ -17,9 +17,6 @@ export class Project {
 
     @Prop()
     thirdPartyId: number;
-
-    @Prop()
-    mysqlId: number;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

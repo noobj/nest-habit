@@ -34,6 +34,7 @@ import {
 } from '@nestjs/swagger';
 import { SummariesService } from './summaries.service';
 import { SummaryDocument } from 'src/schemas/summary.schema';
+import { User } from '../users';
 
 class DateRange {
     @ApiProperty()
@@ -75,7 +76,7 @@ export class SummariesController {
     @ApiBadRequestResponse({ description: 'Wrong project input' })
     @ApiInternalServerErrorResponse()
     setCurrentProjectByName(
-        @Request() req: Express.Request,
+        @Request() req: Express.Request & { user: User },
         @Body('project_name') projectName: string
     ) {
         return from(this.projectService.setCurrentProject(req.user, projectName)).pipe(

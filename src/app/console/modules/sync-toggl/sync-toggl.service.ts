@@ -1,9 +1,8 @@
 import { Injectable, Logger, ImATeapotException, OnModuleInit } from '@nestjs/common';
 
 import { SummariesService } from 'src/app/modules/summaries/summaries.service';
-import { ProjectService } from 'src/app/modules/summaries';
+import { ProjectService, ProjectWithMysqlUser } from 'src/app/modules/summaries';
 import { ICommand } from 'src/app/console/interfaces/command.interface';
-import { Project } from 'src/app/modules/summaries/entities';
 import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
@@ -29,10 +28,10 @@ export class SyncTogglService implements ICommand, OnModuleInit {
         if (projects.length == 0) throw new ImATeapotException('No project found');
 
         return await Promise.all(
-            projects.map(async (project: Project) => {
+            projects.map(async (project: ProjectWithMysqlUser) => {
                 const affectedRow = await this.summariesService.syncWithThirdParty(
                     365,
-                    project.user,
+                    project.userMysql,
                     false
                 );
 

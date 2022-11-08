@@ -18,7 +18,7 @@ import { ModuleRef } from '@nestjs/core';
 import { convertRawDurationToFormat } from 'src/common/helpers/utils';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Project as MongoProject, ProjectDocument } from 'src/schemas/project.schema';
+import { ProjectDocument } from 'src/schemas/project.schema';
 import { Summary, SummaryDocument } from 'src/schemas/summary.schema';
 import { User as MongoUser, UserDocument } from 'src/schemas/user.schema';
 
@@ -38,8 +38,6 @@ export class SummariesService implements OnModuleInit {
     private redisClient: Redis;
 
     constructor(
-        @InjectModel(MongoProject.name)
-        private projectModel: Model<ProjectDocument>,
         @InjectModel(Summary.name)
         private summaryModel: Model<SummaryDocument>,
         @InjectModel(MongoUser.name)
@@ -61,13 +59,11 @@ export class SummariesService implements OnModuleInit {
         endDate: string,
         user: Partial<User>
     ): Promise<SummaryDocument[]> {
-        const { id } = (await this.projectService.getProjectByUser(user)) || {};
-        const project = await this.projectModel.findOne({ mysqlId: id });
-        const mongoUser = await this.userModel.findOne({ mysqlId: user.id });
+        const project = await this.projectService.getProjectByUser(user);
 
         return await this.summaryModel.find({
             project: project,
-            user: mongoUser,
+            user: project.user,
             date: { $gte: startDate, $lte: endDate }
         });
     }
@@ -179,15 +175,12 @@ export class SummariesService implements OnModuleInit {
     async syncWithThirdParty(days: number, user: User, emitNotice = true) {
         const since = moment().subtract(days, 'days').format('YYYY-MM-DD');
 
-        const projectMysql = await this.projectService.getProjectByUser(user);
+        const project = await this.projectService.getProjectByUser(user);
 
-        if (!projectMysql) throw new BadRequestException('No project found');
-        const project = await this.projectModel
-            .findOne({ mysqlId: projectMysql.id })
-            .populate('user');
+        if (!project) throw new BadRequestException('No project found');
 
         try {
-            await this.projectService.updateProjectLastUpdated(projectMysql);
+            await this.projectService.updateProjectLastUpdated(project);
             const details = await ThirdPartyFactory.getService(
                 user.third_party_service
             ).fetch(project, since);
@@ -207,6 +200,7 @@ export class SummariesService implements OnModuleInit {
 
             return result.affected;
         } catch (err) {
+            console.log(err);
             throw new InternalServerErrorException(`Sync error: ${err.message}`);
         }
     }
