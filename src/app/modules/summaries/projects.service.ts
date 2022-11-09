@@ -60,8 +60,7 @@ export class ProjectService {
         );
     }
 
-    public async updateProjectLastUpdated(project: ProjectDocument) {
-        project.lastUpdated = new Date();
+    public async updateProjectLastUpdated(project: Partial<ProjectDocument>) {
         return await this.projectModel.findByIdAndUpdate(project.id, {
             lastUpdated: new Date()
         });

@@ -31,7 +31,6 @@ describe('SummariesService', () => {
     };
 
     const project: Project = {
-        mysqlId: 30.0,
         user: userWithMysqlId,
         thirdPartyId: 157099012,
         name: 'meditation',
