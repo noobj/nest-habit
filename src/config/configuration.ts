@@ -18,7 +18,8 @@ const configfactory = () => ({
         prefix: process.env.MONGO_PREFIX || 'mongodb',
         user: process.env.MONGO_USER || 'jjj',
         password: process.env.MONGO_PASSWORD || '1234',
-        host: process.env.MONGO_HOST || '127.0.0.1'
+        host: process.env.MONGO_HOST || '127.0.0.1',
+        database: process.env.MONGO_DATABASE || 'habit'
     },
     jwt: {
         secret: process.env.JWT_SECRET || 'secret',

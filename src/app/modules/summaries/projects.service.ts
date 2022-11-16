@@ -88,6 +88,7 @@ export class ProjectService {
 
     public async setCurrentProject(user: User, projectName: string) {
         const userWhole = await this.userModel.findOne({ mysqlId: user.id });
+        user.third_party_service = userWhole.third_party_service;
         const currentProject = await this.getProjectByUser(user);
 
         // if current project equals to passed project, then only sync data

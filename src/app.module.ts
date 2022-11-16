@@ -30,16 +30,16 @@ const modulesForImport = [
             if (configService.get('mongo.user') == undefined)
                 url = `${configService.get('mongo.prefix')}://${configService.get(
                     'mongo.host'
-                )}`;
+                )}/${configService.get('mongo.database')}`;
             else
                 url = `${configService.get('mongo.prefix')}://${configService.get(
                     'mongo.user'
                 )}:${configService.get('mongo.password')}@${configService.get(
                     'mongo.host'
-                )}`;
+                )}/${configService.get('mongo.database')}`;
 
             return {
-                loggerLevel: 'debug',
+                loggerLevel: 'error',
                 uri: url
             };
         }
