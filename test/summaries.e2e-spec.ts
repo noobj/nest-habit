@@ -15,7 +15,7 @@ import { getCacheString } from 'src/common/helpers/utils';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
 import { UserDocument, User as MongoUser } from 'src/schemas/user.schema';
-import { Model, connection } from 'mongoose';
+import { Model } from 'mongoose';
 import { SummaryDocument } from 'src/schemas/summary.schema';
 import { ProjectDocument } from 'src/schemas/project.schema';
 
@@ -256,7 +256,7 @@ describe('SummariesController (e2e)', () => {
             start_date: '2022-05-22',
             end_date: '2022-05-26'
         };
-        // jest.useFakeTimers('modern').setSystemTime(new Date('2022-05-25').getTime());
+        // jest.useFakeTimers('modern').setSystemTime(new Date('2022-05-25'));
         request(server)
             .get('/summaries')
             .set('Cookie', cookies)
@@ -285,6 +285,7 @@ describe('SummariesController (e2e)', () => {
                 expect(res.body.data.streak).toEqual(1);
                 expect(res.body.data.total_last_year).toEqual('3h40m');
                 expect(res.status).toEqual(200);
+                // jest.runOnlyPendingTimers();
                 // jest.useRealTimers();
             });
     });
@@ -307,10 +308,12 @@ describe('SummariesController (e2e)', () => {
                     query.end_date
                 );
                 redisClient.get(cacheString, (err, result) => {
-                    expect(JSON.parse(result)).toEqual(res.body.data);
+                    if (result !== null)
+                        expect(JSON.parse(result)).toEqual(res.body.data);
+                    else fail();
                 });
 
-                expect(res.body.data.streak).toEqual(1);
+                expect(res.body.data.streak).toEqual(0);
                 expect(res.body.data.total_last_year).toEqual('3h40m');
                 expect(res.status).toEqual(200);
                 done();
@@ -352,7 +355,7 @@ describe('SummariesController (e2e)', () => {
     });
 
     afterAll(async () => {
-        // await redisClient.flushdb();
+        await redisClient.flushdb();
         await getConnection().synchronize(true); // clean up all data
         await redisClient.quit();
         await clearCollections();
@@ -361,11 +364,10 @@ describe('SummariesController (e2e)', () => {
     });
 
     async function clearCollections() {
-        const collections = connection.collections;
+        const collections = summaryModel.db.collections;
 
         await Promise.all(
             Object.values(collections).map(async (collection) => {
-                console.log(collection);
                 await collection.deleteMany({});
             })
         );

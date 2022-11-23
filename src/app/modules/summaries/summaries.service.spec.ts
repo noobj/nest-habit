@@ -196,10 +196,7 @@ describe('SummariesService', () => {
     };
 
     const mockProjectService = {
-        getProjectByUser: jest.fn((name: string) => ({
-            name: name,
-            id: 123
-        })),
+        getProjectByUser: jest.fn(() => project),
         getLeastUpdatedProjects: jest.fn(),
         updateProjectLastUpdated: jest.fn()
     };
@@ -297,10 +294,7 @@ describe('SummariesService', () => {
             user: userWithMysqlId
         });
         expect(mockSummaryModel.find).toBeCalledWith({
-            project: {
-                ...project,
-                populate: populateFucntion
-            },
+            project: project,
             user: userWithMysqlId,
             date: { $gte: 'startDate', $lte: 'endDate' }
         });
