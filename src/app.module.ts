@@ -39,7 +39,8 @@ const modulesForImport = [
                 )}`;
 
             return {
-                loggerLevel: 'debug',
+                loggerLevel: 'error',
+                dbName: configService.get('mongo.database'),
                 uri: url
             };
         }

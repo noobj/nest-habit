@@ -11,7 +11,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { QuoteService } from '../quote/quote.service';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { Notification, NotificationDocument } from '../../../schemas/notification.schema';
-import { MysqlUserId, MysqlUserIdDocument } from '../../../schemas/mysqlUserId.schema';
 import * as winston from 'winston';
 import { timezoned } from 'src/common/helpers/utils';
 import { Model } from 'mongoose';
@@ -29,9 +28,7 @@ export class CronService {
         private quoteService: QuoteService,
         private socketServerGateway: SocketServerGateway,
         @InjectModel(Notification.name)
-        private notificationModel: Model<NotificationDocument>,
-        @InjectModel(MysqlUserId.name)
-        private mysqlUserIdModel: Model<MysqlUserIdDocument>
+        private notificationModel: Model<NotificationDocument>
     ) {
         logger.add(
             new winston.transports.File({
@@ -44,7 +41,7 @@ export class CronService {
         );
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_5_SECONDS)
     public async dailyNotify() {
         const botApi = `bot${process.env.TELEGRAM_BOT_API_KEY}/`;
         const client = axios.create({
@@ -68,10 +65,7 @@ export class CronService {
             notificationWithUsers.map(async (entry) => {
                 const startDate = moment().isoWeekday(1).format('YYYY-MM-DD');
                 const endDate = moment().isoWeekday(7).format('YYYY-MM-DD');
-                const mysqlUserId = await this.mysqlUserIdModel.findOne({
-                    uid: entry.user._id
-                });
-                const user = { id: mysqlUserId.mysqlUid, ...entry.user };
+                const user = { id: entry.user.mysqlId, ...entry.user };
                 return this.summariesService
                     .getRawDailySummaries(startDate, endDate, user)
                     .then(async (rawData) => {
@@ -87,7 +81,7 @@ export class CronService {
                             streakAlert = `❗Keep going bro💪, don't lose your hard-earned ${res.streak} days steak✅\n\n`;
                         else {
                             const missDays = await this.summariesService.getMissingStreak(
-                                user
+                                entry.user
                             );
                             streakAlert = `🤷 You've already missed ${missDays} days👎, make a change today!\n\n`;
                         }

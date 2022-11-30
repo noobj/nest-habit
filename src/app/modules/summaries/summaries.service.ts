@@ -5,25 +5,22 @@ import {
     BadRequestException,
     InternalServerErrorException
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThanOrEqual } from 'typeorm';
 import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
 import { Redis } from 'ioredis';
 
 import { RedisService } from '../redis';
-import { DailySummary } from './entities';
-import { IBasicService } from './interfaces';
-import { CreateDailySummaryDto, WrapperCreateDailySummaryDto } from './daily_summary_dto';
-import { validate } from 'class-validator';
 import { ProjectService } from './projects.service';
-import { Project } from './entities/project.entity';
-import { ClassTransformer } from 'class-transformer';
 import { User } from '../users';
 import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { ModuleRef } from '@nestjs/core';
 import { convertRawDurationToFormat } from 'src/common/helpers/utils';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { ProjectDocument } from 'src/schemas/project.schema';
+import { Summary, SummaryDocument } from 'src/schemas/summary.schema';
+import { User as MongoUser, UserDocument } from 'src/schemas/user.schema';
 
 /**
  * The return format for frontend use
@@ -36,15 +33,15 @@ export interface IFormatedSummary {
 }
 
 @Injectable()
-export class SummariesService
-    implements IBasicService<DailySummary, IFormatedSummary>, OnModuleInit
-{
+export class SummariesService implements OnModuleInit {
     private projectService: ProjectService;
     private redisClient: Redis;
 
     constructor(
-        @InjectRepository(DailySummary)
-        private dailySummaryRepository: Repository<DailySummary>,
+        @InjectModel(Summary.name)
+        private summaryModel: Model<SummaryDocument>,
+        @InjectModel(MongoUser.name)
+        private userModel: Model<UserDocument>,
         private moduleRef: ModuleRef,
         private readonly socketServerGateway: SocketServerGateway,
         private readonly redisService: RedisService
@@ -61,23 +58,18 @@ export class SummariesService
         startDate: string,
         endDate: string,
         user: Partial<User>
-    ): Promise<DailySummary[]> {
-        const { id: projectId } =
-            (await this.projectService.getProjectByUser(user)) || {};
+    ): Promise<SummaryDocument[]> {
+        const project = await this.projectService.getProjectByUser(user);
 
-        return await this.dailySummaryRepository.find({
-            where: [
-                {
-                    date: Between(startDate, endDate),
-                    project: projectId,
-                    user: user
-                }
-            ]
+        return await this.summaryModel.find({
+            project: project,
+            user: project.user,
+            date: { $gte: startDate, $lte: endDate }
         });
     }
 
     public async processTheRawSummaries(
-        rawData: DailySummary[]
+        rawData: SummaryDocument[]
     ): Promise<IFormatedSummary[]> {
         return rawData.map((entry) => {
             const level = this.calLevel(entry.duration);
@@ -111,7 +103,7 @@ export class SummariesService
             : durationLevelMap.get(levelIndex);
     }
 
-    public getLongestDayRecord(rawData: DailySummary[]): {
+    public getLongestDayRecord(rawData: SummaryDocument[]): {
         date: string;
         duration: string;
     } {
@@ -125,7 +117,7 @@ export class SummariesService
         };
     }
 
-    public getTotalDuration(rawData: DailySummary[]): string {
+    public getTotalDuration(rawData: SummaryDocument[]): string {
         return convertRawDurationToFormat(
             rawData.reduce((sum, entry) => {
                 return (sum += entry.duration);
@@ -133,7 +125,7 @@ export class SummariesService
         );
     }
 
-    public getTotalThisMonth(rawData: DailySummary[]): string {
+    public getTotalThisMonth(rawData: SummaryDocument[]): string {
         const stingOfThisMonth = moment().format('YYYY-MM');
 
         const sum = rawData
@@ -145,45 +137,32 @@ export class SummariesService
         return convertRawDurationToFormat(sum);
     }
 
-    public async upsert(data: CreateDailySummaryDto[]): Promise<any> {
-        const classTransformer = new ClassTransformer();
-        const entity = classTransformer.plainToClass(CreateDailySummaryDto, data);
-        const wrapped = new WrapperCreateDailySummaryDto(entity);
-        const errors = await validate(wrapped);
-        if (errors.length > 0) {
-            throw new ImATeapotException('Validation failed');
-        }
+    public async upsert(entries: Summary[]): Promise<any> {
+        // TODO: validate the entries
 
         try {
             let affected = 0;
             // search for those existing entries and insert their id
-            data = await Promise.all(
-                data.map(async (entry) => {
-                    return this.dailySummaryRepository
-                        .findOne({
-                            where: {
+            await Promise.all(
+                entries.map(async (entry) => {
+                    return this.summaryModel
+                        .updateOne(
+                            {
                                 user: entry.user,
                                 date: entry.date,
                                 project: entry.project
-                            }
-                        })
+                            },
+                            entry,
+                            { upsert: true, new: true }
+                        )
                         .then((result) => {
-                            if (result) {
-                                if (result.duration != entry.duration) {
-                                    affected++;
-                                    result.duration = entry.duration;
-                                }
-
-                                return result;
-                            } else {
+                            if (result.nModified > 0 || result.upserted) {
                                 affected++;
-                                return entry;
                             }
                         });
                 })
             );
 
-            const entries = await this.dailySummaryRepository.save(data);
             return {
                 affected,
                 entries
@@ -197,7 +176,6 @@ export class SummariesService
         const since = moment().subtract(days, 'days').format('YYYY-MM-DD');
 
         const project = await this.projectService.getProjectByUser(user);
-        project.user = user;
 
         if (!project) throw new BadRequestException('No project found');
 
@@ -206,7 +184,6 @@ export class SummariesService
             const details = await ThirdPartyFactory.getService(
                 user.third_party_service
             ).fetch(project, since);
-
             if (!details.length) return 0;
 
             const fetchedData = this.processFetchedData(details, project);
@@ -223,15 +200,16 @@ export class SummariesService
 
             return result.affected;
         } catch (err) {
+            console.log(err);
             throw new InternalServerErrorException(`Sync error: ${err.message}`);
         }
     }
 
-    private sendMessageToSocketClients(entries: CreateDailySummaryDto[]) {
+    private sendMessageToSocketClients(entries: SummaryDocument[]) {
         entries.map((entry) => {
             // Only new records have user data
             if (entry.user) {
-                const userId = entry.user.id;
+                const userId = entry.user;
                 const userAccount = entry.user.account;
                 entry.user = null;
                 entry.duration = null;
@@ -246,10 +224,7 @@ export class SummariesService
         });
     }
 
-    private processFetchedData(
-        details: any[],
-        project: Project
-    ): CreateDailySummaryDto[] {
+    private processFetchedData(details: any[], project: ProjectDocument): Summary[] {
         const tmp = _.groupBy(details, (entry) => {
             return moment(entry.start).format('YYYY-MM-DD');
         });
@@ -257,49 +232,43 @@ export class SummariesService
         return Object.entries(tmp).map((key) => {
             return {
                 date: key[0],
-                project: project.id,
+                project: project,
                 duration: key[1].reduce((sum, entry) => sum + entry.dur, 0),
                 user: project.user
             };
         });
     }
 
-    public async getCurrentStreak(user: User): Promise<number> {
-        let streak = await this.dailySummaryRepository
-            .query(`select if(max(maxcount) < 0, 0, max(maxcount)) streak
-        from (
-        select
-          if(datediff(@prevDate, \`date\`) = 1, @count := @count + 1, @count := -99999) maxcount,
-          @prevDate := \`date\`
-          from daily_summaries as v cross join
-            (select @prevDate := curdate(), @count := 0) t1
-          where user_id = ${user.id}
-          and \`date\` < curdate()
-          order by \`date\` desc
-        ) t1; `);
+    public async getCurrentStreak(user: Partial<User>): Promise<number> {
+        let streak = 0;
+        let today = new Date().toISOString().slice(0, 10).replace(/T.*/, '');
 
-        const todayDateString = moment().format('YYYY-MM-DD');
-        const today = await this.dailySummaryRepository.find({ date: todayDateString });
-        streak = streak[0].streak;
-        if (today.length) streak++;
+        const userComplete = await this.userModel.findOne({ mysqlId: user.id });
+        const entries = await this.summaryModel
+            .find({ user: userComplete })
+            .sort({ date: -1 });
+
+        for (const entry of entries) {
+            if (entry.date != today) {
+                break;
+            }
+
+            streak++;
+            const prevDate = new Date(today);
+            prevDate.setDate(prevDate.getDate() - 1);
+            today = prevDate.toISOString().slice(0, 10).replace(/T.*/, '');
+        }
 
         return streak;
     }
 
-    public async getMissingStreak(user: User): Promise<number> {
-        const lastDate = await this.dailySummaryRepository
-            .find({
-                select: ['date'],
-                where: {
-                    user,
-                    date: LessThanOrEqual(moment().format('YYYY-MM-DD'))
-                },
-                order: {
-                    date: 'DESC'
-                }
-            })
-            .then((res) => res[0].date);
+    public async getMissingStreak(user: UserDocument): Promise<number> {
+        const lastEntry = await this.summaryModel.findOne({
+            user
+        });
 
-        return Math.floor(moment.duration(moment().diff(moment(lastDate))).as('days'));
+        return Math.floor(
+            moment.duration(moment().diff(moment(lastEntry.date))).as('days')
+        );
     }
 }

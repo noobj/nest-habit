@@ -23,6 +23,9 @@ export class User {
 
     @Prop()
     third_party_service?: ThirdPartyServiceKeys;
+
+    @Prop()
+    mysqlId: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

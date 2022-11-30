@@ -12,7 +12,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { RedisService } from 'src/app/modules/redis';
 import { timezoned } from 'src/common/helpers/utils';
 import { Notification, NotificationDocument } from '../../../schemas/notification.schema';
-import { MysqlUserId, MysqlUserIdDocument } from '../../../schemas/mysqlUserId.schema';
 import { User, UserDocument } from '../../../schemas/user.schema';
 
 @Update()
@@ -28,8 +27,6 @@ export class SummariesUpdate {
         private userModel: Model<UserDocument>,
         @InjectModel(Notification.name)
         private notificationModel: Model<NotificationDocument>,
-        @InjectModel(MysqlUserId.name)
-        private mysqlUserIdModel: Model<MysqlUserIdDocument>,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: winston.Logger
     ) {
         this.redisClient = this.redisService.getClient();
@@ -68,10 +65,7 @@ export class SummariesUpdate {
             return;
         }
 
-        const userId = await this.mysqlUserIdModel.findOne({
-            mysqlUid: +userIdFromRedis
-        });
-        const user = await this.userModel.findById(userId.uid);
+        const user = await this.userModel.findOne({ mysqlId: +userIdFromRedis });
 
         if (!user) {
             ctx.reply('User not found');

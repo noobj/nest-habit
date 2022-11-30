@@ -1,8 +1,6 @@
 import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
 import { User } from '../../users/users.entity';
 
-// import { DailySummary } from './daily_summary.entity';
-
 @Entity({ name: 'projects' })
 export class Project {
     @PrimaryColumn({ generated: 'increment' })
