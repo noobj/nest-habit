@@ -16,8 +16,8 @@ export default () => ({
     },
     mongo: {
         prefix: 'mongodb',
-        user: 'agent_backend',
-        password: 'password',
+        user: process.env.MONGO_USER || undefined,
+        password: process.env.MONGO_PASSWORD || undefined,
         host: '127.0.0.1',
         database: 'test'
     },
