@@ -1,12 +1,10 @@
 import { Module, Provider } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { SummariesService } from './summaries.service';
 import { SummariesController } from './summaries.controller';
 import { ProjectService } from './projects.service';
-import { Project, DailySummary } from './entities';
 import { UsersModule } from '../users';
 import { ThirdPartyModule } from '../ThirdParty/third-party.module';
 import { SummariesGateway } from './summaries.gateway';
@@ -32,7 +30,6 @@ if (configs.telegram.bot_enable === true && configs.node_env !== 'test')
         BullModule.registerQueue({
             name: 'summary'
         }),
-        TypeOrmModule.forFeature([DailySummary, Project]),
         UsersModule,
         ThirdPartyModule,
         RedisModule.forRootAsync({

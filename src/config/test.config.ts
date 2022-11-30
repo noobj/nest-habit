@@ -1,5 +1,4 @@
 import { User } from 'src/app/modules/users/users.entity';
-import { DailySummary } from 'src/app/modules/summaries/entities/daily_summary.entity';
 import { Project } from 'src/app/modules/summaries/entities/project.entity';
 
 export default () => ({
@@ -11,15 +10,15 @@ export default () => ({
         database: 'test',
         username: process.env.DB_USER || 'linuxj', // fetch the main.yml setting for github actions
         password: process.env.DB_PASSWORD || '1234', // fetch the main.yml setting for github actions
-        entities: [User, DailySummary, Project],
+        entities: [User, Project],
         synchronize: true,
         logging: false
     },
     mongo: {
-        prefix: process.env.MONGO_PREFIX || 'mongodb',
-        // user: process.env.MONGO_USER || 'jjj',
-        // password: process.env.MONGO_PASSWORD || '1234',
-        host: process.env.MONGO_HOST || '127.0.0.1',
+        prefix: 'mongodb',
+        user: 'agent_backend',
+        password: 'password',
+        host: '127.0.0.1',
         database: 'test'
     },
     jwt: {

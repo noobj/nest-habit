@@ -256,6 +256,7 @@ describe('SummariesController (e2e)', () => {
             start_date: '2022-05-22',
             end_date: '2022-05-26'
         };
+        // TODO: restore this when complete Typeorm removal
         // jest.useFakeTimers('modern').setSystemTime(new Date('2022-05-25'));
         request(server)
             .get('/summaries')
@@ -282,7 +283,7 @@ describe('SummariesController (e2e)', () => {
                         duration: '30m'
                     }
                 ]);
-                expect(res.body.data.streak).toEqual(1);
+                expect(res.body.data.streak).toEqual(0);
                 expect(res.body.data.total_last_year).toEqual('3h40m');
                 expect(res.status).toEqual(200);
                 // jest.runOnlyPendingTimers();

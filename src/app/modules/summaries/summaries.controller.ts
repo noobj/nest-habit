@@ -15,7 +15,6 @@ import { IsDateString } from 'class-validator';
 import { forkJoin, from, of } from 'rxjs';
 import { map, mergeMap, tap } from 'rxjs/operators';
 import { Redis } from 'ioredis';
-import { Express } from 'express';
 
 import { ProjectService } from './projects.service';
 import { HttpExceptionFilter } from 'src/common/exception-filters/http-exception.filter';

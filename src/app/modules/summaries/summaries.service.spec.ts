@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DailySummary } from './entities';
 import { SummariesService } from './summaries.service';
 import { ImATeapotException } from '@nestjs/common';
 import { User } from '../users';
@@ -190,9 +189,7 @@ describe('SummariesService', () => {
                 upserted: true
             })
         ),
-        save: jest.fn((entries) => Promise.resolve<DailySummary[]>(entries)),
         find: <any>jest.fn(() => fakeSummaries),
-        query: jest.fn(() => Promise.resolve<any>([{ streak: 3 }]))
     };
 
     const mockProjectService = {
