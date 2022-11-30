@@ -189,7 +189,7 @@ describe('SummariesService', () => {
                 upserted: true
             })
         ),
-        find: <any>jest.fn(() => fakeSummaries),
+        find: <any>jest.fn(() => fakeSummaries)
     };
 
     const mockProjectService = {
