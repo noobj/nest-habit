@@ -14,7 +14,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SummariesUpdate } from './summaries.update';
 import { configs } from 'src/config/configuration';
 import { Notification, NotificationSchema } from '../../../schemas/notification.schema';
-import { MysqlUserId, MysqlUserIdSchema } from '../../../schemas/mysqlUserId.schema';
 import { User, UserSchema } from '../../../schemas/user.schema';
 import { Project as MongoPrject, ProjectSchema } from '../../../schemas/project.schema';
 import { Summary, SummarySchema } from 'src/schemas/summary.schema';
@@ -43,7 +42,6 @@ if (configs.telegram.bot_enable === true && configs.node_env !== 'test')
         ScheduleModule.forRoot(),
         MongooseModule.forFeature([
             { name: Notification.name, schema: NotificationSchema },
-            { name: MysqlUserId.name, schema: MysqlUserIdSchema },
             { name: User.name, schema: UserSchema },
             { name: Summary.name, schema: SummarySchema },
             { name: MongoPrject.name, schema: ProjectSchema }
