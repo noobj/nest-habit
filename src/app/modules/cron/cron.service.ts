@@ -65,14 +65,15 @@ export class CronService {
             notificationWithUsers.map(async (entry) => {
                 const startDate = moment().isoWeekday(1).format('YYYY-MM-DD');
                 const endDate = moment().isoWeekday(7).format('YYYY-MM-DD');
-                const user = { id: entry.user.mysqlId, ...entry.user };
                 return this.summariesService
-                    .getRawDailySummaries(startDate, endDate, user)
+                    .getRawDailySummaries(startDate, endDate, entry.user)
                     .then(async (rawData) => {
                         return {
                             total: this.summariesService.getTotalDuration(rawData),
                             days: rawData.length,
-                            streak: await this.summariesService.getCurrentStreak(user)
+                            streak: await this.summariesService.getCurrentStreak(
+                                entry.user
+                            )
                         };
                     })
                     .then(async (res) => {
@@ -115,7 +116,7 @@ export class CronService {
     @Cron(CronExpression[process.env.CRON_DAILY_SYNC_TIME as keyof typeof CronExpression])
     public async dailySync() {
         try {
-            const users = await this.usersService.find({ select: ['id'] });
+            const users = await this.usersService.find({});
 
             await Promise.all(
                 users.map((user) =>

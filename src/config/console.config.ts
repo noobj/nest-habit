@@ -3,17 +3,6 @@ import 'dotenv/config';
 const configfactory = () => ({
     node_env: process.env.NODE_ENV || 'dev',
     port: parseInt(process.env.PORT, 10) || 3000,
-    database: {
-        type: process.env.TYPEORM_CONNECTION || 'mysql',
-        host: process.env.TYPEORM_HOST || '127.0.0.1',
-        port: process.env.TYPEORM_PORT || 3306,
-        username: process.env.TYPEORM_USERNAME || 'root',
-        password: process.env.TYPEORM_PASSWORD || 'root',
-        database: process.env.TYPEORM_DATABASE || 'test',
-        entities: [process.env.TYPEORM_ENTITIES] || null,
-        synchronize: false,
-        logging: process.env.TYPEORM_LOGGING === 'true' || false
-    },
     mongo: {
         prefix: process.env.MONGO_PREFIX || 'mongodb',
         user: process.env.MONGO_USER || 'jjj',

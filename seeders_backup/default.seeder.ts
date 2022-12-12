@@ -1,7 +1,7 @@
 import { Connection } from 'typeorm';
 
-import { ISeeder } from './seeder.interface';
-import { ProjectSeeder, UserSeeder } from './';
+import { ISeeder } from '../src/database/mongo_seeders/seeder.interface';
+import { ProjectSeeder, UserSeeder } from '.';
 
 export class DefaultSeeder implements ISeeder {
     constructor(public connection: Connection) {}
