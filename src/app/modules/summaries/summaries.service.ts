@@ -240,12 +240,10 @@ export class SummariesService implements OnModuleInit {
 
     public async getCurrentStreak(user: UserDocument): Promise<number> {
         let streak = 0;
-        let today = new Date().toISOString().slice(0, 10).replace(/T.*/, '');
-
-        const userComplete = await this.userModel.findOne({ mysqlId: user.id });
-        const entries = await this.summaryModel
-            .find({ user: userComplete })
-            .sort({ date: -1 });
+        // for e2e testing purpose
+        const now = Date.now();
+        let today = new Date(now).toISOString().slice(0, 10).replace(/T.*/, '');
+        const entries = await this.summaryModel.find({ user: user }).sort({ date: -1 });
 
         for (const entry of entries) {
             if (entry.date != today) {
@@ -257,7 +255,6 @@ export class SummariesService implements OnModuleInit {
             prevDate.setDate(prevDate.getDate() - 1);
             today = prevDate.toISOString().slice(0, 10).replace(/T.*/, '');
         }
-
         return streak;
     }
 

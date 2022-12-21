@@ -1,10 +1,10 @@
 export default () => ({
     port: parseInt(process.env.PORT, 10) || 3000,
     mongo: {
-        prefix: 'mongodb',
+        prefix: process.env.MONGO_PREFIX || 'mongodb',
         user: process.env.MONGO_USER || undefined,
         password: process.env.MONGO_PASSWORD || undefined,
-        host: '127.0.0.1',
+        host: process.env.MONGO_HOST || '127.0.0.1',
         database: 'test'
     },
     jwt: {

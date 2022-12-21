@@ -5,8 +5,6 @@ import { AppModule } from './../src/app.module';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/test.config';
-import { User } from './../src/app/modules/users/users.entity';
-import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adapter';
 import * as redis from 'redis';
@@ -14,7 +12,7 @@ import * as connectRedis from 'connect-redis';
 import { getCacheString } from 'src/common/helpers/utils';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
-import { UserDocument, User as MongoUser } from 'src/schemas/user.schema';
+import { UserDocument, User } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
 import { SummaryDocument } from 'src/schemas/summary.schema';
 import { ProjectDocument } from 'src/schemas/project.schema';
@@ -26,7 +24,7 @@ describe('SummariesController (e2e)', () => {
     let redisClient: redis.RedisClient;
     let summaryModel: Model<SummaryDocument>;
     let project: ProjectDocument;
-    let currentUser: MongoUser;
+    let currentUser: UserDocument;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -50,29 +48,17 @@ describe('SummariesController (e2e)', () => {
         );
         await app.init();
 
-        const userRepository: Repository<User> = moduleFixture.get('UserRepository');
         summaryModel = moduleFixture.get('SummaryModel');
-        const mysqlUser = {
-            id: 222,
-            account: 'jjj',
-            email: 'marley.lemke@example.org',
-            password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-            toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
-            third_party_service: 'toggl' as ThirdPartyServiceKeys
-        };
-        await userRepository.save(mysqlUser);
-
         const userModel: Model<UserDocument> = moduleFixture.get('UserModel');
 
-        currentUser = {
-            mysqlId: 222,
+        const fakeUser = {
             account: 'jjj',
             email: 'marley.lemke@example.org',
             password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
             third_party_service: 'toggl' as ThirdPartyServiceKeys
         };
-        currentUser = await userModel.create(currentUser);
+        currentUser = await userModel.create(fakeUser);
     });
 
     it('/POST auth/login', (done) => {
@@ -256,8 +242,9 @@ describe('SummariesController (e2e)', () => {
             start_date: '2022-05-22',
             end_date: '2022-05-26'
         };
-        // TODO: restore this when complete Typeorm removal
-        // jest.useFakeTimers('modern').setSystemTime(new Date('2022-05-25'));
+        const dateSpy = jest
+            .spyOn(Date, 'now')
+            .mockImplementation(() => new Date('2022-05-25').getTime());
         request(server)
             .get('/summaries')
             .set('Cookie', cookies)
@@ -283,11 +270,10 @@ describe('SummariesController (e2e)', () => {
                         duration: '30m'
                     }
                 ]);
-                expect(res.body.data.streak).toEqual(0);
+                expect(res.body.data.streak).toEqual(3);
                 expect(res.body.data.total_last_year).toEqual('3h40m');
                 expect(res.status).toEqual(200);
-                // jest.runOnlyPendingTimers();
-                // jest.useRealTimers();
+                dateSpy.mockRestore();
             });
     });
 
@@ -304,17 +290,18 @@ describe('SummariesController (e2e)', () => {
             .end((err, res) => {
                 const cacheString = getCacheString(
                     'Summaries',
-                    222,
+                    currentUser._id,
                     query.start_date,
                     query.end_date
                 );
                 redisClient.get(cacheString, (err, result) => {
+                    console.log(cacheString, result);
                     if (result !== null)
                         expect(JSON.parse(result)).toEqual(res.body.data);
-                    else fail();
+                    else throw new Error('couldnt find the cache');
                 });
 
-                expect(res.body.data.streak).toEqual(0);
+                expect(res.body.data.streak).toEqual(3);
                 expect(res.body.data.total_last_year).toEqual('3h40m');
                 expect(res.status).toEqual(200);
                 done();
@@ -357,7 +344,6 @@ describe('SummariesController (e2e)', () => {
 
     afterAll(async () => {
         await redisClient.flushdb();
-        await getConnection().synchronize(true); // clean up all data
         await redisClient.quit();
         await clearCollections();
 
