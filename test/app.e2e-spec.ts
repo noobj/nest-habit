@@ -3,10 +3,8 @@ import { ImATeapotException, INestApplicationContext } from '@nestjs/common';
 import * as request from 'supertest';
 
 import { AppModule } from 'src/app.module';
-import { User } from 'src/app/modules/users/users.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/test.config';
-import { getConnection, Repository } from 'typeorm';
 import * as session from 'express-session';
 import { join } from 'path';
 import * as fs from 'fs';
@@ -15,11 +13,16 @@ import { RedisSessionIoAdapter } from 'src/common/adapters/redis-session.io.adap
 import Services from 'src/config/third-party-services.map';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
+import { UserDocument } from 'src/schemas/user.schema';
+import { Model } from 'mongoose';
+import { clearCollections } from './test.helper';
 
 describe('AppController (e2e)', () => {
     let app: NestExpressApplication;
     let server: INestApplicationContext | any;
     let cookies: string;
+    let currentUser: UserDocument;
+    let userModel: Model<UserDocument>;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -41,16 +44,15 @@ describe('AppController (e2e)', () => {
         );
         await app.init();
 
-        const userRepository: Repository<User> = moduleFixture.get('UserRepository');
-        const user = {
-            id: 222,
+        userModel = moduleFixture.get('UserModel');
+        const fakeUser = {
             account: 'jjj',
             email: 'marley.lemke@example.org',
             password: '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             toggl_token: '1cf1a1e2b149f8465373bfcacb7a831e',
             third_party_service: 'toggl' as ThirdPartyServiceKeys
         };
-        await userRepository.save(user);
+        currentUser = await userModel.create(fakeUser);
     });
 
     it('/POST auth/login', (done) => {
@@ -79,7 +81,7 @@ describe('AppController (e2e)', () => {
             .set('Cookie', cookies)
             .attach('file', buffer, { filename: 'display.png' })
             .then((res) => {
-                expect(res.body.filename).toEqual('222.jpg');
+                expect(res.body.filename).toEqual(`${currentUser.id}.jpg`);
                 expect(res.body.originalname).toEqual('display.png');
             });
     });
@@ -107,8 +109,9 @@ describe('AppController (e2e)', () => {
             .set('Cookie', cookies)
             .send()
             .end((err, res) => {
+                console.log(res);
                 expect(res.status).toEqual(200);
-                expect(res.body.id).toEqual(222);
+                expect(res.body._id).toEqual(currentUser.id);
                 expect(res.body.account).toEqual('jjj');
 
                 done();
@@ -207,7 +210,7 @@ describe('AppController (e2e)', () => {
     });
 
     afterAll(async () => {
-        await getConnection().synchronize(true); // clean up all data
+        await clearCollections(userModel.db);
         app.close();
     });
 });

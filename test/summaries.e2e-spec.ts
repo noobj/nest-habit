@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImATeapotException, INestApplicationContext } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from 'src/app.module';
 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'src/config/test.config';
@@ -12,10 +12,11 @@ import * as connectRedis from 'connect-redis';
 import { getCacheString } from 'src/common/helpers/utils';
 import { NestExpressApplication } from '@nestjs/platform-express/interfaces';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
-import { UserDocument, User } from 'src/schemas/user.schema';
+import { UserDocument } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
 import { SummaryDocument } from 'src/schemas/summary.schema';
 import { ProjectDocument } from 'src/schemas/project.schema';
+import { clearCollections } from './test.helper';
 
 describe('SummariesController (e2e)', () => {
     let app: NestExpressApplication;
@@ -295,7 +296,6 @@ describe('SummariesController (e2e)', () => {
                     query.end_date
                 );
                 redisClient.get(cacheString, (err, result) => {
-                    console.log(cacheString, result);
                     if (result !== null)
                         expect(JSON.parse(result)).toEqual(res.body.data);
                     else throw new Error('couldnt find the cache');
@@ -345,18 +345,8 @@ describe('SummariesController (e2e)', () => {
     afterAll(async () => {
         await redisClient.flushdb();
         await redisClient.quit();
-        await clearCollections();
+        await clearCollections(summaryModel.db);
 
         await app.close();
     });
-
-    async function clearCollections() {
-        const collections = summaryModel.db.collections;
-
-        await Promise.all(
-            Object.values(collections).map(async (collection) => {
-                await collection.deleteMany({});
-            })
-        );
-    }
 });
