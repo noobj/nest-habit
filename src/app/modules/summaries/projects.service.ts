@@ -38,7 +38,7 @@ export class ProjectService {
             .populate('user');
     }
 
-    public async updateProjectLastUpdated(project: Partial<ProjectDocument>) {
+    public async updateProjectLastUpdated(project: ProjectDocument) {
         return await this.projectModel.findByIdAndUpdate(project.id, {
             lastUpdated: new Date()
         });

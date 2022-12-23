@@ -1,31 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { User, UsersService } from '../users';
+import { UsersService } from '../users';
 import { ProjectService } from './projects.service';
 import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SummariesService } from './summaries.service';
 import { RedisService } from 'src/app/modules/redis';
-import { User as UserMongo } from 'src/schemas/user.schema';
-import { Project } from 'src/schemas/project.schema';
+import { UserDocument, User } from 'src/schemas/user.schema';
+import { Project, ProjectDocument } from 'src/schemas/project.schema';
 import { getModelToken } from '@nestjs/mongoose';
+import { createMock } from '@golevelup/ts-jest';
 
 describe('ProjectService', () => {
     let service: ProjectService;
-
-    const user: Omit<User, 'summaries'> = {
-        id: 1,
+    const userMongo: UserDocument = createMock<UserDocument>({
         account: 'jjj',
+        _id: () => '1234',
         email: 'test',
         password: 'DGAF',
         toggl_token: 'DGAF'
-    };
-
-    const userMongo: UserMongo = {
-        account: 'jjj',
-        email: 'test',
-        password: 'DGAF',
-        toggl_token: 'DGAF',
-        mysqlId: 1
-    };
+    });
 
     const mockThirdPartyService = jest.fn().mockImplementation(() => ({
         getProjects: () => ({
@@ -44,40 +36,36 @@ describe('ProjectService', () => {
 
     ThirdPartyFactory.getService = mockThirdPartyService;
 
-    const mockProject = {
+    const mockProjectDoc = (mock?: Partial<ProjectDocument>): ProjectDocument =>
+        createMock<ProjectDocument>({
+            _id: () => mock._id,
+            name: mock.name,
+            lastUpdated: mock.lastUpdated,
+            user: userMongo,
+            thirdPartyId: mock.thirdPartyId
+        });
+
+    const mockProject: ProjectDocument = mockProjectDoc({
         _id: 1,
-        id: 1,
         name: 'meditation',
         lastUpdated: new Date('2021-05-30 02:49:54'),
-        user: userMongo,
         thirdPartyId: 123
-    };
+    });
 
     const mockProjects = [
-        {
-            _id: 1,
-            name: 'meditation',
-            last_updated: new Date('2021-05-30 02:49:54'),
-            user: userMongo,
-            userMysql: user,
-            project_id: 123
-        },
-        {
+        mockProject,
+        mockProjectDoc({
             _id: 2,
             name: 'sleep',
-            last_updated: new Date('2021-05-30 02:49:54'),
-            user: userMongo,
-            userMysql: user,
-            project_id: 223
-        },
-        {
+            lastUpdated: new Date('2021-05-30 02:49:54'),
+            thirdPartyId: 223
+        }),
+        mockProjectDoc({
             _id: 3,
             name: 'eat',
-            last_updated: new Date('2021-05-30 02:49:54'),
-            user: userMongo,
-            userMysql: user,
-            project_id: 323
-        }
+            lastUpdated: new Date('2021-05-30 02:49:54'),
+            thirdPartyId: 323
+        })
     ];
 
     const mockProjectModel = {
@@ -98,11 +86,11 @@ describe('ProjectService', () => {
     };
 
     const mockUserModel = {
-        findOne: jest.fn(() => Promise.resolve<Partial<UserMongo>>(userMongo))
+        findOne: jest.fn(() => Promise.resolve<Partial<User>>(userMongo))
     };
 
     const mockUsersService = {
-        findOne: jest.fn(() => user)
+        findOne: jest.fn(() => userMongo)
     };
 
     const mockSummariesService = {
@@ -129,7 +117,7 @@ describe('ProjectService', () => {
                     useValue: mockProjectModel
                 },
                 {
-                    provide: getModelToken(UserMongo.name),
+                    provide: getModelToken(User.name),
                     useValue: mockUserModel
                 },
                 {
@@ -151,7 +139,7 @@ describe('ProjectService', () => {
     });
 
     it('should return project of the user', async () => {
-        const result = await service.getProjectByUser(user);
+        const result = await service.getProjectByUser(userMongo);
 
         expect(result).toEqual(mockProject);
 
@@ -181,7 +169,7 @@ describe('ProjectService', () => {
     });
 
     it('should get all projects of the user', async () => {
-        const result = await service.getAllProjects(user);
+        const result = await service.getAllProjects(userMongo);
         expect(result).toEqual({
             data: [
                 {
@@ -197,7 +185,7 @@ describe('ProjectService', () => {
     });
 
     it('should delete the current project of the user', async () => {
-        await service.deleteProjectByUser(user);
+        await service.deleteProjectByUser(userMongo);
         expect(mockProjectModel.deleteOne).toBeCalledTimes(1);
         expect(mockProjectModel.deleteOne).toBeCalledWith({ user: userMongo });
     });
@@ -207,7 +195,7 @@ describe('ProjectService', () => {
         const spyOnDate = jest
             .spyOn(global, 'Date')
             .mockImplementation(() => mockDate as unknown as string);
-        await service.setCurrentProject(user, 'sleep');
+        await service.setCurrentProject(userMongo, 'sleep');
         expect(mockProjectModel.create).toBeCalledWith({
             name: 'sleep',
             user: userMongo,
