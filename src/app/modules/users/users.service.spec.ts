@@ -1,23 +1,24 @@
+import { createMock } from '@golevelup/ts-jest';
+import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from '.';
+import { UserDocument } from 'src/schemas/user.schema';
 
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
     let service: UsersService;
 
-    const user: Omit<User, 'summaries'> = {
-        id: 1,
+    const user: UserDocument = createMock<UserDocument>({
         account: 'jjj',
+        _id: () => '1',
         email: 'test',
         password: 'DGAF',
         toggl_token: 'DGAF'
-    };
+    });
 
     const mockUsersRepo = {
-        findOne: jest.fn(() => Promise.resolve<Partial<User>>(user)),
-        update: jest.fn()
+        findOne: jest.fn(() => Promise.resolve<Partial<UserDocument>>(user)),
+        findByIdAndUpdate: jest.fn()
     };
 
     beforeEach(async () => {
@@ -25,7 +26,7 @@ describe('UsersService', () => {
             providers: [
                 UsersService,
                 {
-                    provide: getRepositoryToken(User),
+                    provide: getModelToken('User'),
                     useValue: mockUsersRepo
                 }
             ]
@@ -39,7 +40,7 @@ describe('UsersService', () => {
 
         expect(result).toEqual(user);
         expect(mockUsersRepo.findOne).toBeCalledWith({
-            where: { account: 'jjj' }
+            account: 'jjj'
         });
     });
 
@@ -53,7 +54,7 @@ describe('UsersService', () => {
     it('should set the users Toggl token', async () => {
         await service.setToken(user.id, '123456', 'toggl');
 
-        expect(mockUsersRepo.update).toBeCalledWith(user.id, {
+        expect(mockUsersRepo.findByIdAndUpdate).toBeCalledWith(user.id, {
             toggl_token: '123456',
             third_party_service: 'toggl'
         });
