@@ -109,7 +109,6 @@ describe('AppController (e2e)', () => {
             .set('Cookie', cookies)
             .send()
             .end((err, res) => {
-                console.log(res);
                 expect(res.status).toEqual(200);
                 expect(res.body._id).toEqual(currentUser.id);
                 expect(res.body.account).toEqual('jjj');
