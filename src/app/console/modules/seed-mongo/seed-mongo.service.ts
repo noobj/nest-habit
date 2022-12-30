@@ -4,7 +4,7 @@ import { Connection } from 'mongoose';
 
 import { ICommand } from '../../interfaces/command.interface';
 import * as Seeder from 'src/database/mongo_seeders';
-import { ISeeder } from 'src/database/seeders';
+import { ISeeder } from 'src/database/mongo_seeders/seeder.interface';
 
 @Injectable()
 export class SeedMongoService implements ICommand {

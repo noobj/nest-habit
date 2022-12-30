@@ -6,7 +6,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
 import { WSExceptionsFilter } from 'src/common/exception-filters/ws-exception.filter';
-import { User } from '../users';
+import { UserDocument } from 'src/schemas/user.schema';
 
 @WebSocketGateway()
 export class SummariesGateway {
@@ -15,7 +15,7 @@ export class SummariesGateway {
     @UseFilters(new WSExceptionsFilter())
     @UseGuards(AuthGuard('jwt'))
     @SubscribeMessage('sync')
-    async onEvent(socket: Socket & { user: Partial<User> }): Promise<void> {
+    async onEvent(socket: Socket & { user: UserDocument }): Promise<void> {
         socket.join(`Room ${socket.user.id}`);
         await this.summaryQueue.add('sync', {
             user: socket.user,

@@ -11,7 +11,6 @@ import { Redis } from 'ioredis';
 
 import { RedisService } from '../redis';
 import { ProjectService } from './projects.service';
-import { User } from '../users';
 import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SocketServerGateway } from '../socket-server/socket-server.gateway';
 import { ModuleRef } from '@nestjs/core';
@@ -20,7 +19,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProjectDocument } from 'src/schemas/project.schema';
 import { Summary, SummaryDocument } from 'src/schemas/summary.schema';
-import { User as MongoUser, UserDocument } from 'src/schemas/user.schema';
+import { User, UserDocument } from 'src/schemas/user.schema';
 
 /**
  * The return format for frontend use
@@ -40,7 +39,7 @@ export class SummariesService implements OnModuleInit {
     constructor(
         @InjectModel(Summary.name)
         private summaryModel: Model<SummaryDocument>,
-        @InjectModel(MongoUser.name)
+        @InjectModel(User.name)
         private userModel: Model<UserDocument>,
         private moduleRef: ModuleRef,
         private readonly socketServerGateway: SocketServerGateway,
@@ -57,7 +56,7 @@ export class SummariesService implements OnModuleInit {
     public async getRawDailySummaries(
         startDate: string,
         endDate: string,
-        user: Partial<User>
+        user: UserDocument
     ): Promise<SummaryDocument[]> {
         const project = await this.projectService.getProjectByUser(user);
 
@@ -172,7 +171,7 @@ export class SummariesService implements OnModuleInit {
         }
     }
 
-    async syncWithThirdParty(days: number, user: User, emitNotice = true) {
+    async syncWithThirdParty(days: number, user: UserDocument, emitNotice = true) {
         const since = moment().subtract(days, 'days').format('YYYY-MM-DD');
 
         const project = await this.projectService.getProjectByUser(user);
@@ -239,14 +238,12 @@ export class SummariesService implements OnModuleInit {
         });
     }
 
-    public async getCurrentStreak(user: Partial<User>): Promise<number> {
+    public async getCurrentStreak(user: UserDocument): Promise<number> {
         let streak = 0;
-        let today = new Date().toISOString().slice(0, 10).replace(/T.*/, '');
-
-        const userComplete = await this.userModel.findOne({ mysqlId: user.id });
-        const entries = await this.summaryModel
-            .find({ user: userComplete })
-            .sort({ date: -1 });
+        // for e2e testing purpose
+        const now = Date.now();
+        let today = new Date(now).toISOString().slice(0, 10).replace(/T.*/, '');
+        const entries = await this.summaryModel.find({ user: user }).sort({ date: -1 });
 
         for (const entry of entries) {
             if (entry.date != today) {
@@ -258,7 +255,6 @@ export class SummariesService implements OnModuleInit {
             prevDate.setDate(prevDate.getDate() - 1);
             today = prevDate.toISOString().slice(0, 10).replace(/T.*/, '');
         }
-
         return streak;
     }
 

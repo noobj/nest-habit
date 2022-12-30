@@ -2,7 +2,7 @@ import { Repository, Connection } from 'typeorm';
 import { ImATeapotException } from '@nestjs/common';
 
 import { Project } from 'src/app/modules/summaries/entities';
-import { ISeeder } from './seeder.interface';
+import { ISeeder } from '../src/database/mongo_seeders/seeder.interface';
 import { User } from 'src/app/modules/users';
 
 export class ProjectSeeder implements ISeeder {

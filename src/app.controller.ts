@@ -46,7 +46,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import * as winston from 'winston';
 import * as moment from 'moment';
 import { timezoned, genRandomStr } from 'src/common/helpers/utils';
-import { User } from './app/modules/users/users.entity';
+import { UserDocument } from './schemas/user.schema';
 
 class LoginDTO {
     @ApiProperty({ required: true })
@@ -101,7 +101,7 @@ export class AppController {
     })
     @ApiUnauthorizedResponse({ description: 'Unauthorized' })
     @ApiResponse({ status: 201, description: 'Success' })
-    async login(@Request() req: Express.Request & { session: any; user: User }) {
+    async login(@Request() req: Express.Request & { session: any; user: UserDocument }) {
         const token = await this.authService.login(req.user);
         req.session.access_token = token.access_token;
         req.session.refresh_token = token.refresh_token;
@@ -112,7 +112,10 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt-refresh'))
     @Get('refresh')
-    refresh(@Request() req: Express.Request & { session: { access_token: string } }) {
+    refresh(
+        @Request()
+        req: Express.Request & { session: { access_token: string }; user: UserDocument }
+    ) {
         req.session.access_token = this.authService.generateAccessToken(req.user);
 
         return 'done';
@@ -120,7 +123,7 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('profile')
-    getProfile(@Request() req: Express.Request) {
+    getProfile(@Request() req: Express.Request & { session: any; user: UserDocument }) {
         return req.user;
     }
 
@@ -145,7 +148,7 @@ export class AppController {
     @ApiResponse({ status: 201, description: 'Success' })
     @UseFilters(new HttpExceptionFilter())
     async uploadFile(
-        @Request() req: Express.Request & { user: User },
+        @Request() req: Express.Request & { user: UserDocument },
         @UploadedFile() file: Express.Multer.File
     ) {
         try {
@@ -196,7 +199,7 @@ export class AppController {
     @ApiResponse({ status: 201, description: 'Success' })
     @ApiBadRequestResponse({ description: 'Third party return error' })
     async setToken(
-        @Request() req: Express.Request & { user: { id: number } },
+        @Request() req: Express.Request & { user: UserDocument },
         @Body('api_token') apiToken: string,
         @Body('service') service: ThirdPartyServiceKeys
     ) {
@@ -221,9 +224,7 @@ export class AppController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('logout')
-    async logout(
-        @Request() req: Express.Request & { session: any; user: { id: number } }
-    ) {
+    async logout(@Request() req: Express.Request & { session: any; user: UserDocument }) {
         req.session.cookie.expires = Date.now();
         req.session.cookie.maxAge = 0;
         await this.userService.removeRefreshToken(req.user.id);
@@ -234,7 +235,7 @@ export class AppController {
     @ApiOperation({ summary: 'Get the subscription token of Telegram' })
     @ApiResponse({ status: 200, description: 'Success' })
     async generateSubToken(
-        @Request() req: Express.Request & { session: any; user: { id: number } }
+        @Request() req: Express.Request & { session: any; user: UserDocument }
     ): Promise<string> {
         const token = genRandomStr(20);
         // store token in Redis and set ttl;

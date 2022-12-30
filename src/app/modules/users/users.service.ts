@@ -1,39 +1,35 @@
 import { ImATeapotException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindConditions, FindManyOptions } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 import { ThirdPartyServiceKeys } from '../ThirdParty/third-party.factory';
-import { User } from './users.entity';
+import { User, UserDocument } from 'src/schemas/user.schema';
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectRepository(User)
-        private usersRepository: Repository<User>
+        @InjectModel(User.name)
+        private userModel: Model<UserDocument>
     ) {}
 
-    async find(conditions?: FindConditions<User>): Promise<User[]>;
-
-    async find(options?: FindManyOptions<User>): Promise<User[]>;
-
-    async find(options?: any): Promise<User[]> {
-        return await this.usersRepository.find(options);
+    async find(...args: any): Promise<UserDocument[]> {
+        return await this.userModel.find(...args);
     }
 
-    async findOne(id: number): Promise<User | undefined> {
-        return await this.usersRepository.findOne(id);
+    async findOne(...args: any): Promise<UserDocument | undefined> {
+        return await this.userModel.findOne(...args);
     }
 
-    async findOneByAccount(account: string): Promise<User | undefined> {
-        return await this.usersRepository.findOne({
-            where: { account: account }
+    async findOneByAccount(account: string): Promise<UserDocument | undefined> {
+        return await this.userModel.findOne({
+            account: account
         });
     }
 
-    async setToken(id: number, token: string, service: ThirdPartyServiceKeys) {
+    async setToken(id: string, token: string, service: ThirdPartyServiceKeys) {
         try {
-            await this.usersRepository.update(id, {
+            await this.userModel.findByIdAndUpdate(id, {
                 toggl_token: token,
                 third_party_service: service
             });
@@ -42,21 +38,24 @@ export class UsersService {
         }
     }
 
-    async setRefreshToken(refreshToken: string, userId: number) {
+    async setRefreshToken(refreshToken: string, userId: string) {
         const currentHashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-        await this.usersRepository.update(userId, {
+        await this.userModel.findByIdAndUpdate(userId, {
             refresh_token: currentHashedRefreshToken
         });
     }
 
-    async removeRefreshToken(userId: number) {
-        return this.usersRepository.update(userId, {
+    async removeRefreshToken(userId: string) {
+        return this.userModel.findByIdAndUpdate(userId, {
             refresh_token: null
         });
     }
 
-    async attempRefreshToken(refreshToken: string, userId: number): Promise<void | User> {
-        const user = await this.usersRepository.findOne(userId);
+    async attempRefreshToken(
+        refreshToken: string,
+        userId: string
+    ): Promise<void | UserDocument> {
+        const user = await this.userModel.findById(userId);
 
         const isRefreshTokenMatching = await bcrypt.compare(
             refreshToken,

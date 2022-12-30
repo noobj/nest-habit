@@ -1,12 +1,12 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { TogglClient } from 'src/common/helpers/TogglClient';
 import { ProjectDocument } from 'src/schemas/project.schema';
-import { User } from '../../users';
+import { UserDocument } from 'src/schemas/user.schema';
 import { IThirdPartyService } from '../third-party.interface';
 
 @Injectable()
 export class TogglService implements IThirdPartyService {
-    public async getProjects(user: Partial<User>) {
+    public async getProjects(user: UserDocument) {
         const togglClient = new TogglClient({
             baseURL: 'https://api.track.toggl.com/',
             timeout: 10000,

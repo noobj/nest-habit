@@ -1,7 +1,7 @@
 import { Connection, Model } from 'mongoose';
 
 import { QuoteSchema, QuoteDocument, Quote } from 'src/schemas/quote.schema';
-import { ISeeder } from '../seeders/seeder.interface';
+import { ISeeder } from './seeder.interface';
 
 export class QuoteSeeder implements ISeeder {
     private model: Model<QuoteDocument>;

@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 
 import { ICommand } from '../../interfaces/command.interface';
-import * as Seeder from 'src/database/seeders';
+import * as Seeder from 'seeders';
 
 @Injectable()
 export class SeedService implements ICommand {

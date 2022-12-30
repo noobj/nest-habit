@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 
 import { UsersService } from '../modules/users';
+import { UserDocument } from 'src/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +14,7 @@ export class AuthService {
         private readonly configService: ConfigService
     ) {}
 
-    async validateUser(username: string, pass: string): Promise<any> {
+    async validateUser(username: string, pass: string): Promise<UserDocument | null> {
         const user = await this.usersService.findOneByAccount(username);
 
         if (!user) return null;
@@ -40,16 +41,16 @@ export class AuthService {
         return { access_token, refresh_token };
     }
 
-    public generateAccessToken(user: any): string {
+    public generateAccessToken(user: UserDocument): string {
         const payload = {
             account: user.account,
-            sub: user.id
+            sub: user._id
         };
 
         return this.jwtService.sign(payload);
     }
 
-    public generateRefreshToken(userId: number): string {
+    public generateRefreshToken(userId: string): string {
         return this.jwtService.sign(
             { userId },
             {

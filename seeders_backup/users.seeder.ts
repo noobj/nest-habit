@@ -1,7 +1,7 @@
 import { Repository, Connection } from 'typeorm';
 
 import { User } from 'src/app/modules/users';
-import { ISeeder } from './seeder.interface';
+import { ISeeder } from '../src/database/mongo_seeders/seeder.interface';
 import { ThirdPartyServiceKeys } from 'src/app/modules/ThirdParty/third-party.factory';
 
 export class UserSeeder implements ISeeder {

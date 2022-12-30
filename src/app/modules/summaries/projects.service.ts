@@ -4,15 +4,11 @@ import { Redis } from 'ioredis';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { User } from '../users';
-import { UsersService } from '../users';
 import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { SummariesService } from './summaries.service';
 import { RedisService } from '../redis';
 import { Project, ProjectDocument } from 'src/schemas/project.schema';
-import { User as MongoUser, UserDocument } from 'src/schemas/user.schema';
-
-export type ProjectWithMysqlUser = Project & { userMysql: User };
+import { UserDocument } from 'src/schemas/user.schema';
 
 @Injectable()
 export class ProjectService {
@@ -21,74 +17,48 @@ export class ProjectService {
     constructor(
         @InjectModel(Project.name)
         private projectModel: Model<ProjectDocument>,
-        @InjectModel(MongoUser.name)
-        private userModel: Model<UserDocument>,
         private summariesService: SummariesService,
-        private usersService: UsersService,
         private redisService: RedisService
     ) {
         moment.tz.setDefault('Asia/Taipei');
         this.redisClient = this.redisService.getClient();
     }
 
-    public async getProjectByUser(user: Partial<User>): Promise<ProjectDocument> {
-        const mongoUser = await this.userModel.findOne({ mysqlId: user.id });
-        const project = await this.projectModel
-            .findOne({ user: mongoUser })
-            .populate('user');
+    public async getProjectByUser(user: UserDocument): Promise<ProjectDocument> {
+        const project = await this.projectModel.findOne({ user: user }).populate('user');
 
         return project;
     }
 
-    public async getLeastUpdatedProjects(
-        amount: number
-    ): Promise<ProjectWithMysqlUser[]> {
-        const projects = await this.projectModel
+    public async getLeastUpdatedProjects(amount: number): Promise<ProjectDocument[]> {
+        return await this.projectModel
             .find({})
             .sort({ lastUpdated: -1 })
             .limit(amount)
             .populate('user');
-
-        return await Promise.all(
-            projects.map(async (project) => {
-                const user = await this.usersService.findOne(project.user.mysqlId);
-                return {
-                    ...project,
-                    userMysql: user
-                };
-            })
-        );
     }
 
-    public async updateProjectLastUpdated(project: Partial<ProjectDocument>) {
+    public async updateProjectLastUpdated(project: ProjectDocument) {
         return await this.projectModel.findByIdAndUpdate(project.id, {
             lastUpdated: new Date()
         });
     }
 
-    public async getAllProjects(user: Partial<User>) {
-        user = await this.usersService.findOne(user.id);
-
+    public async getAllProjects(user: UserDocument) {
         return await ThirdPartyFactory.getService(user.third_party_service).getProjects(
             user
         );
     }
 
-    public async deleteProjectByUser(user: Partial<User> | number) {
-        const userId = typeof user === 'number' ? user : user.id;
-
+    public async deleteProjectByUser(user: UserDocument) {
         // clean cache
-        const keys = await this.redisClient.keys(`summaries:${user}*`);
+        const keys = await this.redisClient.keys(`summaries:${user._id}*`);
         for (const key of keys) await this.redisClient.del(key);
 
-        const userMongo = await this.userModel.findOne({ mysqlId: userId });
-
-        await this.projectModel.deleteOne({ user: userMongo });
+        await this.projectModel.deleteOne({ user: user });
     }
 
-    public async setCurrentProject(user: User, projectName: string) {
-        const userWhole = await this.userModel.findOne({ mysqlId: user.id });
-        user.third_party_service = userWhole.third_party_service;
+    public async setCurrentProject(user: UserDocument, projectName: string) {
         const currentProject = await this.getProjectByUser(user);
 
         // if current project equals to passed project, then only sync data
@@ -105,7 +75,7 @@ export class ProjectService {
             const project: Project = {
                 thirdPartyId: fetchedProject.id,
                 name: projectName,
-                user: userWhole,
+                user: user,
                 lastUpdated: new Date()
             };
             await this.projectModel.create(project);

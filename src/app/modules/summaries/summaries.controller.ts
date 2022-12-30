@@ -33,7 +33,7 @@ import {
 } from '@nestjs/swagger';
 import { SummariesService } from './summaries.service';
 import { SummaryDocument } from 'src/schemas/summary.schema';
-import { User } from '../users';
+import { UserDocument } from 'src/schemas/user.schema';
 
 class DateRange {
     @ApiProperty()
@@ -75,7 +75,7 @@ export class SummariesController {
     @ApiBadRequestResponse({ description: 'Wrong project input' })
     @ApiInternalServerErrorResponse()
     setCurrentProjectByName(
-        @Request() req: Express.Request & { user: User },
+        @Request() req: Express.Request & { user: UserDocument },
         @Body('project_name') projectName: string
     ) {
         return from(this.projectService.setCurrentProject(req.user, projectName)).pipe(
@@ -87,7 +87,7 @@ export class SummariesController {
     @Get('projects')
     @ApiOperation({ summary: 'Get all projects of the user along with current project' })
     @ApiResponse({ status: 200, description: 'Success' })
-    getProjectNameByUser(@Request() req: Express.Request) {
+    getProjectNameByUser(@Request() req: Express.Request & { user: UserDocument }) {
         return forkJoin({
             curretProject: this.projectService.getProjectByUser(req.user),
             allProjects: this.projectService.getAllProjects(req.user).then((res) => {
@@ -126,7 +126,7 @@ export class SummariesController {
     @ApiNoContentResponse({ description: 'No content' })
     async showAll(
         @Query(new ValidationPipe()) dateRange: DateRange,
-        @Request() req: Express.Request & { user: { id: number; account: string } }
+        @Request() req: Express.Request & { user: UserDocument }
     ) {
         const cacheString = getCacheString(
             'summaries',

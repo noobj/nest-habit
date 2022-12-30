@@ -1,13 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SummariesService } from './summaries.service';
 import { ImATeapotException } from '@nestjs/common';
-import { User } from '../users';
+import { UserDocument } from 'src/schemas/user.schema';
+import { createMock } from '@golevelup/ts-jest';
 import { ProjectService } from './projects.service';
 import { ModuleRef } from '@nestjs/core';
 import { ThirdPartyFactory } from '../ThirdParty/third-party.factory';
 import { RedisService } from 'src/app/modules/redis';
 import { SocketServerGateway } from 'src/app/modules/socket-server/socket-server.gateway';
-import { Project } from 'src/schemas/project.schema';
+import { Project, ProjectDocument } from 'src/schemas/project.schema';
 import { User as MongoUser } from 'src/schemas/user.schema';
 import { getModelToken } from '@nestjs/mongoose';
 import { Summary } from 'src/schemas/summary.schema';
@@ -16,145 +17,141 @@ import * as moment from 'moment';
 describe('SummariesService', () => {
     let service: SummariesService;
 
-    const user: Omit<User, 'summaries'> = {
-        id: 1,
+    const user: UserDocument = createMock<UserDocument>({
         account: 'jjj',
+        _id: () => '1',
         email: 'test',
         password: 'DGAF',
         toggl_token: 'DGAF'
-    };
+    });
 
-    const userWithMysqlId = {
-        ...user,
-        mysqlId: 1
-    };
-
-    const project: Project = {
-        user: userWithMysqlId,
+    const project: ProjectDocument = createMock<ProjectDocument>({
+        _id: () => '1',
+        user: user,
         thirdPartyId: 157099012,
         name: 'meditation',
         lastUpdated: new Date('2022-10-24 16:50:19')
-    };
+    });
 
     const fakeSummaries = [
         {
             date: '2021-04-23',
             duration: 1500000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-22',
             duration: 12000000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-21',
             duration: 12000000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-20',
             duration: 3300000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-19',
             duration: 1800000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-17',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-13',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-12',
             duration: 1800000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-11',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-10',
             duration: 1800000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-09',
             duration: 3000000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-07',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-03',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-04-02',
             duration: 16200000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-03-31',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-03-30',
             duration: 1800000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-03-16',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-03-09',
             duration: 1800000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-03-05',
             duration: 5400000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         },
         {
             date: '2021-03-01',
             duration: 2700000,
-            user: userWithMysqlId,
+            user: user,
             project: project
         }
     ];
@@ -171,7 +168,7 @@ describe('SummariesService', () => {
     };
 
     const mockUserModel = {
-        findOne: jest.fn(() => userWithMysqlId)
+        findOne: jest.fn(() => user)
     };
 
     const mockSummaryModel = {
@@ -288,11 +285,11 @@ describe('SummariesService', () => {
             project: project,
             date: '2021-04-23',
             duration: 1500000,
-            user: userWithMysqlId
+            user: user
         });
         expect(mockSummaryModel.find).toBeCalledWith({
             project: project,
-            user: userWithMysqlId,
+            user: user,
             date: { $gte: 'startDate', $lte: 'endDate' }
         });
     });
@@ -348,7 +345,7 @@ describe('SummariesService', () => {
             project: project,
             date: '2021-04-23',
             duration: 1500000,
-            user: userWithMysqlId
+            user: user
         };
         const result = await service.upsert([entry]);
 
@@ -366,7 +363,7 @@ describe('SummariesService', () => {
     //                 project: project,
     //                 date: '123',
     //                 duration: 1500000,
-    //                 user: userWithMysqlId
+    //                 user: user
     //             }
     //         ]);
     //     }).rejects.toThrow(ImATeapotException);
@@ -385,7 +382,7 @@ describe('SummariesService', () => {
                     project: project,
                     date: '2021-04-23',
                     duration: 1500000,
-                    user: userWithMysqlId
+                    user: user
                 }
             ]);
         }).rejects.toThrow(ImATeapotException);
